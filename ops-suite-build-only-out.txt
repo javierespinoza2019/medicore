@@ -1,0 +1,41 @@
+MediCore - suite de pruebas | ambiente=dev (ASPNETCORE_ENVIRONMENT=Development)
+    API=http://localhost:5080 | Frontend=http://localhost:5173
+    Estrategia: docs/operacion/pruebas.md
+
+=== dotnet build (solucion) 
+  Determinando los proyectos que se van a restaurar...
+  Se ha restaurado C:\Proyectos\AppFabric\MedicalCore\backend\Common\MediCore.Common.csproj (en 249 ms).
+  Se ha restaurado C:\Proyectos\AppFabric\MedicalCore\backend\Worker\MediCore.Worker.csproj (en 649 ms).
+  Se ha restaurado C:\Proyectos\AppFabric\MedicalCore\backend\Business\MediCore.Business.csproj (en 636 ms).
+  Se ha restaurado C:\Proyectos\AppFabric\MedicalCore\backend\Tests\MediCore.Common.Tests\MediCore.Common.Tests.csproj (en 631 ms).
+  Se ha restaurado C:\Proyectos\AppFabric\MedicalCore\backend\DataAccess\MediCore.DataAccess.csproj (en 634 ms).
+  Se ha restaurado C:\Proyectos\AppFabric\MedicalCore\backend\Tests\MediCore.Business.Tests\MediCore.Business.Tests.csproj (en 656 ms).
+  Se ha restaurado C:\Proyectos\AppFabric\MedicalCore\backend\Api\MediCore.Api.csproj (en 636 ms).
+  1 de 8 proyectos están actualizados para la restauración.
+  MediCore.Common -> C:\Proyectos\AppFabric\MedicalCore\backend\Common\bin\Debug\net10.0\MediCore.Common.dll
+  MediCore.Models -> C:\Proyectos\AppFabric\MedicalCore\backend\Models\bin\Debug\net10.0\MediCore.Models.dll
+  MediCore.Common.Tests -> C:\Proyectos\AppFabric\MedicalCore\backend\Tests\MediCore.Common.Tests\bin\Debug\net10.0\MediCore.Common.Tests.dll
+  MediCore.DataAccess -> C:\Proyectos\AppFabric\MedicalCore\backend\DataAccess\bin\Debug\net10.0\MediCore.DataAccess.dll
+  MediCore.Business -> C:\Proyectos\AppFabric\MedicalCore\backend\Business\bin\Debug\net10.0\MediCore.Business.dll
+  MediCore.Worker -> C:\Proyectos\AppFabric\MedicalCore\backend\Worker\bin\Debug\net10.0\MediCore.Worker.dll
+  MediCore.Business.Tests -> C:\Proyectos\AppFabric\MedicalCore\backend\Tests\MediCore.Business.Tests\bin\Debug\net10.0\MediCore.Business.Tests.dll
+  MediCore.Api -> C:\Proyectos\AppFabric\MedicalCore\backend\Api\bin\Debug\net10.0\MediCore.Api.dll
+
+Compilación correcta.
+    0 Advertencia(s)
+    0 Errores
+
+Tiempo transcurrido 00:00:10.44
+
+=== Etapa 'test' omitida por -Skip 
+
+=== Etapa 'frontend' omitida por -Skip 
+
+=== Etapa 'e2e' omitida por -Skip 
+
+================ Resumen de la suite ================
+  build     OK
+  test      omitida (-Skip)
+  frontend  omitida (-Skip)
+  e2e       omitida (-Skip)
+=====================================================

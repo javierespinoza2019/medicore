@@ -6,9 +6,10 @@
   "type": "module",
   "scripts": {
     "test": "playwright test",
+    "test:api": "playwright test --project=contrato-api",
     "test:smoke": "playwright test specs/00-smoke",
     "test:sc": "playwright test specs/06-seguridad-clinica",
-    "test:offline": "playwright test specs/03-triage-urgencias/dos-estaciones-offline.spec.ts specs/09-offline",
+    "test:offline": "playwright test specs/03-triage-urgencias/dos-estaciones-offline.spec.ts specs/03-triage-urgencias/sc-19-estacion-offline.spec.ts specs/09-offline",
     "test:a11y": "playwright test specs/07-accesibilidad",
     "test:headed": "playwright test --headed",
     "test:ui": "playwright test --ui",
@@ -18,6 +19,7 @@
   },
   "devDependencies": {
     "@axe-core/playwright": "^4.10.2",
+    "@microsoft/signalr": "^10.0.11",
     "@playwright/test": "^1.56.1",
     "@types/node": "^22.10.2",
     "typescript": "^5.7.2"

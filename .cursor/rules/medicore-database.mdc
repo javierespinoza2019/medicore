@@ -12,5 +12,19 @@ alwaysApply: false
 - Toda tabla de negocio: `TenantId` (+ índices compuestos típicos).
 - Seeds solo sintéticos (`seeds/`); nunca PHI real.
 - Outbox y auditoría append-only; no hard-delete de hechos clínicos/pagos (void/reverso).
+
+## Prohibición general: DELETE y DROP
+
+Regla dura, sin excepción por conveniencia:
+
+- **Prohibido `DELETE`** contra la base de datos (SP, script, migración o consola). Baja lógica: `IsDeleted` / `RevokedAtUtc` / estado `void` + reverso, siempre con rastro y autoría.
+- **Prohibido `DROP`** de cualquier objeto (`DATABASE`, `TABLE`, `COLUMN`, `INDEX`, `PROCEDURE`, `CONSTRAINT`, `SCHEMA`). Para evolucionar esquema: crear lo nuevo y migrar; deprecar sin destruir.
+- **Prohibido `TRUNCATE`**, `DELETE FROM` masivo y "limpiezas" de datos de prueba borrando filas.
+- SPs de negocio: **no** exponen operación de borrado físico; el sufijo permitido es `_SoftDelete`, nunca `_Delete` con `DELETE`.
+- Cambios de SP: usar `CREATE OR ALTER PROCEDURE` (no `DROP PROCEDURE ... CREATE`).
+- Reinicio de un ambiente de demo: **restaurar respaldo** o crear base nueva, no borrar filas.
+- Si una tarea parece exigir `DELETE`/`DROP`: **detenerse y preguntar**; requiere decisión explícita del responsable y queda registrada en `docs/analisis/06-decisiones-abiertas.md`.
+
+Motivo: el expediente clínico es append-only (NOM-004 5.11 en lo verificado) y la trazabilidad no se relaja; además un borrado físico destruye evidencia de auditoría y rompe la reconciliación de la cola offline y del outbox.
 - Centinelas DGIS (`Desconocido`, `09/09/9999`, `999`) solo en **capa de reporte**, no contaminar modelo clínico.
 - Prohibido autogenerar CURP (NOM-024 6.5.1).

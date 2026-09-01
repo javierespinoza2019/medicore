@@ -1,0 +1,48 @@
+---
+description: MediCore — cierre de tarea: actualizar memoria viva y dejar pruebas (siempre)
+alwaysApply: true
+---
+
+# MediCore — cierre de tarea
+
+Al terminar **cualquier** tarea, antes de dar el resumen final: actualizar la memoria viva del
+repo y dejar las pruebas del módulo tocado. Solo lo que el cambio amerite; una tarea que no
+cambió decisiones no toca documentos.
+
+## Qué se actualiza y cuándo
+
+| Si el cambio… | Actualizar |
+|---|---|
+| altera una decisión de arquitectura, fase o alcance | `docs/analisis/12-propuesta-final.md` (y `03` si hay ADR) |
+| cambia un no negociable o el flujo de trabajo del agente | `AGENTS.md` (+ `CLAUDE.md` solo si cambia el arranque de Claude) |
+| cambia una convención de código verificable por capa | la regla de `.cursor/rules/` correspondiente (backend / frontend / database / e2e) |
+| cambia el procedimiento que un agente debe seguir | el skill `medicore-*` correspondiente |
+| cambia contrato de API (ruta, DTO, códigos, authz) | `docs/operacion/` del módulo + spec/contrato en `tests/e2e` |
+| cambia el modelo de datos o un SP | `.cursor/rules/medicore-database.mdc` si cambia la convención; nunca editar una migración ya aplicada |
+| cambia ambientes, secretos, despliegue o BD | `docs/operacion/ambientes.md` |
+| cambia la estrategia o el inventario de pruebas | `docs/operacion/pruebas.md` |
+| deja una decisión pendiente, o ratifica una | `docs/analisis/06-decisiones-abiertas.md` |
+| descubre un bug que no se corrige en esta tarea | reportarlo en el resumen y anotarlo en `06-decisiones-abiertas.md` si requiere decisión |
+
+Reglas para que esto no degenere en ruido:
+
+- Un hecho vive en **un** archivo; los demás lo referencian con enlace. No copiar párrafos.
+- No inflar changelogs ni agregar fechas ni estados de fase inventados.
+- Si nada de la tabla aplica, decirlo en el resumen: «sin cambios de memoria».
+
+## Pruebas acumulativas
+
+Cada módulo implementado deja sus pruebas en el mismo cambio, para que al final exista un set
+completo ejecutable de una sola vez con `tools/run-all-tests.ps1`.
+
+- Niveles, requisitos previos y aislamiento: [`docs/operacion/pruebas.md`](../../docs/operacion/pruebas.md).
+- La aceptación cuenta **solo contra stack real** (API + BD). Un smoke contra mocks es andamiaje.
+- Las pruebas **no** usan `DELETE` / `TRUNCATE` para limpiar: Dev es compartida y sin PHI; el
+  aislamiento se logra con tenant/identificadores propios.
+- Los IDs `SC-01…` no se borran para poner verde la suite.
+
+## Resumen final
+
+Decir qué se cambió, qué fase afecta, qué documentos de memoria se actualizaron (o por qué
+ninguno), qué pruebas se agregaron y qué etapas de la suite se corrieron **realmente** con su
+resultado. No afirmar que algo pasa sin haberlo ejecutado.

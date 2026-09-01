@@ -8,14 +8,70 @@ Este documento contiene todo lo que **no** se dio por resuelto. Nada de esto fue
 
 ## Decisiones ya ratificadas por el cliente
 
+### Oleada 2026-08-31 (break-glass y SaMD)
+
+| # | Tema | Resolución |
+|---|---|---|
+| 23 | **Break-glass** | **Sí — habilitado con justificación obligatoria y alerta auditable.** Acceso de emergencia cuando el rol habitual no alcanza. Requiere motivo escrito (mín. 15), registro en bitácora (`security.break_glass.started`) y concesión temporal (60 min). API/UI entregadas 2026-08-31: `POST /api/auth/break-glass`, menú usuario «Acceso de emergencia». No sustituye el catálogo de roles ni permite nombres libres. |
+| 8 | **Software como dispositivo médico (SaMD)** | **Fuera de alcance — producto documental/administrativo.** No se incorpora apoyo a la decisión clínica automatizada, cálculo de dosis, interpretación de resultados ni IA diagnóstica en Fases 1–4. Si legal exige reevaluación ante COFEPRIS antes del primer paciente real, reabrir con dictamen escrito. **No** afirmar clasificación SaMD sin fuente oficial. |
+
+### Oleada 2026-08-30 (revocación global de sesiones)
+
+| # | Tema | Resolución |
+|---|---|---|
+| 75 | **Revocación global de sesiones** | **Opción A — política ratificada; endpoints entregados 2026-08-31.** El logout ordinario sigue siendo **solo esta estación** (#73). `sp_Auth_RevokeAllRefreshTokensForUser` se invoca en: (1) **cambio de contraseña** (cuando exista el flujo); (2) **revocación admin** vía `POST /api/auth/users/{userId}/sessions/revoke-all` (previo a o junto con `IsActive=false`); (3) **autogestión** `POST /api/auth/sessions/revoke-all` («cerrar en todos mis dispositivos»). **No** en lockout por intentos fallidos. Contrato: [`docs/operacion/auth-sesiones.md`](../operacion/auth-sesiones.md). |
+
+### Oleada 2026-08-30 (monitor de turnos)
+
+| # | Tema | Resolución |
+|---|---|---|
+| 21 | **Enmascaramiento en el monitor de turnos** | **Sólo número de turno por omisión** (recomendación técnica aceptada). No se muestra nombre ni otra PHI en la pantalla pública. Mostrar nombre exigiría una decisión futura explícita (opt-in por tenant/sucursal); hoy no hay control de UI para activarlo. |
+
+### Oleada 2026-08-30 (escala de triage)
+
+| # | Tema | Resolución |
+|---|---|---|
+| 63 | **Escala de triage** | **Opción A — motor configurable; plantilla demo de 5 niveles.** Se mantiene la cascada sucursal → tenant (plan 13 / M5). Plantilla Dev = `escala_sintetica_demo_v1` (seed `006`, cinco niveles `prioridad_1`…`prioridad_5`); **no** es Manchester, ESI ni norma mexicana. Cada tenant **puede** cambiar el número y el contenido de niveles vía API/admin. La UI clínica **no** hardcodea los cuatro colores del prototipo: presenta la escala efectiva. **No** se afirma cumplimiento de escala internacional ni NOM sobre triage. Deuda residual: pantallas que aún consumen `mocks/urgencias` (dashboard/farmacia/expediente mock) con rojo/naranja/amarillo/verde — se retiran al sacar esos módulos de mocks, no se reinstalan como escala de producto. |
+
+### Oleada 2026-08-30 (establecimiento)
+
+| # | Tema | Resolución |
+|---|---|---|
+| 10 / L | **Responsable sanitario y tipología de establecimiento** | **Opción A — tipología demo + alcance de servicios.** Producto Fases 1–4: **solo ambulatorio + urgencias** (sin laboratorio propio, imagenología, cirugía, anestesia, odontología, hospital/UCI como alcance de esta decisión). Tenant demo (`seeds/002`): **CENTRAL** = `ambulatorio_con_urgencias` / `HasEmergencyService=1`; **NORTE** y **SUR** = `ambulatorio` / `0`. Aprovisionamiento genérico (`003`) **no** inventa tipología (queda NULL hasta captura). Responsable sanitario operativo **provisional:** rol `admin` (y SuperAdmin de plataforma) aprueba parámetros clínicos versionados; `ResponsiblePhysicianProfessionalId` se liga cuando se conozca al profesional — **no** bloquea emisión solo por faltar ese FK. |
+
+### Oleada 2026-08-30 (controlados)
+
+| # | Tema | Resolución |
+|---|---|---|
+| 64 / 68 | **Estupefacientes y psicotrópicos** | **Opción A — fuera de alcance comercial** en Fases 1–4 (y piloto / primer año comercial: las clínicas **no** los necesitan). El bloqueo ya implementado (`IsControlledSubstance` → HTTP **422** + exclusión del catálogo de prescritir) es **política de producto**, no un temporal. **No** hay UI/API de recetarios especiales ni surtido de estas clases. Reabrir solo con decisión escrita + **Reglamento de Insumos** verificado en fuente oficial + trámite de folios ante autoridad. El **libro de control de farmacia general** (pregunta **#60**, LGS 226) queda **aparte** y sigue abierto; no se decide por esta oleada. |
+
+### Oleada 2026-08-30 (roles y permisos)
+
+| # | Tema | Resolución |
+|---|---|---|
+| 19 | **Roles y permisos (Fase 1)** | **Opción B — plantillas fijas; permisos ajustables por tenant.** No se permiten nombres de rol libres por cliente. Catálogo cerrado de plantillas (los 8 del prototipo **más** `trabajo_social`) con matriz de permisos configurable por tenant sobre esas plantillas. **SuperAdmin** sigue siendo **solo de plataforma** (no es rol de tenant). Consulta de bitácora (`GET /api/audit/subject|actor`) permanece **admin + SuperAdmin** hasta una fase posterior. API matriz: `GET/PUT /api/roles/permission-matrix` (entregada 2026-08-31); UI admin en `seguridad/roles`. El front sigue usando `permissions.ts` como plantilla hasta que la sesión cargue overrides del tenant. |
+
+### Oleada 2026-08-30 (firma electrónica)
+
+| # | Tema | Resolución |
+|---|---|---|
+| 9 / 69 | **Firma electrónica (piloto / Fase 1)** | **Opción A — firma simple de integridad.** Hasta un nuevo dictamen escrito, basta la mecánica ya entregada: hash canónico SHA-256 + sello de tiempo + snapshot de cédula/establecimiento; nota/receta inmutables al firmar. **No** se exige e.firma/FIEL del SAT en el piloto. Los médicos del piloto **no** disponen de e.firma vigente. **No** se exige constancia NOM-151-SCFI-2016 en el piloto. La UI **no** afirma validez jurídica plena ni cumplimiento NOM-004 5.10; puede retirarse la leyenda de «dictamen pendiente de producto» y sustituirse por texto que describa integridad/cadena de custodia técnica sin pretensión de e.firma. Reabrir si legal exige FIEL o NOM-151 antes del primer paciente real. |
+
+### Oleada 2026-08-27 (operación de sesiones)
+
+| # | Tema | Resolución |
+|---|---|---|
+| 73 | **Alcance del logout** | **Sólo la sesión actual.** Cerrar sesión revoca únicamente el refresh token presentado en la cookie; las demás estaciones del mismo usuario siguen trabajando. Motivo del cliente: continuidad de la atención con dos estaciones en urgencias (recepción y triage sobre la misma cuenta). Si la petición llega **sin** cookie de refresh válida, el API limpia la cookie de esa estación y responde **400** con `success:false`: no hay sesión identificable que cerrar y responder 200 afirmaría un cierre que no ocurrió; tampoco se cae al cierre global, que sería lo contrario de la decisión. El cierre global (`sp_Auth_RevokeAllRefreshTokensForUser`) se usa según política **§75** (cambio de contraseña, bloqueo/baja admin, botón «cerrar en todos…»; no lockout por intentos). |
+| 19-bis | **Profesional sanitario en BD + sesión** | **Modelar y alimentar la sesión desde el servidor** (2026-08-27/28). Cédula/especialidad admiten «no capturado»; sin validación externa; filtro médico **fail closed** si no hay profesional ligado. Detalle y pendientes en §19-bis. |
+
 ### Oleada 2026-08-23 (arquitectura final + operación)
 
 | # | Tema | Resolución |
 |---|---|---|
 | — | **Topología final** | **Sin Edge.** Core central + SPA/PWA. Navegador e instalación = mismo cliente. Doc 03 reescrito. |
 | — | **Cobro offline** | **Permitido.** Recibo provisional no fiscal; CFDI diferido; corte por dispositivo en contingencia. |
-| — | **Farmacia offline** | **Permitida** (existencia negativa + reconciliación). **Estupefacientes y psicotrópicos: PENDIENTE** (Reglamento de Insumos + alcance). |
-| — | **Firma offline** | Local + sello al sincronizar; nota inmutable al firmar; **dictamen legal** vs NOM-004 5.10 pendiente. |
+| — | **Farmacia offline** | **Permitida** (existencia negativa + reconciliación). **Estupefacientes y psicotrópicos: fuera de alcance** (opción A, 2026-08-30 — ver 64/68); el sistema los **impide**. |
+| — | **Firma offline** | Local + sello al sincronizar; nota inmutable al firmar. **Dictamen de alcance (opción A) ratificado 2026-08-30** — ver 9/69; sin afirmar e.firma SAT ni NOM-004 5.10. |
 | — | **Rechazo diferido** | Severidad admin/clínico; bandeja con SLA; nunca borrar; protocolo de contacto. |
 | — | **Despliegue escalonado** | Aceptado **en entorno controlado**. No aplicable en shared hosting. |
 | — | **Hospedaje** | SmarterASP **shared** = demos/ventas (datos sintéticos). **Instancia dedicada antes del primer paciente real.** |
@@ -48,12 +104,14 @@ Ambas modalidades son obligatorias y la modalidad es configuración por sucursal
 
 **Sigue bloqueando el presupuesto y el dimensionamiento:** ¿cuántas sucursales y cuántas estaciones por sucursal en el primer año, y **cuáles tienen urgencias**? Esto último determina qué modalidad es obligatoria en cada sucursal, porque mientras el Core siga en 1 nodo sin HA la modalidad sin servidor no debe ofrecerse donde hay urgencias (doc 07 §6).
 
-### 2. Hospedaje y residencia de datos
-- ¿Nube pública (Azure / AWS / GCP), datacenter propio o híbrido?
-- ¿Existe requisito o preferencia de que los datos residan en México?
-- ¿El cliente tiene ya un proveedor o contrato vigente?
+### 2. Hospedaje y residencia de datos — **APLAZADA 2026-08-30** (cliente: dejar pendiente)
+Vigente lo ya ratificado: shared = demos sintéticas; dedicado antes de PHI. **Sigue abierto** (no inventar):
+- ¿Nube pública (Azure / AWS / GCP), VPS, datacenter propio o híbrido?
+- ¿Requisito o preferencia de residencia en México? (ligado a #70)
+- ¿Proveedor o contrato vigente?
+- Región y proveedor definitivos de Production y de QA (#71; hoy “por definir” en `docs/operacion/ambientes.md`)
 
-**Bloquea:** diseño de HA/DR, cifrado, gestión de llaves, costos.
+**No bloquea** seguir en Dev sintético. **Sí bloquea** `AllowRealPatientData=true` y PHI en Prod.
 
 ### 3. Desviaciones al documento de arquitectura — **RESUELTA**
 - **ADR-006 (refresh token en cookie `httpOnly`): aprobado.**
@@ -99,29 +157,16 @@ El `.docx` calcula IVA al 16% con uso de CFDI D01 por defecto. El tratamiento de
 
 **Bloquea:** la Fase 2. Programar esto mal tiene consecuencia fiscal directa.
 
-### 8. Software como dispositivo médico
-Una fuente secundaria afirmó que la reforma de 2026 somete al software médico a tecnovigilancia; **no se encontró sustento en el texto del decreto** (doc 01 §1).
+### 8. Software como dispositivo médico — **RATIFICADA 2026-08-31**
+Ver oleada break-glass/SaMD (#8). Alcance F1–4 = documental/administrativo; sin ADC/IA clínica. Reabrir solo con dictamen legal escrito.
 
-- ¿Se prevé incorporar apoyo a la decisión clínica, cálculo de dosis, interpretación de resultados o IA diagnóstica?
-- Si sí, ¿el área legal evaluará la posible clasificación como SaMD ante COFEPRIS?
+### 9. Firma electrónica — **RATIFICADA 2026-08-30** (opción A)
+Ver oleada de decisiones ratificadas (9 / 69). Mecánica = integridad + sello; sin e.firma SAT ni NOM-151 en el piloto; médicos del piloto sin e.firma vigente.
 
-**Recomendación:** mantener el alcance documental/administrativo mientras no haya dictamen.
+### 10. Responsable sanitario y perfil del establecimiento — **RATIFICADA 2026-08-30** (opción A)
+Ver oleada de establecimiento (10 / L). Alcance de servicios = ambulatorio + urgencias. Tipología demo en seed `002`; `003` no inventa. Responsable operativo provisional = `admin` / SuperAdmin; médico responsable ligado cuando se conozca.
 
-### 9. Firma electrónica
-- ¿Se requiere e.firma/FIEL del SAT con validez jurídica plena, o basta una firma electrónica simple con cadena de integridad y sello de tiempo?
-- ¿Se requiere constancia de conservación conforme a NOM-151-SCFI-2016 (estado no verificado, ver doc 01 §8)?
-- ¿Los médicos disponen de e.firma vigente?
-
-**Impacto:** modelo de firma, costo de PSC, complejidad de la estación (lector de tarjeta).
-
-### 10. Responsable sanitario y perfil del establecimiento
-El paquete normativo aplicable depende del tipo de establecimiento y de los servicios activos (`mx-health-regulatory-core`).
-
-- ¿Qué tipo de establecimiento es cada sucursal (consultorio general, consulta especializada, hospital)?
-- ¿Qué servicios están activos hoy: laboratorio propio, imagenología/rayos X, urgencias, cirugía ambulatoria, anestesia, UCI, odontología, transfusión, RPBI?
-- ¿Quién es el rol responsable sanitario que aprobará los parámetros clínicos versionados?
-
-**Bloquea:** la matriz de cumplimiento y qué módulos normativos se activan.
+**Sigue abierto (no bloquea tipología):** domicilio completo, cédula de licencia sanitaria, persona concreta del responsable médico, y matriz normativa fina por servicio futuro (lab/imagen) si se amplía alcance.
 
 ---
 
@@ -130,7 +175,7 @@ El paquete normativo aplicable depende del tipo de establecimiento y de los serv
 ### 11. Alcance "clínica" vs "hospital" — **RESUELTA**
 Las Fases 1–4 se **congelan en clínica ambulatoria + urgencias**. Hospitalización, quirófanos y UCI quedan como dirección estratégica (Fase 5), **no** como compromiso con fecha.
 
-**Consecuencia favorable:** el modelo de datos se diseña para admitir el episodio hospitalario más adelante (el episodio de urgencias ya es un caso particular de episodio), pero no se construye ni se estima ahora. También acota el paquete normativo aplicable, pendiente de la pregunta 10 sobre el tipo de establecimiento de cada sucursal.
+**Consecuencia favorable:** el modelo de datos se diseña para admitir el episodio hospitalario más adelante (el episodio de urgencias ya es un caso particular de episodio), pero no se construye ni se estima ahora. El paquete normativo de F1–4 queda acotado a ambulatorio + urgencias (doc 06 §10).
 
 ### 12. Equipo y capacidades disponibles
 Sin esto no hay calendario.
@@ -171,11 +216,22 @@ El documento técnico menciona Stripe/Toss/PayPal como previstos y el prototipo 
 - ¿Se requiere cobro con tarjeta en línea, o sólo registro del método de pago en caja?
 - ¿Qué PAC se usará para el timbrado CFDI?
 
-### 19. Roles y permisos
-El `.docx` fija 8 roles como catálogo cerrado; el requisito 5 pide configurabilidad total.
+### 19. Roles y permisos — **RATIFICADA 2026-08-30** (ver oleada de roles)
 
-- ¿Se acepta roles dinámicos por tenant, con los 8 actuales como plantilla?
-- ¿Un cliente podrá crear roles propios, o sólo ajustar los permisos de los existentes?
+**Resuelto (producto):** opción **B** — plantillas cerradas; permisos ajustables por tenant; sin roles con nombre libre; SuperAdmin solo plataforma; auditoría de consulta sigue admin + SuperAdmin; plantilla explícita `trabajo_social` en el catálogo.
+
+**Pendiente de implementar:** persistencia y UI/API de la matriz de permisos por tenant (hoy el front usa `roleRoutes` / `rolePermissions` estáticos por código de plantilla). Cuando exista la matriz, sustituir AuthZ provisional (`AuditAccess.CanQuery` y dominios clínicos) sin cambiar contratos HTTP salvo que se documente en `docs/operacion/`.
+
+### 19-bis. Profesional sanitario en sesión — **PARCIALMENTE RESUELTO 2026-08-28**
+**Resuelto (modelo + sesión):** existe `dbo.HealthcareProfessional` (liga opcional 0..1 a `dbo.[User]`, cédula y especialidad **nullable** = «no capturado», sin defaults inventados), catálogo `dbo.Specialty` por tenant vacío de fábrica, SPs mínimos de consulta, y el login/`me` exponen `healthcareProfessional` (o `null`) desde el servidor. Seed sintético de Dev liga sólo a los dos usuarios con rol `medico` del prototipo; el resto queda sin profesional a propósito (fail closed). El filtro clínico en frontend, si el médico no trae profesional, muestra lista vacía — no inventa `doctorId`.
+
+**Sigue abierto (no verificado / no implementado):**
+- ¿La cédula debe **validarse** contra el registro oficial (SEP/RUPE u otro)? **No implementado**; no hay consulta externa.
+- ¿La cédula es **obligatoria para firmar/emitir** documentos clínicos en todo caso? El art. 83 LGS (verificado 2026-08-22, doc 01 §11.1) exige consignarla en documentos del ejercicio; la regla de bloqueo al emitir es de Fase 1.
+- ¿Cómo se representan **pasantes y residentes** (sin cédula plena o con cédula de otra categoría)?
+- Perfil profesional completo (correo, teléfono, vigencias de cédula/certificación, responsable sanitario del establecimiento — pregunta 10).
+- Administración CRUD de médicos (alta/edición/baja) — Fase 1.
+- Afirmar cumplimiento normativo de cédula/responsable sanitario **sin** fuente oficial + fecha sigue prohibido.
 
 ### 20. Estaciones con hardware
 - ¿Qué hardware hay o habrá: impresoras térmicas, impresoras de etiquetas/brazalete, tabletas de firma, lectores biométricos, lectores de código de barras, básculas, equipos de laboratorio con interfaz?
@@ -185,9 +241,9 @@ El `.docx` fija 8 roles como catálogo cerrado; el requisito 5 pide configurabil
 
 ## D. Confirmaciones de menor riesgo
 
-21. **Enmascaramiento en el monitor de turnos:** ¿valor por defecto = número de turno únicamente? (Es la opción más segura.)
+21. **Enmascaramiento en el monitor de turnos — RATIFICADA 2026-08-30.** Sólo número de turno por omisión; sin nombre/PHI en pantalla pública (ver oleada). Opt-in de nombre = decisión futura, no implementada.
 22. **Retención documental:** ¿se adopta el mínimo de 5 años de NOM-004 numeral 5.4, o el cliente define un plazo mayor por política?
-23. **Break-glass:** ¿se habilita el acceso de emergencia con justificación y alerta? (Recomendado: sí. Sin él, el personal comparte credenciales.)
+23. **Break-glass — RATIFICADA e implementada 2026-08-31.** API `POST /api/auth/break-glass`, auditoría, UI menú usuario. Ver [`docs/operacion/auth-sesiones.md`](../operacion/auth-sesiones.md).
 24. **Zona horaria:** ¿todas las sucursales en la misma zona, o hay sucursales en zonas distintas de México?
 25. **Navegadores y sistemas soportados:** ¿se puede exigir un navegador moderno basado en Chromium? (Impacta service worker, IndexedDB, OKLCH y las APIs de PWA.)
 26. **Idioma del código y la documentación:** el doc 2 fija código en inglés, explicaciones en español y documentación en el código en español. ¿Se confirma?
@@ -245,7 +301,9 @@ Surgen del análisis de [`08-identidad-y-paciente-no-identificado.md`](08-identi
 ### Requieren política del cliente
 
 47. **Conservación de las señas particulares una vez identificado el paciente.** La base de licitud del artículo 9 fracción VI opera *"mientras la persona titular no esté en condiciones de otorgar el consentimiento"*, y la finalidad declarada de las señas es **identificar**. Agotada esa finalidad: ¿se conservan como parte del expediente, se restringe su acceso a roles sujetos a secreto profesional, o se anonimizan mediante el motor de retención? Lo que **no** es admisible es dejarlas indefinidamente visibles para cualquier rol como si fueran expediente clínico ordinario. Se necesita una regla explícita.
+   - *Acotación M3 (2026-08-28):* se **conservan** (no se borran ni anonimizan al identificar); acceso restringido a roles admin/clínicos provisionales. Pendiente la regla definitiva de retención.
 48. **Quién puede ejecutar la búsqueda por descripción** para atender a familiares (doc 08 §7): ¿recepción, trabajo social, sólo personal clínico, o un rol específico? ¿Alcance limitado a la sucursal o a toda la organización? Es un flujo con una tensión normativa propia: el numeral **5.6** de la NOM-004 **obliga** a proporcionar información verbal a los familiares, mientras el **5.5.1** condiciona la entrega a terceros a solicitud escrita de quien tiene legitimación — y con un paciente no identificado **no se puede acreditar el parentesco de alguien cuya identidad se desconoce** (doc 08 §7, ambos numerales verificados el 2026-08-22). Se requiere criterio del cliente sobre el procedimiento operativo.
+   - *Acotación M3 (2026-08-28):* endpoint implementado; AuthZ provisional **SuperAdmin/`admin`** (mismo criterio que auditoría). Alcance y rol definitivo pendientes.
 49. **Copia del documento de identidad.** Al verificar la identidad, ¿se conserva copia digital del documento cotejado, o basta registrar tipo, folio y quién cotejó? Conservar la copia amplía la superficie de datos sensibles sin necesidad clínica evidente. La propuesta es **no conservarla**, pero es decisión del cliente.
 50. **Estado `no_recuperable`:** ¿qué plazo o criterio operativo lo dispara, y qué rol lo autoriza? Sin una regla, los expedientes de pacientes que nunca se identificaron quedan indefinidamente en las bandejas de pendientes.
 51. **Convención de etiquetas temporales.** Se propone **alfabeto fonético** (Alfa, Bravo, Charlie…) por ser inconfundible al pronunciarse, que es donde ocurre la confusión real: "Desconocido 1" y "Desconocido 2" se distinguen en pantalla pero no en un pasillo. ¿Se acepta, o el cliente tiene convención propia? Queda excluido cualquier esquema basado en colores, porque colisiona con la semántica clínica de triage.
@@ -267,19 +325,22 @@ Surgen de [`09-brechas-del-modelo-de-datos.md`](09-brechas-del-modelo-de-datos.m
 
 56. **Qué se hace con los expedientes existentes cuyos antecedentes fueron prellenados.** La función que crea la historia clínica inicializa los antecedentes en `negado` y **todos** los aparatos y sistemas en `normal` (BM-PAC-14). Al corregir el tipo, los registros ya creados con esos valores son **indistinguibles** de los asentados por un clínico. ¿Se migran todos a `no_interrogado`, aceptando que se pierde información realmente asentada; se migran sólo los que nunca fueron editados; o se marcan todos como *"origen: prellenado por el sistema"* y se deja que el clínico los confirme en el siguiente contacto? **Recomendación técnica:** la tercera, por ser la única que no destruye ni afirma. Requiere criterio clínico del cliente.
 57. **Cuántos signos vitales se exigen para poder guardar un triage.** Hoy nueve son obligatorios y no nulos, de modo que el triage del paciente en reanimación no se puede guardar (BM-URG-02). La propuesta es que el triage **siempre** se pueda guardar, exigiendo respuesta explícita por signo y no valor. ¿Hay algún signo vital cuya ausencia deba impedir el guardado, o basta la razón de no medición en todos? **Recomendación técnica:** ninguno debe impedirlo, y un triage con los nueve en `no_medido` y razón *"paciente en reanimación"* debe ser un registro válido y visible. Requiere criterio de enfermería y dirección médica.
-58. **Qué se hace cuando se prescribe sin haber interrogado alergias.** La propuesta es que el sistema exija que el estado alérgico no sea `no_interrogado` para emitir una receta, con posibilidad de continuar declarando justificación (BM-FAR-05). ¿Bloqueo duro, bloqueo con justificación registrada, o advertencia sin bloqueo? **Recomendación técnica: bloqueo con justificación registrada.** El bloqueo duro por alergias no interrogadas reproduciría en urgencias exactamente el daño del campo obligatorio del caso del paciente no identificado: obliga a fabricar el dato o a no documentar. Requiere decisión de dirección médica.
+58. **Qué se hace cuando se prescribe sin haber interrogado alergias.** ~~Propuesta anterior: exigir que el estado no sea `no_interrogado`.~~ **RATIFICADA 2026-08-27 (doc 13 / M8):** se **obliga a capturar el estado** de forma explícita antes de prescritir (incluye `no_interrogado` / `paciente_no_puede_responder`) con rastro auditado. **No** se bloquea hasta «conocer» las alergias; se bloquea si el estado **nunca** se capturó (la semilla de Ensure no cuenta). Implementado en WS-I (`sp_Prescription_Create` → 409; UI de captura; contrato `api-prescriptions.spec.ts`).
 59. **Unidad canónica de almacenamiento de peso y talla.** La propuesta lleva unidad explícita en el tipo de toda medición (BM-TRA-09, BM-URG-11). ¿Se almacena en la unidad capturada, conservando el dato original, o se normaliza a una unidad canónica al guardar? **Recomendación técnica:** almacenar lo capturado con su unidad y convertir al calcular, porque normalizar al guardar pierde la información de cómo se midió y reintroduce el error de conversión en el punto de escritura. Requiere validación clínica.
 
 ### Requieren dictamen legal o consulta a la autoridad
 
-60. **Equivalencia del libro de control de farmacia electrónico con el libro físico.** El artículo 226 fracciones II y III de la LGS exige registro en libros de control y retención física de la receta (doc 01 §11; BM-FAR-07). Si el sistema produce el libro de control electrónico, ¿sustituye al físico o lo complementa? Depende del **Reglamento de Insumos para la Salud, no verificado** (doc 01 §8). Bloqueante para el alcance del módulo de farmacia. **No se decide por analogía.**
-61. **Cuál es el reloj del último acto médico.** El plazo de conservación de cinco años corre desde el **último acto médico** (NOM-004 numeral 5.4), y la implementación actual lo ancla en la última consulta (BM-NOR-10). La propuesta enumera doce tipos de acto médico; se requiere **ratificar la lista**. ¿Una dispensación de farmacia es acto médico para efectos del numeral 5.4? ¿Una cita a la que el paciente no acudió? **Recomendación técnica:** todo acto que genere un documento en el expediente. Requiere criterio legal.
+60. **Equivalencia del libro de control de farmacia electrónico con el libro físico.** El artículo 226 fracciones II y III de la LGS exige registro en libros de control y retención física de la receta (doc 01 §11; BM-FAR-07). Si el sistema produce el libro de control electrónico, ¿sustituye al físico o lo complementa? Depende del **Reglamento de Insumos para la Salud, no verificado** (doc 01 §8). Bloqueante para el alcance del módulo de farmacia **general**. **No se decide por analogía.** *Acotación 2026-08-30:* la decisión de controlados (64/68 opción A) **no** cierra esta pregunta; libro de controlados no aplica mientras esas clases estén fuera de alcance.
+61. **Cuál es el reloj del último acto médico.** El plazo de conservación de cinco años corre desde el **último acto médico** (NOM-004 numeral 5.4), y la implementación actual lo ancla en la última consulta (BM-NOR-10). La propuesta enumera doce tipos de acto médico; se requiere **ratificar la lista**. ¿Una dispensación de farmacia es acto médico para efectos del numeral 5.4? ¿Una cita a la que el paciente no acudió? **Recomendación técnica:** todo acto que genere un documento en el expediente. Requiere criterio legal. *Acotación M7 (2026-08-28):* `ClinicalRecord.LastMedicalActAtUtc` queda **nullable** y `sp_ClinicalRecord_TouchMedicalAct` existe sin afirmar qué `ActType` cuentan; el motor de retención sigue en Fase 3. *Acotación M6 (2026-08-28):* al firmar una nota se invoca `TouchMedicalAct` con `ActType = clinical_note_{noteType}` si hay expediente; **no se afirma** que cuente para el reloj.
 62. **Qué se registra como sexo biológico cuando el paciente declara identidad de género distinta.** La propuesta separa sexo biológico, identidad de género y sexo documental (BM-PAC-03). ¿Qué campo alimenta los rangos de referencia y el cálculo de dosis cuando difieren, y qué campo se imprime en cada documento? **Recomendación técnica:** sexo biológico para lo clínico, nombre de uso e identidad para el trato y la presentación, sexo documental para lo fiscal y los trámites. Requiere validación clínica y legal. Se relaciona con la pregunta 54, sobre el sexo no determinable.
-63. **Escala de triage: cuatro colores o cinco niveles con escala declarada.** El prototipo usa cuatro niveles de color que **no corresponden a ninguna escala documentada**, y las escalas de uso internacional son de cinco (BM-URG-05). ¿Se conservan los cuatro colores como escala institucional propia, documentándola como tal, o se adopta una escala de cinco niveles? Bloqueante para el tipo del nivel de triage. El pendiente normativo asociado —si alguna norma mexicana prescribe una escala— está registrado en doc 01 §8.
+   - *Acotación M3 (2026-08-28):* sólo `BiologicalSex` + `SexSource`; **no** se agregó campo de género/identidad hasta respuesta del cliente.
+63. **Escala de triage — RATIFICADA 2026-08-30** (opción A; ver oleada de escala de triage).
+Motor configurable; demo = 5 niveles sintéticos; UI clínica lee escala efectiva; sin afirmar norma/escala internacional.
 
 ### Requieren decisión de producto y de negocio
 
-64. **Si la clínica prescribirá estupefacientes y psicotrópicos.** Hoy no puede: no hay recetario especial ni código de barras (BM-FAR-01). ¿Está en el alcance? Si lo está, se requiere el trámite de recetarios con código de barras ante la autoridad sanitaria (LGS artículo 241, doc 01 §11) y el diseño debe contemplar la administración de esos folios. Si **no** lo está, el sistema debe **impedir** la prescripción de esos medicamentos, no simplemente no soportarla. Decisión de producto con implicación regulatoria.
+64. **Si la clínica prescribirá estupefacientes y psicotrópicos — RATIFICADA 2026-08-30** (opción A; ver oleada de controlados).
+Fuera de alcance comercial Fases 1–4; piloto/primer año **sin** necesidad de controlados; bloqueo 422 = política de producto. Reabrir solo con decisión escrita + Reglamento verificado + trámite de recetarios.
 65. **Alcance del multi-tenant en la primera versión.** La propuesta exige identificador de tenant en toda entidad (BM-TRA-01). ¿La primera versión es realmente multi-tenant, o es una instalación por cliente? La respuesta **no cambia la recomendación** —el campo debe existir desde el inicio, porque agregarlo después obliga a migrar todo— pero sí cambia el alcance del trabajo de aislamiento, autorización y pruebas. Decisión de arquitectura y de negocio.
 66. **Qué campos se retiran por minimización.** Se señalan datos posiblemente innecesarios: aseguradora y póliza obligatorias para todo paciente, correo electrónico obligatorio, y la denominación del paciente copiada en catorce entidades (BM-TRA-11, BM-PAC-13). ¿Qué se conserva? **Bloqueada** por la verificación pendiente del principio de minimización en la LFPDPPP de 2025 (doc 01 §8).
 67. **Tratamiento fiscal del IVA en servicios médicos — reiteración de la pregunta 7.** No es una decisión nueva: es la **misma** pregunta 7 de la sección B, y se registra aquí porque el barrido del modelo de datos añadió una dependencia que antes no era visible. Los hallazgos BM-CAJ-02 y BM-CAJ-05 no se pueden cerrar sin ella, porque el objeto de impuesto por concepto y la regla de cálculo dependen de esa definición. Ver pregunta 7.
@@ -288,21 +349,34 @@ Surgen de [`09-brechas-del-modelo-de-datos.md`](09-brechas-del-modelo-de-datos.m
 
 ## H. Pendientes explícitos post-cierre (2026-08-23)
 
-### 68. Estupefacientes y psicotrópicos — **PENDIENTE EN MEMORIA / ALCANCE**
-Pedido explícito del cliente: dejarlo al final. No implementar surtido/prescripción de estupefacientes y psicotrópicos hasta:
-1. Obtener y verificar el **Reglamento de Insumos para la Salud** en fuente oficial.
-2. Decidir si están en el alcance comercial (pregunta 64).
-3. Si **no** están en alcance: el sistema debe **impedir** su prescripción, no omitirlos en silencio.
-**Recomendación técnica preliminar (condicionada):** bloquear surtido offline de estas clases por libro de control y recetario especial (LGS 226/241).
+### 68. Estupefacientes y psicotrópicos — **RATIFICADA 2026-08-30** (opción A)
+Ver oleada de controlados (64 / 68). Alcance = **impedir** (no omitir en silencio). Sin recetarios especiales. Reglamento de Insumos sigue sin verificar en fuente oficial (doc 01 §8); no se afirma cumplimiento del régimen de controlados.
 
-### 69. Dictamen firma electrónica local + sello
-¿Satisface NOM-004 numeral 5.10?
+### 69. Dictamen firma electrónica local + sello — **RATIFICADA 2026-08-30** (opción A)
+Ver oleada de decisiones ratificadas (9 / 69). Alcance piloto = integridad técnica; sin e.firma/NOM-151. **No** se cierra cumplimiento NOM-004 5.10 por esta decisión.
 
-### 70. Residencia / transferencia internacional de datos
-Proveedor tipico sin DC en México. Requerido antes del primer paciente real.
+### 70. Residencia / transferencia internacional de datos — **APLAZADA 2026-08-30**
+Proveedor típico sin DC en México. Requerido antes del primer paciente real. Cliente dejó pendiente junto con §2 / #71.
 
-### 71. Región y proveedor definitivo de producción
-VPS dedicado u otro; no shared para PHI.
+### 71. Región y proveedor definitivo de producción — **APLAZADA 2026-08-30**
+VPS dedicado u otro; no shared para PHI. Cliente dejó pendiente junto con §2 / #70. QA/Prod siguen “por definir” en `ambientes.md`.
 
 ### 72. Supresión de celdas pequeñas en BI
 Umbral numérico (p. ej. n&lt;5) a definir con dirección / legal.
+
+### 73. Alcance del logout — **RATIFICADA 2026-08-27** (ver oleada de decisiones ratificadas)
+Movida a la sección de decisiones ratificadas: **cerrar sesión revoca únicamente la sesión actual**.
+
+### 74. `tools/apply-database.ps1` no aplicaba la migración `0002` — **RESUELTO 2026-08-27**
+El script enumeraba los archivos SQL uno por uno y sólo incluía `0001_foundation.sql`, así que QA y Production habrían quedado sin la columna `PayloadHash` de `dbo.IdempotencyRecord` que `sp_Sync_SaveIdempotency` necesita para distinguir reintento de conflicto.
+
+Ahora recorre `backend/database/migrations/*.sql` en orden lexicográfico. La primera migración es la fundacional y es la única que puede conectarse a `master` (es la que crea la base); las demás corren siempre contra la base destino, porque todas traen `USE [$(DbName)]`. Con `-SkipCreateDatabase` nada toca `master`, que es el caso del hosting compartido. Verificado el 2026-08-27 aplicando `0001` + `0002` + SPs a la base de Dev hospedada con `-SkipCreateDatabase -SkipSeed`.
+
+### 75. Revocación global de sesiones — **RATIFICADA 2026-08-30** (opción A; ver oleada)
+Política: revocar **todas** las estaciones en cambio de contraseña, bloqueo/baja admin (`IsActive=false`) y botón autogestión «cerrar en todos…». **No** en lockout por intentos fallidos. Logout ordinario = solo sesión actual (#73). SP ya existe; endpoints/UI pendientes de implementación.
+
+### 76. Deuda de tipos y lint del frontend
+`npm run type-check` y `npm run lint` en `frontend/` fallan por la deuda del prototipo migrado (ver [`docs/operacion/pruebas.md`](../operacion/pruebas.md)). Se registra aquí porque la tarea que lo introdujo no pudo anotarlo. Al 2026-08-27 hay un agente atacándolo en `frontend/src/**`; si al cerrar ese trabajo la etapa `frontend` de `tools/run-all-tests.ps1` queda en verde, este pendiente se cierra sin decisión adicional.
+
+### 77. SC-25 / SC-26 vs mapa SC-01…SC-24 — **ALCANCE QA RATIFICADO 2026-08-29**
+Discrepancia del doc 13 §M12 / doc 11 §3 («SC-01…SC-26») frente al mapa ejecutable (hasta SC-24). **Resolución de alcance (no de producto nuevo):** SC-25 y SC-26 **permanecen fuera** del mapa `sc-mapa.spec.ts` en M12 parcial. Motivos y defensa parcial ya cubierta: hecho canónico en [`docs/operacion/pruebas.md`](../operacion/pruebas.md) § «Discrepancia SC-25 / SC-26». Reabrir SC-25 exige capa de reporte SINBA (Fase 4) + cierre de #53/#54; reabrir SC-26 exige detección offline NOM-027 en cliente.

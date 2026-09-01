@@ -17,8 +17,18 @@ Thumbs.db
 .env.*
 !.env.example
 !.env.*.example
+# Perfiles de ambiente del cliente: sólo variables públicas (VITE_* termina en el bundle).
+!/frontend/.env.development
+!/frontend/.env.qa
+!/frontend/.env.production
+.env.local
+.env.*.local
 *.pfx
 secrets/
+
+# --- Secretos backend (connection strings, llaves) ---
+appsettings.*.local.json
+appsettings.Local.json
 
 # --- .NET ---
 bin/
@@ -33,6 +43,9 @@ TestResults/
 node_modules/
 dist/
 build/
+out/
+out-development/
+out-qa/
 .vite/
 .vite-temp/
 *.local

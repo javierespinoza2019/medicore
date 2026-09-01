@@ -11,7 +11,8 @@ export type UserRole =
   | 'caja'
   | 'farmacia'
   | 'laboratorio'
-  | 'directivo';
+  | 'directivo'
+  | 'trabajo_social';
 
 export interface TestUser {
   id: string;
@@ -94,6 +95,16 @@ export const users = {
     rolLabel: 'Enfermería',
     sucursalIds: ['suc1'],
   }),
+  /** Enfermería NORTE — sin compartir break-glass con specs API (carmen.vargas). */
+  enfermeriaNorte: makeUser({
+    id: 'u7n',
+    email: 'rocio.bautista@medicore.mx',
+    nombre: 'Rocío',
+    apellidos: 'Bautista León',
+    rol: 'enfermeria',
+    rolLabel: 'Enfermería',
+    sucursalIds: ['suc2'],
+  }),
   caja: makeUser({
     id: 'u9',
     email: 'monica.soto@medicore.mx',
@@ -112,5 +123,14 @@ export const users = {
     rol: 'recepcion',
     rolLabel: 'Recepción',
     sucursalIds: ['suc2'],
+  }),
+  trabajoSocial: makeUser({
+    id: 'u-ts1',
+    email: 'gabriela.moreno@medicore.mx',
+    nombre: 'Gabriela',
+    apellidos: 'Moreno Sánchez',
+    rol: 'trabajo_social',
+    rolLabel: 'Trabajo social',
+    sucursalIds: ['suc1'],
   }),
 } as const;

@@ -1,0 +1,47 @@
+
+Running 10 tests using 4 workers
+
+(node:6092) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:27564) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:11528) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:16760) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ok  1 [contrato-api] › specs\00-smoke\api-sync-idempotencia.spec.ts:11:3 › 00 — Contrato API · cola e idempotencia › POST /api/sync/commands sin token responde 401 (80ms)
+  ok  4 [contrato-api] › specs\00-smoke\api-sync-idempotencia.spec.ts:83:3 › 00 — Contrato API · cola e idempotencia › IdempotencyKey vacía se rechaza con 400 (1.6s)
+  ok  5 [contrato-api] › specs\00-smoke\api-sync-idempotencia.spec.ts:99:3 › 00 — Contrato API · cola e idempotencia › CommandType vacío se rechaza con 400 (1.6s)
+  ok  2 [contrato-api] › specs\00-smoke\api-sync-idempotencia.spec.ts:23:3 › 00 — Contrato API · cola e idempotencia › el mismo IdempotencyKey repetido no duplica efecto (2.0s)
+  ok  3 [contrato-api] › specs\00-smoke\api-sync-idempotencia.spec.ts:59:3 › 00 — Contrato API · cola e idempotencia › claves distintas producen efectos distintos (2.2s)
+  ok  8 [contrato-api] › specs\00-smoke\api-sync-idempotencia.spec.ts:199:3 › 00 — Contrato API · cola e idempotencia › triage.save Full sin encounterId responde 400 (612ms)
+  ok  9 [contrato-api] › specs\00-smoke\api-sync-idempotencia.spec.ts:215:3 › 00 — Contrato API · cola e idempotencia › appointment.state cancelada sin motivo responde 400 (598ms)
+  x   7 [contrato-api] › specs\00-smoke\api-sync-idempotencia.spec.ts:151:3 › 00 — Contrato API · cola e idempotencia › encounter.open vía sync acepta y es idempotente (1.2s)
+  ok 10 [contrato-api] › specs\00-smoke\api-sync-idempotencia.spec.ts:234:3 › 00 — Contrato API · cola e idempotencia › allergyStatus.set vía sync exige subjectId (Full) (539ms)
+  ok  6 [contrato-api] › specs\00-smoke\api-sync-idempotencia.spec.ts:115:3 › 00 — Contrato API · cola e idempotencia › subject.create vía sync acepta y crea sujeto (idempotente) (1.6s)
+
+
+  1) [contrato-api] › specs\00-smoke\api-sync-idempotencia.spec.ts:151:3 › 00 — Contrato API · cola e idempotencia › encounter.open vía sync acepta y es idempotente 
+
+    Error: {"success":false,"data":null,"message":"Error interno del servidor.","errors":["Error interno del servidor."]}
+
+    expect(received).toBe(expected) // Object.is equality
+
+    Expected: 200
+    Received: 500
+
+      162 |       },
+      163 |     });
+    > 164 |     expect(subj.status(), await subj.text()).toBe(200);
+          |                                              ^
+      165 |     const subjectId = (await subj.json()).data.serverEntityId as string;
+      166 |
+      167 |     const clave = idE2E('enc-sync');
+        at c:\Proyectos\AppFabric\MedicalCore\tests\e2e\specs\00-smoke\api-sync-idempotencia.spec.ts:164:46
+
+    Error Context: test-results\00-smoke-api-sync-idempote-5f95d-ync-acepta-y-es-idempotente-contrato-api\error-context.md
+
+  1 failed
+    [contrato-api] › specs\00-smoke\api-sync-idempotencia.spec.ts:151:3 › 00 — Contrato API · cola e idempotencia › encounter.open vía sync acepta y es idempotente 
+  9 passed (4.9s)
+EXIT=0 

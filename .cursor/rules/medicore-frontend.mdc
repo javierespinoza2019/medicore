@@ -14,6 +14,25 @@ alwaysApply: false
 - Al cerrar sesión: purgar caché de lectura; **nunca** borrar la cola de salida.
 - Solo dispositivos registrados: caché clínica + cola. Otros: solo en línea.
 
+## Errores del API
+
+- `apiFetch` clasifica la falla (`ApiFailure` en `src/api/errors.ts`): enlace/indisponibilidad
+  (`sin_enlace`, `tiempo_agotado`, `servidor_no_disponible`) vs. negocio (`credenciales`,
+  `sesion_expirada`, `sin_permiso`, `solicitud_invalida`, `error_servidor`).
+- **Prohibido** redactar mensajes de error de API por pantalla: el texto vive sólo en
+  `mensajeDeFalla`. Nunca presentar una falla de enlace como credenciales o dato inválido,
+  ni mostrar códigos HTTP al usuario.
+- 401 de inicio de sesión: mensaje ambiguo (no revelar si el usuario existe).
+- Estado del enlace: sólo lo observado en peticiones reales (`src/api/connectivity.ts`).
+  `navigator.onLine` no prueba que el API sea alcanzable y no se usa como tal.
+
+## Carga diferida
+
+- Rutas por `lazy()` + `Suspense` con `CargandoPantalla` (`src/router/pantallas.tsx`);
+  login y 404 quedan en el arranque.
+- Dependencias pesadas (`jspdf`, `html2canvas`, `xlsx`) sólo con `import()` dentro de la
+  función que las usa: nunca en el arranque.
+
 ## Seguridad clínica en UI
 
 - Ningún control clínico con valor por omisión que fabrique dato (sexo, triage, alergias, antecedentes).

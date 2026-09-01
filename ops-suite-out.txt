@@ -1,0 +1,1052 @@
+MediCore - suite de pruebas | ambiente=dev (ASPNETCORE_ENVIRONMENT=Development)
+    API=http://localhost:5080 | Frontend=http://localhost:5173
+    Estrategia: docs/operacion/pruebas.md
+
+=== dotnet build (solucion) 
+  Determinando los proyectos que se van a restaurar...
+  Todos los proyectos están actualizados para la restauración.
+  MediCore.Common -> C:\Proyectos\AppFabric\MedicalCore\backend\Common\bin\Debug\net10.0\MediCore.Common.dll
+  MediCore.Models -> C:\Proyectos\AppFabric\MedicalCore\backend\Models\bin\Debug\net10.0\MediCore.Models.dll
+  MediCore.DataAccess -> C:\Proyectos\AppFabric\MedicalCore\backend\DataAccess\bin\Debug\net10.0\MediCore.DataAccess.dll
+  MediCore.Common.Tests -> C:\Proyectos\AppFabric\MedicalCore\backend\Tests\MediCore.Common.Tests\bin\Debug\net10.0\MediCore.Common.Tests.dll
+  MediCore.Business -> C:\Proyectos\AppFabric\MedicalCore\backend\Business\bin\Debug\net10.0\MediCore.Business.dll
+C:\Program Files\dotnet\sdk\10.0.302\Microsoft.Common.CurrentVersion.targets(5096,5): warning MSB3026: No se pudo copiar "C:\Proyectos\AppFabric\MedicalCore\backend\Models\bin\Debug\net10.0\MediCore.Models.dll" en "bin\Debug\net10.0\MediCore.Models.dll". Se iniciará el reintento 1 dentro de 1000ms. The process cannot access the file 'C:\Proyectos\AppFabric\MedicalCore\backend\Api\bin\Debug\net10.0\MediCore.Models.dll' because it is being used by another process. El archivo se ha bloqueado por: "MediCore.Api (31492)" [C:\Proyectos\AppFabric\MedicalCore\backend\Api\MediCore.Api.csproj]
+C:\Program Files\dotnet\sdk\10.0.302\Microsoft.Common.CurrentVersion.targets(5096,5): warning MSB3026: No se pudo copiar "C:\Proyectos\AppFabric\MedicalCore\backend\DataAccess\bin\Debug\net10.0\MediCore.DataAccess.dll" en "bin\Debug\net10.0\MediCore.DataAccess.dll". Se iniciará el reintento 1 dentro de 1000ms. The process cannot access the file 'C:\Proyectos\AppFabric\MedicalCore\backend\Api\bin\Debug\net10.0\MediCore.DataAccess.dll' because it is being used by another process. El archivo se ha bloqueado por: "MediCore.Api (31492)" [C:\Proyectos\AppFabric\MedicalCore\backend\Api\MediCore.Api.csproj]
+  MediCore.Worker -> C:\Proyectos\AppFabric\MedicalCore\backend\Worker\bin\Debug\net10.0\MediCore.Worker.dll
+C:\Program Files\dotnet\sdk\10.0.302\Microsoft.Common.CurrentVersion.targets(5096,5): warning MSB3026: No se pudo copiar "C:\Proyectos\AppFabric\MedicalCore\backend\Business\bin\Debug\net10.0\MediCore.Business.dll" en "bin\Debug\net10.0\MediCore.Business.dll". Se iniciará el reintento 1 dentro de 1000ms. The process cannot access the file 'C:\Proyectos\AppFabric\MedicalCore\backend\Api\bin\Debug\net10.0\MediCore.Business.dll' because it is being used by another process. El archivo se ha bloqueado por: "MediCore.Api (31492), .NET Host (21020)" [C:\Proyectos\AppFabric\MedicalCore\backend\Api\MediCore.Api.csproj]
+C:\Proyectos\AppFabric\MedicalCore\backend\Tests\MediCore.Business.Tests\Sync\SyncCommandRegistryTests.cs(249,46): error CS0535: 'SyncCommandRegistryTests.NoOpEncounterRepo' no implementa el miembro de interfaz 'IEncounterRepository.CountUnsignedPrescriptionsByEncounterAsync(Guid, Guid, CancellationToken)' [C:\Proyectos\AppFabric\MedicalCore\backend\Tests\MediCore.Business.Tests\MediCore.Business.Tests.csproj]
+C:\Program Files\dotnet\sdk\10.0.302\Microsoft.Common.CurrentVersion.targets(5096,5): warning MSB3026: No se pudo copiar "C:\Proyectos\AppFabric\MedicalCore\backend\Models\bin\Debug\net10.0\MediCore.Models.dll" en "bin\Debug\net10.0\MediCore.Models.dll". Se iniciará el reintento 2 dentro de 1000ms. The process cannot access the file 'C:\Proyectos\AppFabric\MedicalCore\backend\Api\bin\Debug\net10.0\MediCore.Models.dll' because it is being used by another process. El archivo se ha bloqueado por: "MediCore.Api (31492)" [C:\Proyectos\AppFabric\MedicalCore\backend\Api\MediCore.Api.csproj]
+C:\Program Files\dotnet\sdk\10.0.302\Microsoft.Common.CurrentVersion.targets(5096,5): warning MSB3026: No se pudo copiar "C:\Proyectos\AppFabric\MedicalCore\backend\DataAccess\bin\Debug\net10.0\MediCore.DataAccess.dll" en "bin\Debug\net10.0\MediCore.DataAccess.dll". Se iniciará el reintento 2 dentro de 1000ms. The process cannot access the file 'C:\Proyectos\AppFabric\MedicalCore\backend\Api\bin\Debug\net10.0\MediCore.DataAccess.dll' because it is being used by another process. El archivo se ha bloqueado por: "MediCore.Api (31492)" [C:\Proyectos\AppFabric\MedicalCore\backend\Api\MediCore.Api.csproj]
+C:\Program Files\dotnet\sdk\10.0.302\Microsoft.Common.CurrentVersion.targets(5096,5): warning MSB3026: No se pudo copiar "C:\Proyectos\AppFabric\MedicalCore\backend\Business\bin\Debug\net10.0\MediCore.Business.dll" en "bin\Debug\net10.0\MediCore.Business.dll". Se iniciará el reintento 2 dentro de 1000ms. The process cannot access the file 'C:\Proyectos\AppFabric\MedicalCore\backend\Api\bin\Debug\net10.0\MediCore.Business.dll' because it is being used by another process. El archivo se ha bloqueado por: "MediCore.Api (31492)" [C:\Proyectos\AppFabric\MedicalCore\backend\Api\MediCore.Api.csproj]
+C:\Program Files\dotnet\sdk\10.0.302\Microsoft.Common.CurrentVersion.targets(5096,5): warning MSB3026: No se pudo copiar "C:\Proyectos\AppFabric\MedicalCore\backend\Models\bin\Debug\net10.0\MediCore.Models.dll" en "bin\Debug\net10.0\MediCore.Models.dll". Se iniciará el reintento 3 dentro de 1000ms. The process cannot access the file 'C:\Proyectos\AppFabric\MedicalCore\backend\Api\bin\Debug\net10.0\MediCore.Models.dll' because it is being used by another process. El archivo se ha bloqueado por: "MediCore.Api (31492)" [C:\Proyectos\AppFabric\MedicalCore\backend\Api\MediCore.Api.csproj]
+C:\Program Files\dotnet\sdk\10.0.302\Microsoft.Common.CurrentVersion.targets(5096,5): warning MSB3026: No se pudo copiar "C:\Proyectos\AppFabric\MedicalCore\backend\DataAccess\bin\Debug\net10.0\MediCore.DataAccess.dll" en "bin\Debug\net10.0\MediCore.DataAccess.dll". Se iniciará el reintento 3 dentro de 1000ms. The process cannot access the file 'C:\Proyectos\AppFabric\MedicalCore\backend\Api\bin\Debug\net10.0\MediCore.DataAccess.dll' because it is being used by another process. El archivo se ha bloqueado por: "MediCore.Api (31492)" [C:\Proyectos\AppFabric\MedicalCore\backend\Api\MediCore.Api.csproj]
+C:\Program Files\dotnet\sdk\10.0.302\Microsoft.Common.CurrentVersion.targets(5096,5): warning MSB3026: No se pudo copiar "C:\Proyectos\AppFabric\MedicalCore\backend\Business\bin\Debug\net10.0\MediCore.Business.dll" en "bin\Debug\net10.0\MediCore.Business.dll". Se iniciará el reintento 3 dentro de 1000ms. The process cannot access the file 'C:\Proyectos\AppFabric\MedicalCore\backend\Api\bin\Debug\net10.0\MediCore.Business.dll' because it is being used by another process. El archivo se ha bloqueado por: "MediCore.Api (31492)" [C:\Proyectos\AppFabric\MedicalCore\backend\Api\MediCore.Api.csproj]
+C:\Program Files\dotnet\sdk\10.0.302\Microsoft.Common.CurrentVersion.targets(5096,5): warning MSB3026: No se pudo copiar "C:\Proyectos\AppFabric\MedicalCore\backend\Models\bin\Debug\net10.0\MediCore.Models.dll" en "bin\Debug\net10.0\MediCore.Models.dll". Se iniciará el reintento 4 dentro de 1000ms. The process cannot access the file 'C:\Proyectos\AppFabric\MedicalCore\backend\Api\bin\Debug\net10.0\MediCore.Models.dll' because it is being used by another process. El archivo se ha bloqueado por: "MediCore.Api (31492)" [C:\Proyectos\AppFabric\MedicalCore\backend\Api\MediCore.Api.csproj]
+C:\Program Files\dotnet\sdk\10.0.302\Microsoft.Common.CurrentVersion.targets(5096,5): warning MSB3026: No se pudo copiar "C:\Proyectos\AppFabric\MedicalCore\backend\DataAccess\bin\Debug\net10.0\MediCore.DataAccess.dll" en "bin\Debug\net10.0\MediCore.DataAccess.dll". Se iniciará el reintento 4 dentro de 1000ms. The process cannot access the file 'C:\Proyectos\AppFabric\MedicalCore\backend\Api\bin\Debug\net10.0\MediCore.DataAccess.dll' because it is being used by another process. El archivo se ha bloqueado por: "MediCore.Api (31492)" [C:\Proyectos\AppFabric\MedicalCore\backend\Api\MediCore.Api.csproj]
+C:\Program Files\dotnet\sdk\10.0.302\Microsoft.Common.CurrentVersion.targets(5096,5): warning MSB3026: No se pudo copiar "C:\Proyectos\AppFabric\MedicalCore\backend\Business\bin\Debug\net10.0\MediCore.Business.dll" en "bin\Debug\net10.0\MediCore.Business.dll". Se iniciará el reintento 4 dentro de 1000ms. The process cannot access the file 'C:\Proyectos\AppFabric\MedicalCore\backend\Api\bin\Debug\net10.0\MediCore.Business.dll' because it is being used by another process. El archivo se ha bloqueado por: "MediCore.Api (31492), .NET Host (21020)" [C:\Proyectos\AppFabric\MedicalCore\backend\Api\MediCore.Api.csproj]
+C:\Program Files\dotnet\sdk\10.0.302\Microsoft.Common.CurrentVersion.targets(5096,5): warning MSB3026: No se pudo copiar "C:\Proyectos\AppFabric\MedicalCore\backend\Models\bin\Debug\net10.0\MediCore.Models.dll" en "bin\Debug\net10.0\MediCore.Models.dll". Se iniciará el reintento 5 dentro de 1000ms. The process cannot access the file 'C:\Proyectos\AppFabric\MedicalCore\backend\Api\bin\Debug\net10.0\MediCore.Models.dll' because it is being used by another process. El archivo se ha bloqueado por: "MediCore.Api (31492)" [C:\Proyectos\AppFabric\MedicalCore\backend\Api\MediCore.Api.csproj]
+C:\Program Files\dotnet\sdk\10.0.302\Microsoft.Common.CurrentVersion.targets(5096,5): warning MSB3026: No se pudo copiar "C:\Proyectos\AppFabric\MedicalCore\backend\DataAccess\bin\Debug\net10.0\MediCore.DataAccess.dll" en "bin\Debug\net10.0\MediCore.DataAccess.dll". Se iniciará el reintento 5 dentro de 1000ms. The process cannot access the file 'C:\Proyectos\AppFabric\MedicalCore\backend\Api\bin\Debug\net10.0\MediCore.DataAccess.dll' because it is being used by another process. El archivo se ha bloqueado por: "MediCore.Api (31492)" [C:\Proyectos\AppFabric\MedicalCore\backend\Api\MediCore.Api.csproj]
+C:\Program Files\dotnet\sdk\10.0.302\Microsoft.Common.CurrentVersion.targets(5096,5): warning MSB3026: No se pudo copiar "C:\Proyectos\AppFabric\MedicalCore\backend\Business\bin\Debug\net10.0\MediCore.Business.dll" en "bin\Debug\net10.0\MediCore.Business.dll". Se iniciará el reintento 5 dentro de 1000ms. The process cannot access the file 'C:\Proyectos\AppFabric\MedicalCore\backend\Api\bin\Debug\net10.0\MediCore.Business.dll' because it is being used by another process. El archivo se ha bloqueado por: "MediCore.Api (31492), .NET Host (21020)" [C:\Proyectos\AppFabric\MedicalCore\backend\Api\MediCore.Api.csproj]
+C:\Program Files\dotnet\sdk\10.0.302\Microsoft.Common.CurrentVersion.targets(5096,5): warning MSB3026: No se pudo copiar "C:\Proyectos\AppFabric\MedicalCore\backend\Models\bin\Debug\net10.0\MediCore.Models.dll" en "bin\Debug\net10.0\MediCore.Models.dll". Se iniciará el reintento 6 dentro de 1000ms. The process cannot access the file 'C:\Proyectos\AppFabric\MedicalCore\backend\Api\bin\Debug\net10.0\MediCore.Models.dll' because it is being used by another process. El archivo se ha bloqueado por: "MediCore.Api (31492)" [C:\Proyectos\AppFabric\MedicalCore\backend\Api\MediCore.Api.csproj]
+C:\Program Files\dotnet\sdk\10.0.302\Microsoft.Common.CurrentVersion.targets(5096,5): warning MSB3026: No se pudo copiar "C:\Proyectos\AppFabric\MedicalCore\backend\DataAccess\bin\Debug\net10.0\MediCore.DataAccess.dll" en "bin\Debug\net10.0\MediCore.DataAccess.dll". Se iniciará el reintento 6 dentro de 1000ms. The process cannot access the file 'C:\Proyectos\AppFabric\MedicalCore\backend\Api\bin\Debug\net10.0\MediCore.DataAccess.dll' because it is being used by another process. El archivo se ha bloqueado por: "MediCore.Api (31492)" [C:\Proyectos\AppFabric\MedicalCore\backend\Api\MediCore.Api.csproj]
+C:\Program Files\dotnet\sdk\10.0.302\Microsoft.Common.CurrentVersion.targets(5096,5): warning MSB3026: No se pudo copiar "C:\Proyectos\AppFabric\MedicalCore\backend\Business\bin\Debug\net10.0\MediCore.Business.dll" en "bin\Debug\net10.0\MediCore.Business.dll". Se iniciará el reintento 6 dentro de 1000ms. The process cannot access the file 'C:\Proyectos\AppFabric\MedicalCore\backend\Api\bin\Debug\net10.0\MediCore.Business.dll' because it is being used by another process. El archivo se ha bloqueado por: "MediCore.Api (31492), .NET Host (21020)" [C:\Proyectos\AppFabric\MedicalCore\backend\Api\MediCore.Api.csproj]
+C:\Program Files\dotnet\sdk\10.0.302\Microsoft.Common.CurrentVersion.targets(5096,5): warning MSB3026: No se pudo copiar "C:\Proyectos\AppFabric\MedicalCore\backend\Models\bin\Debug\net10.0\MediCore.Models.dll" en "bin\Debug\net10.0\MediCore.Models.dll". Se iniciará el reintento 7 dentro de 1000ms. The process cannot access the file 'C:\Proyectos\AppFabric\MedicalCore\backend\Api\bin\Debug\net10.0\MediCore.Models.dll' because it is being used by another process. El archivo se ha bloqueado por: "MediCore.Api (31492)" [C:\Proyectos\AppFabric\MedicalCore\backend\Api\MediCore.Api.csproj]
+C:\Program Files\dotnet\sdk\10.0.302\Microsoft.Common.CurrentVersion.targets(5096,5): warning MSB3026: No se pudo copiar "C:\Proyectos\AppFabric\MedicalCore\backend\DataAccess\bin\Debug\net10.0\MediCore.DataAccess.dll" en "bin\Debug\net10.0\MediCore.DataAccess.dll". Se iniciará el reintento 7 dentro de 1000ms. The process cannot access the file 'C:\Proyectos\AppFabric\MedicalCore\backend\Api\bin\Debug\net10.0\MediCore.DataAccess.dll' because it is being used by another process. El archivo se ha bloqueado por: "MediCore.Api (31492)" [C:\Proyectos\AppFabric\MedicalCore\backend\Api\MediCore.Api.csproj]
+C:\Program Files\dotnet\sdk\10.0.302\Microsoft.Common.CurrentVersion.targets(5096,5): warning MSB3026: No se pudo copiar "C:\Proyectos\AppFabric\MedicalCore\backend\Business\bin\Debug\net10.0\MediCore.Business.dll" en "bin\Debug\net10.0\MediCore.Business.dll". Se iniciará el reintento 7 dentro de 1000ms. The process cannot access the file 'C:\Proyectos\AppFabric\MedicalCore\backend\Api\bin\Debug\net10.0\MediCore.Business.dll' because it is being used by another process. El archivo se ha bloqueado por: "MediCore.Api (31492), .NET Host (21020)" [C:\Proyectos\AppFabric\MedicalCore\backend\Api\MediCore.Api.csproj]
+C:\Program Files\dotnet\sdk\10.0.302\Microsoft.Common.CurrentVersion.targets(5096,5): warning MSB3026: No se pudo copiar "C:\Proyectos\AppFabric\MedicalCore\backend\Models\bin\Debug\net10.0\MediCore.Models.dll" en "bin\Debug\net10.0\MediCore.Models.dll". Se iniciará el reintento 8 dentro de 1000ms. The process cannot access the file 'C:\Proyectos\AppFabric\MedicalCore\backend\Api\bin\Debug\net10.0\MediCore.Models.dll' because it is being used by another process. El archivo se ha bloqueado por: "MediCore.Api (31492)" [C:\Proyectos\AppFabric\MedicalCore\backend\Api\MediCore.Api.csproj]
+C:\Program Files\dotnet\sdk\10.0.302\Microsoft.Common.CurrentVersion.targets(5096,5): warning MSB3026: No se pudo copiar "C:\Proyectos\AppFabric\MedicalCore\backend\DataAccess\bin\Debug\net10.0\MediCore.DataAccess.dll" en "bin\Debug\net10.0\MediCore.DataAccess.dll". Se iniciará el reintento 8 dentro de 1000ms. The process cannot access the file 'C:\Proyectos\AppFabric\MedicalCore\backend\Api\bin\Debug\net10.0\MediCore.DataAccess.dll' because it is being used by another process. El archivo se ha bloqueado por: "MediCore.Api (31492)" [C:\Proyectos\AppFabric\MedicalCore\backend\Api\MediCore.Api.csproj]
+C:\Program Files\dotnet\sdk\10.0.302\Microsoft.Common.CurrentVersion.targets(5096,5): warning MSB3026: No se pudo copiar "C:\Proyectos\AppFabric\MedicalCore\backend\Business\bin\Debug\net10.0\MediCore.Business.dll" en "bin\Debug\net10.0\MediCore.Business.dll". Se iniciará el reintento 8 dentro de 1000ms. The process cannot access the file 'C:\Proyectos\AppFabric\MedicalCore\backend\Api\bin\Debug\net10.0\MediCore.Business.dll' because it is being used by another process. El archivo se ha bloqueado por: "MediCore.Api (31492), .NET Host (21020)" [C:\Proyectos\AppFabric\MedicalCore\backend\Api\MediCore.Api.csproj]
+C:\Program Files\dotnet\sdk\10.0.302\Microsoft.Common.CurrentVersion.targets(5096,5): warning MSB3026: No se pudo copiar "C:\Proyectos\AppFabric\MedicalCore\backend\Models\bin\Debug\net10.0\MediCore.Models.dll" en "bin\Debug\net10.0\MediCore.Models.dll". Se iniciará el reintento 9 dentro de 1000ms. The process cannot access the file 'C:\Proyectos\AppFabric\MedicalCore\backend\Api\bin\Debug\net10.0\MediCore.Models.dll' because it is being used by another process. El archivo se ha bloqueado por: "MediCore.Api (31492)" [C:\Proyectos\AppFabric\MedicalCore\backend\Api\MediCore.Api.csproj]
+C:\Program Files\dotnet\sdk\10.0.302\Microsoft.Common.CurrentVersion.targets(5096,5): warning MSB3026: No se pudo copiar "C:\Proyectos\AppFabric\MedicalCore\backend\DataAccess\bin\Debug\net10.0\MediCore.DataAccess.dll" en "bin\Debug\net10.0\MediCore.DataAccess.dll". Se iniciará el reintento 9 dentro de 1000ms. The process cannot access the file 'C:\Proyectos\AppFabric\MedicalCore\backend\Api\bin\Debug\net10.0\MediCore.DataAccess.dll' because it is being used by another process. El archivo se ha bloqueado por: "MediCore.Api (31492)" [C:\Proyectos\AppFabric\MedicalCore\backend\Api\MediCore.Api.csproj]
+C:\Program Files\dotnet\sdk\10.0.302\Microsoft.Common.CurrentVersion.targets(5096,5): warning MSB3026: No se pudo copiar "C:\Proyectos\AppFabric\MedicalCore\backend\Business\bin\Debug\net10.0\MediCore.Business.dll" en "bin\Debug\net10.0\MediCore.Business.dll". Se iniciará el reintento 9 dentro de 1000ms. The process cannot access the file 'C:\Proyectos\AppFabric\MedicalCore\backend\Api\bin\Debug\net10.0\MediCore.Business.dll' because it is being used by another process. El archivo se ha bloqueado por: "MediCore.Api (31492), .NET Host (21020)" [C:\Proyectos\AppFabric\MedicalCore\backend\Api\MediCore.Api.csproj]
+C:\Program Files\dotnet\sdk\10.0.302\Microsoft.Common.CurrentVersion.targets(5096,5): warning MSB3026: No se pudo copiar "C:\Proyectos\AppFabric\MedicalCore\backend\Models\bin\Debug\net10.0\MediCore.Models.dll" en "bin\Debug\net10.0\MediCore.Models.dll". Se iniciará el reintento 10 dentro de 1000ms. The process cannot access the file 'C:\Proyectos\AppFabric\MedicalCore\backend\Api\bin\Debug\net10.0\MediCore.Models.dll' because it is being used by another process. El archivo se ha bloqueado por: "MediCore.Api (31492)" [C:\Proyectos\AppFabric\MedicalCore\backend\Api\MediCore.Api.csproj]
+C:\Program Files\dotnet\sdk\10.0.302\Microsoft.Common.CurrentVersion.targets(5096,5): warning MSB3026: No se pudo copiar "C:\Proyectos\AppFabric\MedicalCore\backend\DataAccess\bin\Debug\net10.0\MediCore.DataAccess.dll" en "bin\Debug\net10.0\MediCore.DataAccess.dll". Se iniciará el reintento 10 dentro de 1000ms. The process cannot access the file 'C:\Proyectos\AppFabric\MedicalCore\backend\Api\bin\Debug\net10.0\MediCore.DataAccess.dll' because it is being used by another process. El archivo se ha bloqueado por: "MediCore.Api (31492)" [C:\Proyectos\AppFabric\MedicalCore\backend\Api\MediCore.Api.csproj]
+C:\Program Files\dotnet\sdk\10.0.302\Microsoft.Common.CurrentVersion.targets(5096,5): warning MSB3026: No se pudo copiar "C:\Proyectos\AppFabric\MedicalCore\backend\Business\bin\Debug\net10.0\MediCore.Business.dll" en "bin\Debug\net10.0\MediCore.Business.dll". Se iniciará el reintento 10 dentro de 1000ms. The process cannot access the file 'C:\Proyectos\AppFabric\MedicalCore\backend\Api\bin\Debug\net10.0\MediCore.Business.dll' because it is being used by another process. El archivo se ha bloqueado por: "MediCore.Api (31492)" [C:\Proyectos\AppFabric\MedicalCore\backend\Api\MediCore.Api.csproj]
+C:\Program Files\dotnet\sdk\10.0.302\Microsoft.Common.CurrentVersion.targets(5096,5): error MSB3027: No se pudo copiar "C:\Proyectos\AppFabric\MedicalCore\backend\Models\bin\Debug\net10.0\MediCore.Models.dll" en "bin\Debug\net10.0\MediCore.Models.dll". Se superó el número de 10 reintentos. Error. El archivo se ha bloqueado por: "MediCore.Api (31492)" [C:\Proyectos\AppFabric\MedicalCore\backend\Api\MediCore.Api.csproj]
+C:\Program Files\dotnet\sdk\10.0.302\Microsoft.Common.CurrentVersion.targets(5096,5): error MSB3021: No se puede copiar "C:\Proyectos\AppFabric\MedicalCore\backend\Models\bin\Debug\net10.0\MediCore.Models.dll" en "bin\Debug\net10.0\MediCore.Models.dll". The process cannot access the file 'C:\Proyectos\AppFabric\MedicalCore\backend\Api\bin\Debug\net10.0\MediCore.Models.dll' because it is being used by another process. [C:\Proyectos\AppFabric\MedicalCore\backend\Api\MediCore.Api.csproj]
+C:\Program Files\dotnet\sdk\10.0.302\Microsoft.Common.CurrentVersion.targets(5096,5): error MSB3027: No se pudo copiar "C:\Proyectos\AppFabric\MedicalCore\backend\DataAccess\bin\Debug\net10.0\MediCore.DataAccess.dll" en "bin\Debug\net10.0\MediCore.DataAccess.dll". Se superó el número de 10 reintentos. Error. El archivo se ha bloqueado por: "MediCore.Api (31492)" [C:\Proyectos\AppFabric\MedicalCore\backend\Api\MediCore.Api.csproj]
+C:\Program Files\dotnet\sdk\10.0.302\Microsoft.Common.CurrentVersion.targets(5096,5): error MSB3021: No se puede copiar "C:\Proyectos\AppFabric\MedicalCore\backend\DataAccess\bin\Debug\net10.0\MediCore.DataAccess.dll" en "bin\Debug\net10.0\MediCore.DataAccess.dll". The process cannot access the file 'C:\Proyectos\AppFabric\MedicalCore\backend\Api\bin\Debug\net10.0\MediCore.DataAccess.dll' because it is being used by another process. [C:\Proyectos\AppFabric\MedicalCore\backend\Api\MediCore.Api.csproj]
+C:\Program Files\dotnet\sdk\10.0.302\Microsoft.Common.CurrentVersion.targets(5096,5): error MSB3027: No se pudo copiar "C:\Proyectos\AppFabric\MedicalCore\backend\Business\bin\Debug\net10.0\MediCore.Business.dll" en "bin\Debug\net10.0\MediCore.Business.dll". Se superó el número de 10 reintentos. Error. El archivo se ha bloqueado por: "MediCore.Api (31492)" [C:\Proyectos\AppFabric\MedicalCore\backend\Api\MediCore.Api.csproj]
+C:\Program Files\dotnet\sdk\10.0.302\Microsoft.Common.CurrentVersion.targets(5096,5): error MSB3021: No se puede copiar "C:\Proyectos\AppFabric\MedicalCore\backend\Business\bin\Debug\net10.0\MediCore.Business.dll" en "bin\Debug\net10.0\MediCore.Business.dll". The process cannot access the file 'C:\Proyectos\AppFabric\MedicalCore\backend\Api\bin\Debug\net10.0\MediCore.Business.dll' because it is being used by another process. [C:\Proyectos\AppFabric\MedicalCore\backend\Api\MediCore.Api.csproj]
+
+ERROR al compilar.
+
+C:\Program Files\dotnet\sdk\10.0.302\Microsoft.Common.CurrentVersion.targets(5096,5): warning MSB3026: No se pudo copiar "C:\Proyectos\AppFabric\MedicalCore\backend\Models\bin\Debug\net10.0\MediCore.Models.dll" en "bin\Debug\net10.0\MediCore.Models.dll". Se iniciará el reintento 1 dentro de 1000ms. The process cannot access the file 'C:\Proyectos\AppFabric\MedicalCore\backend\Api\bin\Debug\net10.0\MediCore.Models.dll' because it is being used by another process. El archivo se ha bloqueado por: "MediCore.Api (31492)" [C:\Proyectos\AppFabric\MedicalCore\backend\Api\MediCore.Api.csproj]
+C:\Program Files\dotnet\sdk\10.0.302\Microsoft.Common.CurrentVersion.targets(5096,5): warning MSB3026: No se pudo copiar "C:\Proyectos\AppFabric\MedicalCore\backend\DataAccess\bin\Debug\net10.0\MediCore.DataAccess.dll" en "bin\Debug\net10.0\MediCore.DataAccess.dll". Se iniciará el reintento 1 dentro de 1000ms. The process cannot access the file 'C:\Proyectos\AppFabric\MedicalCore\backend\Api\bin\Debug\net10.0\MediCore.DataAccess.dll' because it is being used by another process. El archivo se ha bloqueado por: "MediCore.Api (31492)" [C:\Proyectos\AppFabric\MedicalCore\backend\Api\MediCore.Api.csproj]
+C:\Program Files\dotnet\sdk\10.0.302\Microsoft.Common.CurrentVersion.targets(5096,5): warning MSB3026: No se pudo copiar "C:\Proyectos\AppFabric\MedicalCore\backend\Business\bin\Debug\net10.0\MediCore.Business.dll" en "bin\Debug\net10.0\MediCore.Business.dll". Se iniciará el reintento 1 dentro de 1000ms. The process cannot access the file 'C:\Proyectos\AppFabric\MedicalCore\backend\Api\bin\Debug\net10.0\MediCore.Business.dll' because it is being used by another process. El archivo se ha bloqueado por: "MediCore.Api (31492), .NET Host (21020)" [C:\Proyectos\AppFabric\MedicalCore\backend\Api\MediCore.Api.csproj]
+C:\Program Files\dotnet\sdk\10.0.302\Microsoft.Common.CurrentVersion.targets(5096,5): warning MSB3026: No se pudo copiar "C:\Proyectos\AppFabric\MedicalCore\backend\Models\bin\Debug\net10.0\MediCore.Models.dll" en "bin\Debug\net10.0\MediCore.Models.dll". Se iniciará el reintento 2 dentro de 1000ms. The process cannot access the file 'C:\Proyectos\AppFabric\MedicalCore\backend\Api\bin\Debug\net10.0\MediCore.Models.dll' because it is being used by another process. El archivo se ha bloqueado por: "MediCore.Api (31492)" [C:\Proyectos\AppFabric\MedicalCore\backend\Api\MediCore.Api.csproj]
+C:\Program Files\dotnet\sdk\10.0.302\Microsoft.Common.CurrentVersion.targets(5096,5): warning MSB3026: No se pudo copiar "C:\Proyectos\AppFabric\MedicalCore\backend\DataAccess\bin\Debug\net10.0\MediCore.DataAccess.dll" en "bin\Debug\net10.0\MediCore.DataAccess.dll". Se iniciará el reintento 2 dentro de 1000ms. The process cannot access the file 'C:\Proyectos\AppFabric\MedicalCore\backend\Api\bin\Debug\net10.0\MediCore.DataAccess.dll' because it is being used by another process. El archivo se ha bloqueado por: "MediCore.Api (31492)" [C:\Proyectos\AppFabric\MedicalCore\backend\Api\MediCore.Api.csproj]
+C:\Program Files\dotnet\sdk\10.0.302\Microsoft.Common.CurrentVersion.targets(5096,5): warning MSB3026: No se pudo copiar "C:\Proyectos\AppFabric\MedicalCore\backend\Business\bin\Debug\net10.0\MediCore.Business.dll" en "bin\Debug\net10.0\MediCore.Business.dll". Se iniciará el reintento 2 dentro de 1000ms. The process cannot access the file 'C:\Proyectos\AppFabric\MedicalCore\backend\Api\bin\Debug\net10.0\MediCore.Business.dll' because it is being used by another process. El archivo se ha bloqueado por: "MediCore.Api (31492)" [C:\Proyectos\AppFabric\MedicalCore\backend\Api\MediCore.Api.csproj]
+C:\Program Files\dotnet\sdk\10.0.302\Microsoft.Common.CurrentVersion.targets(5096,5): warning MSB3026: No se pudo copiar "C:\Proyectos\AppFabric\MedicalCore\backend\Models\bin\Debug\net10.0\MediCore.Models.dll" en "bin\Debug\net10.0\MediCore.Models.dll". Se iniciará el reintento 3 dentro de 1000ms. The process cannot access the file 'C:\Proyectos\AppFabric\MedicalCore\backend\Api\bin\Debug\net10.0\MediCore.Models.dll' because it is being used by another process. El archivo se ha bloqueado por: "MediCore.Api (31492)" [C:\Proyectos\AppFabric\MedicalCore\backend\Api\MediCore.Api.csproj]
+C:\Program Files\dotnet\sdk\10.0.302\Microsoft.Common.CurrentVersion.targets(5096,5): warning MSB3026: No se pudo copiar "C:\Proyectos\AppFabric\MedicalCore\backend\DataAccess\bin\Debug\net10.0\MediCore.DataAccess.dll" en "bin\Debug\net10.0\MediCore.DataAccess.dll". Se iniciará el reintento 3 dentro de 1000ms. The process cannot access the file 'C:\Proyectos\AppFabric\MedicalCore\backend\Api\bin\Debug\net10.0\MediCore.DataAccess.dll' because it is being used by another process. El archivo se ha bloqueado por: "MediCore.Api (31492)" [C:\Proyectos\AppFabric\MedicalCore\backend\Api\MediCore.Api.csproj]
+C:\Program Files\dotnet\sdk\10.0.302\Microsoft.Common.CurrentVersion.targets(5096,5): warning MSB3026: No se pudo copiar "C:\Proyectos\AppFabric\MedicalCore\backend\Business\bin\Debug\net10.0\MediCore.Business.dll" en "bin\Debug\net10.0\MediCore.Business.dll". Se iniciará el reintento 3 dentro de 1000ms. The process cannot access the file 'C:\Proyectos\AppFabric\MedicalCore\backend\Api\bin\Debug\net10.0\MediCore.Business.dll' because it is being used by another process. El archivo se ha bloqueado por: "MediCore.Api (31492)" [C:\Proyectos\AppFabric\MedicalCore\backend\Api\MediCore.Api.csproj]
+C:\Program Files\dotnet\sdk\10.0.302\Microsoft.Common.CurrentVersion.targets(5096,5): warning MSB3026: No se pudo copiar "C:\Proyectos\AppFabric\MedicalCore\backend\Models\bin\Debug\net10.0\MediCore.Models.dll" en "bin\Debug\net10.0\MediCore.Models.dll". Se iniciará el reintento 4 dentro de 1000ms. The process cannot access the file 'C:\Proyectos\AppFabric\MedicalCore\backend\Api\bin\Debug\net10.0\MediCore.Models.dll' because it is being used by another process. El archivo se ha bloqueado por: "MediCore.Api (31492)" [C:\Proyectos\AppFabric\MedicalCore\backend\Api\MediCore.Api.csproj]
+C:\Program Files\dotnet\sdk\10.0.302\Microsoft.Common.CurrentVersion.targets(5096,5): warning MSB3026: No se pudo copiar "C:\Proyectos\AppFabric\MedicalCore\backend\DataAccess\bin\Debug\net10.0\MediCore.DataAccess.dll" en "bin\Debug\net10.0\MediCore.DataAccess.dll". Se iniciará el reintento 4 dentro de 1000ms. The process cannot access the file 'C:\Proyectos\AppFabric\MedicalCore\backend\Api\bin\Debug\net10.0\MediCore.DataAccess.dll' because it is being used by another process. El archivo se ha bloqueado por: "MediCore.Api (31492)" [C:\Proyectos\AppFabric\MedicalCore\backend\Api\MediCore.Api.csproj]
+C:\Program Files\dotnet\sdk\10.0.302\Microsoft.Common.CurrentVersion.targets(5096,5): warning MSB3026: No se pudo copiar "C:\Proyectos\AppFabric\MedicalCore\backend\Business\bin\Debug\net10.0\MediCore.Business.dll" en "bin\Debug\net10.0\MediCore.Business.dll". Se iniciará el reintento 4 dentro de 1000ms. The process cannot access the file 'C:\Proyectos\AppFabric\MedicalCore\backend\Api\bin\Debug\net10.0\MediCore.Business.dll' because it is being used by another process. El archivo se ha bloqueado por: "MediCore.Api (31492), .NET Host (21020)" [C:\Proyectos\AppFabric\MedicalCore\backend\Api\MediCore.Api.csproj]
+C:\Program Files\dotnet\sdk\10.0.302\Microsoft.Common.CurrentVersion.targets(5096,5): warning MSB3026: No se pudo copiar "C:\Proyectos\AppFabric\MedicalCore\backend\Models\bin\Debug\net10.0\MediCore.Models.dll" en "bin\Debug\net10.0\MediCore.Models.dll". Se iniciará el reintento 5 dentro de 1000ms. The process cannot access the file 'C:\Proyectos\AppFabric\MedicalCore\backend\Api\bin\Debug\net10.0\MediCore.Models.dll' because it is being used by another process. El archivo se ha bloqueado por: "MediCore.Api (31492)" [C:\Proyectos\AppFabric\MedicalCore\backend\Api\MediCore.Api.csproj]
+C:\Program Files\dotnet\sdk\10.0.302\Microsoft.Common.CurrentVersion.targets(5096,5): warning MSB3026: No se pudo copiar "C:\Proyectos\AppFabric\MedicalCore\backend\DataAccess\bin\Debug\net10.0\MediCore.DataAccess.dll" en "bin\Debug\net10.0\MediCore.DataAccess.dll". Se iniciará el reintento 5 dentro de 1000ms. The process cannot access the file 'C:\Proyectos\AppFabric\MedicalCore\backend\Api\bin\Debug\net10.0\MediCore.DataAccess.dll' because it is being used by another process. El archivo se ha bloqueado por: "MediCore.Api (31492)" [C:\Proyectos\AppFabric\MedicalCore\backend\Api\MediCore.Api.csproj]
+C:\Program Files\dotnet\sdk\10.0.302\Microsoft.Common.CurrentVersion.targets(5096,5): warning MSB3026: No se pudo copiar "C:\Proyectos\AppFabric\MedicalCore\backend\Business\bin\Debug\net10.0\MediCore.Business.dll" en "bin\Debug\net10.0\MediCore.Business.dll". Se iniciará el reintento 5 dentro de 1000ms. The process cannot access the file 'C:\Proyectos\AppFabric\MedicalCore\backend\Api\bin\Debug\net10.0\MediCore.Business.dll' because it is being used by another process. El archivo se ha bloqueado por: "MediCore.Api (31492), .NET Host (21020)" [C:\Proyectos\AppFabric\MedicalCore\backend\Api\MediCore.Api.csproj]
+C:\Program Files\dotnet\sdk\10.0.302\Microsoft.Common.CurrentVersion.targets(5096,5): warning MSB3026: No se pudo copiar "C:\Proyectos\AppFabric\MedicalCore\backend\Models\bin\Debug\net10.0\MediCore.Models.dll" en "bin\Debug\net10.0\MediCore.Models.dll". Se iniciará el reintento 6 dentro de 1000ms. The process cannot access the file 'C:\Proyectos\AppFabric\MedicalCore\backend\Api\bin\Debug\net10.0\MediCore.Models.dll' because it is being used by another process. El archivo se ha bloqueado por: "MediCore.Api (31492)" [C:\Proyectos\AppFabric\MedicalCore\backend\Api\MediCore.Api.csproj]
+C:\Program Files\dotnet\sdk\10.0.302\Microsoft.Common.CurrentVersion.targets(5096,5): warning MSB3026: No se pudo copiar "C:\Proyectos\AppFabric\MedicalCore\backend\DataAccess\bin\Debug\net10.0\MediCore.DataAccess.dll" en "bin\Debug\net10.0\MediCore.DataAccess.dll". Se iniciará el reintento 6 dentro de 1000ms. The process cannot access the file 'C:\Proyectos\AppFabric\MedicalCore\backend\Api\bin\Debug\net10.0\MediCore.DataAccess.dll' because it is being used by another process. El archivo se ha bloqueado por: "MediCore.Api (31492)" [C:\Proyectos\AppFabric\MedicalCore\backend\Api\MediCore.Api.csproj]
+C:\Program Files\dotnet\sdk\10.0.302\Microsoft.Common.CurrentVersion.targets(5096,5): warning MSB3026: No se pudo copiar "C:\Proyectos\AppFabric\MedicalCore\backend\Business\bin\Debug\net10.0\MediCore.Business.dll" en "bin\Debug\net10.0\MediCore.Business.dll". Se iniciará el reintento 6 dentro de 1000ms. The process cannot access the file 'C:\Proyectos\AppFabric\MedicalCore\backend\Api\bin\Debug\net10.0\MediCore.Business.dll' because it is being used by another process. El archivo se ha bloqueado por: "MediCore.Api (31492), .NET Host (21020)" [C:\Proyectos\AppFabric\MedicalCore\backend\Api\MediCore.Api.csproj]
+C:\Program Files\dotnet\sdk\10.0.302\Microsoft.Common.CurrentVersion.targets(5096,5): warning MSB3026: No se pudo copiar "C:\Proyectos\AppFabric\MedicalCore\backend\Models\bin\Debug\net10.0\MediCore.Models.dll" en "bin\Debug\net10.0\MediCore.Models.dll". Se iniciará el reintento 7 dentro de 1000ms. The process cannot access the file 'C:\Proyectos\AppFabric\MedicalCore\backend\Api\bin\Debug\net10.0\MediCore.Models.dll' because it is being used by another process. El archivo se ha bloqueado por: "MediCore.Api (31492)" [C:\Proyectos\AppFabric\MedicalCore\backend\Api\MediCore.Api.csproj]
+C:\Program Files\dotnet\sdk\10.0.302\Microsoft.Common.CurrentVersion.targets(5096,5): warning MSB3026: No se pudo copiar "C:\Proyectos\AppFabric\MedicalCore\backend\DataAccess\bin\Debug\net10.0\MediCore.DataAccess.dll" en "bin\Debug\net10.0\MediCore.DataAccess.dll". Se iniciará el reintento 7 dentro de 1000ms. The process cannot access the file 'C:\Proyectos\AppFabric\MedicalCore\backend\Api\bin\Debug\net10.0\MediCore.DataAccess.dll' because it is being used by another process. El archivo se ha bloqueado por: "MediCore.Api (31492)" [C:\Proyectos\AppFabric\MedicalCore\backend\Api\MediCore.Api.csproj]
+C:\Program Files\dotnet\sdk\10.0.302\Microsoft.Common.CurrentVersion.targets(5096,5): warning MSB3026: No se pudo copiar "C:\Proyectos\AppFabric\MedicalCore\backend\Business\bin\Debug\net10.0\MediCore.Business.dll" en "bin\Debug\net10.0\MediCore.Business.dll". Se iniciará el reintento 7 dentro de 1000ms. The process cannot access the file 'C:\Proyectos\AppFabric\MedicalCore\backend\Api\bin\Debug\net10.0\MediCore.Business.dll' because it is being used by another process. El archivo se ha bloqueado por: "MediCore.Api (31492), .NET Host (21020)" [C:\Proyectos\AppFabric\MedicalCore\backend\Api\MediCore.Api.csproj]
+C:\Program Files\dotnet\sdk\10.0.302\Microsoft.Common.CurrentVersion.targets(5096,5): warning MSB3026: No se pudo copiar "C:\Proyectos\AppFabric\MedicalCore\backend\Models\bin\Debug\net10.0\MediCore.Models.dll" en "bin\Debug\net10.0\MediCore.Models.dll". Se iniciará el reintento 8 dentro de 1000ms. The process cannot access the file 'C:\Proyectos\AppFabric\MedicalCore\backend\Api\bin\Debug\net10.0\MediCore.Models.dll' because it is being used by another process. El archivo se ha bloqueado por: "MediCore.Api (31492)" [C:\Proyectos\AppFabric\MedicalCore\backend\Api\MediCore.Api.csproj]
+C:\Program Files\dotnet\sdk\10.0.302\Microsoft.Common.CurrentVersion.targets(5096,5): warning MSB3026: No se pudo copiar "C:\Proyectos\AppFabric\MedicalCore\backend\DataAccess\bin\Debug\net10.0\MediCore.DataAccess.dll" en "bin\Debug\net10.0\MediCore.DataAccess.dll". Se iniciará el reintento 8 dentro de 1000ms. The process cannot access the file 'C:\Proyectos\AppFabric\MedicalCore\backend\Api\bin\Debug\net10.0\MediCore.DataAccess.dll' because it is being used by another process. El archivo se ha bloqueado por: "MediCore.Api (31492)" [C:\Proyectos\AppFabric\MedicalCore\backend\Api\MediCore.Api.csproj]
+C:\Program Files\dotnet\sdk\10.0.302\Microsoft.Common.CurrentVersion.targets(5096,5): warning MSB3026: No se pudo copiar "C:\Proyectos\AppFabric\MedicalCore\backend\Business\bin\Debug\net10.0\MediCore.Business.dll" en "bin\Debug\net10.0\MediCore.Business.dll". Se iniciará el reintento 8 dentro de 1000ms. The process cannot access the file 'C:\Proyectos\AppFabric\MedicalCore\backend\Api\bin\Debug\net10.0\MediCore.Business.dll' because it is being used by another process. El archivo se ha bloqueado por: "MediCore.Api (31492), .NET Host (21020)" [C:\Proyectos\AppFabric\MedicalCore\backend\Api\MediCore.Api.csproj]
+C:\Program Files\dotnet\sdk\10.0.302\Microsoft.Common.CurrentVersion.targets(5096,5): warning MSB3026: No se pudo copiar "C:\Proyectos\AppFabric\MedicalCore\backend\Models\bin\Debug\net10.0\MediCore.Models.dll" en "bin\Debug\net10.0\MediCore.Models.dll". Se iniciará el reintento 9 dentro de 1000ms. The process cannot access the file 'C:\Proyectos\AppFabric\MedicalCore\backend\Api\bin\Debug\net10.0\MediCore.Models.dll' because it is being used by another process. El archivo se ha bloqueado por: "MediCore.Api (31492)" [C:\Proyectos\AppFabric\MedicalCore\backend\Api\MediCore.Api.csproj]
+C:\Program Files\dotnet\sdk\10.0.302\Microsoft.Common.CurrentVersion.targets(5096,5): warning MSB3026: No se pudo copiar "C:\Proyectos\AppFabric\MedicalCore\backend\DataAccess\bin\Debug\net10.0\MediCore.DataAccess.dll" en "bin\Debug\net10.0\MediCore.DataAccess.dll". Se iniciará el reintento 9 dentro de 1000ms. The process cannot access the file 'C:\Proyectos\AppFabric\MedicalCore\backend\Api\bin\Debug\net10.0\MediCore.DataAccess.dll' because it is being used by another process. El archivo se ha bloqueado por: "MediCore.Api (31492)" [C:\Proyectos\AppFabric\MedicalCore\backend\Api\MediCore.Api.csproj]
+C:\Program Files\dotnet\sdk\10.0.302\Microsoft.Common.CurrentVersion.targets(5096,5): warning MSB3026: No se pudo copiar "C:\Proyectos\AppFabric\MedicalCore\backend\Business\bin\Debug\net10.0\MediCore.Business.dll" en "bin\Debug\net10.0\MediCore.Business.dll". Se iniciará el reintento 9 dentro de 1000ms. The process cannot access the file 'C:\Proyectos\AppFabric\MedicalCore\backend\Api\bin\Debug\net10.0\MediCore.Business.dll' because it is being used by another process. El archivo se ha bloqueado por: "MediCore.Api (31492), .NET Host (21020)" [C:\Proyectos\AppFabric\MedicalCore\backend\Api\MediCore.Api.csproj]
+C:\Program Files\dotnet\sdk\10.0.302\Microsoft.Common.CurrentVersion.targets(5096,5): warning MSB3026: No se pudo copiar "C:\Proyectos\AppFabric\MedicalCore\backend\Models\bin\Debug\net10.0\MediCore.Models.dll" en "bin\Debug\net10.0\MediCore.Models.dll". Se iniciará el reintento 10 dentro de 1000ms. The process cannot access the file 'C:\Proyectos\AppFabric\MedicalCore\backend\Api\bin\Debug\net10.0\MediCore.Models.dll' because it is being used by another process. El archivo se ha bloqueado por: "MediCore.Api (31492)" [C:\Proyectos\AppFabric\MedicalCore\backend\Api\MediCore.Api.csproj]
+C:\Program Files\dotnet\sdk\10.0.302\Microsoft.Common.CurrentVersion.targets(5096,5): warning MSB3026: No se pudo copiar "C:\Proyectos\AppFabric\MedicalCore\backend\DataAccess\bin\Debug\net10.0\MediCore.DataAccess.dll" en "bin\Debug\net10.0\MediCore.DataAccess.dll". Se iniciará el reintento 10 dentro de 1000ms. The process cannot access the file 'C:\Proyectos\AppFabric\MedicalCore\backend\Api\bin\Debug\net10.0\MediCore.DataAccess.dll' because it is being used by another process. El archivo se ha bloqueado por: "MediCore.Api (31492)" [C:\Proyectos\AppFabric\MedicalCore\backend\Api\MediCore.Api.csproj]
+C:\Program Files\dotnet\sdk\10.0.302\Microsoft.Common.CurrentVersion.targets(5096,5): warning MSB3026: No se pudo copiar "C:\Proyectos\AppFabric\MedicalCore\backend\Business\bin\Debug\net10.0\MediCore.Business.dll" en "bin\Debug\net10.0\MediCore.Business.dll". Se iniciará el reintento 10 dentro de 1000ms. The process cannot access the file 'C:\Proyectos\AppFabric\MedicalCore\backend\Api\bin\Debug\net10.0\MediCore.Business.dll' because it is being used by another process. El archivo se ha bloqueado por: "MediCore.Api (31492)" [C:\Proyectos\AppFabric\MedicalCore\backend\Api\MediCore.Api.csproj]
+C:\Proyectos\AppFabric\MedicalCore\backend\Tests\MediCore.Business.Tests\Sync\SyncCommandRegistryTests.cs(249,46): error CS0535: 'SyncCommandRegistryTests.NoOpEncounterRepo' no implementa el miembro de interfaz 'IEncounterRepository.CountUnsignedPrescriptionsByEncounterAsync(Guid, Guid, CancellationToken)' [C:\Proyectos\AppFabric\MedicalCore\backend\Tests\MediCore.Business.Tests\MediCore.Business.Tests.csproj]
+C:\Program Files\dotnet\sdk\10.0.302\Microsoft.Common.CurrentVersion.targets(5096,5): error MSB3027: No se pudo copiar "C:\Proyectos\AppFabric\MedicalCore\backend\Models\bin\Debug\net10.0\MediCore.Models.dll" en "bin\Debug\net10.0\MediCore.Models.dll". Se superó el número de 10 reintentos. Error. El archivo se ha bloqueado por: "MediCore.Api (31492)" [C:\Proyectos\AppFabric\MedicalCore\backend\Api\MediCore.Api.csproj]
+C:\Program Files\dotnet\sdk\10.0.302\Microsoft.Common.CurrentVersion.targets(5096,5): error MSB3021: No se puede copiar "C:\Proyectos\AppFabric\MedicalCore\backend\Models\bin\Debug\net10.0\MediCore.Models.dll" en "bin\Debug\net10.0\MediCore.Models.dll". The process cannot access the file 'C:\Proyectos\AppFabric\MedicalCore\backend\Api\bin\Debug\net10.0\MediCore.Models.dll' because it is being used by another process. [C:\Proyectos\AppFabric\MedicalCore\backend\Api\MediCore.Api.csproj]
+C:\Program Files\dotnet\sdk\10.0.302\Microsoft.Common.CurrentVersion.targets(5096,5): error MSB3027: No se pudo copiar "C:\Proyectos\AppFabric\MedicalCore\backend\DataAccess\bin\Debug\net10.0\MediCore.DataAccess.dll" en "bin\Debug\net10.0\MediCore.DataAccess.dll". Se superó el número de 10 reintentos. Error. El archivo se ha bloqueado por: "MediCore.Api (31492)" [C:\Proyectos\AppFabric\MedicalCore\backend\Api\MediCore.Api.csproj]
+C:\Program Files\dotnet\sdk\10.0.302\Microsoft.Common.CurrentVersion.targets(5096,5): error MSB3021: No se puede copiar "C:\Proyectos\AppFabric\MedicalCore\backend\DataAccess\bin\Debug\net10.0\MediCore.DataAccess.dll" en "bin\Debug\net10.0\MediCore.DataAccess.dll". The process cannot access the file 'C:\Proyectos\AppFabric\MedicalCore\backend\Api\bin\Debug\net10.0\MediCore.DataAccess.dll' because it is being used by another process. [C:\Proyectos\AppFabric\MedicalCore\backend\Api\MediCore.Api.csproj]
+C:\Program Files\dotnet\sdk\10.0.302\Microsoft.Common.CurrentVersion.targets(5096,5): error MSB3027: No se pudo copiar "C:\Proyectos\AppFabric\MedicalCore\backend\Business\bin\Debug\net10.0\MediCore.Business.dll" en "bin\Debug\net10.0\MediCore.Business.dll". Se superó el número de 10 reintentos. Error. El archivo se ha bloqueado por: "MediCore.Api (31492)" [C:\Proyectos\AppFabric\MedicalCore\backend\Api\MediCore.Api.csproj]
+C:\Program Files\dotnet\sdk\10.0.302\Microsoft.Common.CurrentVersion.targets(5096,5): error MSB3021: No se puede copiar "C:\Proyectos\AppFabric\MedicalCore\backend\Business\bin\Debug\net10.0\MediCore.Business.dll" en "bin\Debug\net10.0\MediCore.Business.dll". The process cannot access the file 'C:\Proyectos\AppFabric\MedicalCore\backend\Api\bin\Debug\net10.0\MediCore.Business.dll' because it is being used by another process. [C:\Proyectos\AppFabric\MedicalCore\backend\Api\MediCore.Api.csproj]
+    30 Advertencia(s)
+    7 Errores
+
+Tiempo transcurrido 00:00:48.03
+
+=== dotnet test (solucion) 
+    Proyectos detectados: 2
+Serie de pruebas para C:\Proyectos\AppFabric\MedicalCore\backend\Tests\MediCore.Common.Tests\bin\Debug\net10.0\MediCore.Common.Tests.dll (.NETCoreApp,Version=v10.0)
+Serie de pruebas para C:\Proyectos\AppFabric\MedicalCore\backend\Tests\MediCore.Business.Tests\bin\Debug\net10.0\MediCore.Business.Tests.dll (.NETCoreApp,Version=v10.0)
+1 archivos de prueba en total coincidieron con el patrón especificado.
+1 archivos de prueba en total coincidieron con el patrón especificado.
+
+Correctas! - Con error:     0, Superado:    19, Omitido:     0, Total:    19, Duración: 424 ms - MediCore.Common.Tests.dll (net10.0)
+
+Correctas! - Con error:     0, Superado:   113, Omitido:     0, Total:   113, Duración: 4 s - MediCore.Business.Tests.dll (net10.0)
+
+=== frontend: type-check + lint 
+
+> medicore-frontend@0.1.0 type-check
+> tsc --noEmit --project tsconfig.app.json
+
+src/pages/administracion/especialidades/page.tsx(143,41): error TS2322: Type '{ mensaje: string; }' is not assignable to type 'IntrinsicAttributes'.
+  Property 'mensaje' does not exist on type 'IntrinsicAttributes'.
+src/pages/administracion/medicos/page.tsx(195,41): error TS2322: Type '{ mensaje: string; }' is not assignable to type 'IntrinsicAttributes'.
+  Property 'mensaje' does not exist on type 'IntrinsicAttributes'.
+src/pages/recetas/components/RecetaPrintModal.tsx(193,83): error TS2304: Cannot find name 'doctor'.
+
+> medicore-frontend@0.1.0 lint
+> eslint src --ext ts,tsx --report-unused-disable-directives --max-warnings 0
+
+
+C:\Proyectos\AppFabric\MedicalCore\frontend\src\pages\recetas\components\RecetaPrintModal.tsx
+  193:83  error  'doctor' is not defined  no-undef
+
+✖ 1 problem (1 error, 0 warnings)
+
+
+=== E2E + contrato de API (Playwright, stack real) 
+    Perfil del API: environment=Development isDemo=True dgis=non-production
+
+> medicore-e2e@0.1.0 test
+> playwright test
+
+
+Running 151 tests using 4 workers
+
+  x    2 [contrato-api] › specs\00-smoke\api-appointments.spec.ts:20:3 › 00 — Contrato API · appointments › GET /api/consulting-rooms lista consultorios de CENTRAL (451ms)
+  -    5 [contrato-api] › specs\00-smoke\api-appointments.spec.ts:32:3 › 00 — Contrato API · appointments › crear cita de sujeto sin identidad + 409 por traslape + cancelar con motivo
+  -    6 [contrato-api] › specs\00-smoke\api-appointments.spec.ts:98:3 › 00 — Contrato API · appointments › mine=true sin profesional falla cerrado (lista vacía)
+  -    7 [contrato-api] › specs\00-smoke\api-appointments.spec.ts:113:3 › 00 — Contrato API · appointments › medico con profesional puede listar mine
+  -    8 [contrato-api] › specs\00-smoke\api-appointments.spec.ts:137:3 › 00 — Contrato API · appointments › sin token responde 401
+  ok   3 [chromium] › specs\00-smoke\login.spec.ts:27:3 › 00 — Smoke · Login › muestra la pantalla de inicio de sesión (5.7s)
+  -    9 [chromium] › specs\01-auth-seguridad\permisos-por-rol-ui.spec.ts:83:3 › 01 — Auth / seguridad · permisos por rol (UI) › recepción: menú sin Administración/Usuarios y deep-link redirige a dashboard
+  -   10 [chromium] › specs\01-auth-seguridad\permisos-por-rol-ui.spec.ts:101:3 › 01 — Auth / seguridad · permisos por rol (UI) › admin: Administración/Usuarios visible en menú
+  -   12 [chromium] › specs\01-auth-seguridad\permisos-por-rol-ui.spec.ts:114:3 › 01 — Auth / seguridad · permisos por rol (UI) › médico: sin Finanzas/Caja; deep-link a caja redirige a dashboard
+  -   13 [chromium] › specs\01-auth-seguridad\permisos-por-rol-ui.spec.ts:129:3 › 01 — Auth / seguridad · permisos por rol (UI) › caja: sin Consultas en menú; deep-link a consultas redirige a dashboard
+  -   14 [chromium] › specs\02-pacientes\registro.spec.ts:5:8 › 02 — Pacientes · registro › [pendiente backend] registra paciente ambulatorio con CURP válida — Requiere backend MediCore (cola, idempotencia, tenant o SC completo). Prototipo mock en docs/frontend.
+  -   15 [chromium] › specs\02-pacientes\registro.spec.ts:9:8 › 02 — Pacientes · registro › [pendiente backend] rechaza CURP mal formada sin inventar identidad — Requiere backend MediCore (cola, idempotencia, tenant o SC completo). Prototipo mock en docs/frontend.
+  x   11 [contrato-api] › specs\00-smoke\api-audit.spec.ts:16:3 › 00 — Contrato API · auditoría › admin puede listar por actor (200) (536ms)
+  -   17 [contrato-api] › specs\00-smoke\api-audit.spec.ts:27:3 › 00 — Contrato API · auditoría › admin puede listar por sujeto inexistente (200 con lista vacía; 404 pendiente de M3)
+  -   18 [contrato-api] › specs\00-smoke\api-audit.spec.ts:41:3 › 00 — Contrato API · auditoría › rol sin permiso (medico) recibe 403
+  -   19 [contrato-api] › specs\00-smoke\api-audit.spec.ts:59:3 › 00 — Contrato API · auditoría › sin token responde 401
+  -   20 [contrato-api] › specs\00-smoke\api-audit.spec.ts:64:3 › 00 — Contrato API · auditoría › admin: fromUtc posterior a toUtc responde 400
+  ok  16 [chromium] › specs\03-triage-urgencias\dos-estaciones-offline.spec.ts:26:3 › 03 — Triage urgencias · dos estaciones offline › Equipo1 y Equipo2: contextos independientes y setOffline por estación (5.0s)
+  -   21 [chromium] › specs\03-triage-urgencias\dos-estaciones-offline.spec.ts:65:8 › 03 — Triage urgencias · dos estaciones offline › cada estación conserva su cola al reconectar sin duplicar (SS-08 / SC-11)
+  -   22 [chromium] › specs\04-consulta-receta\flujo-consulta-ui.spec.ts:110:3 › 04 — Consulta / receta · UI (Vite + API) › abre consulta, captura SOAP (borrador) y lista la nota
+  -   23 [chromium] › specs\04-consulta-receta\flujo-consulta-ui.spec.ts:131:3 › 04 — Consulta / receta · UI (Vite + API) › emite receta tras captura alérgica explícita (niega)
+  -   24 [chromium] › specs\05-caja\cobro-offline.spec.ts:6:8 › 05 — Caja · cobro offline › [pendiente Fase 2] registra cobro offline y sincroniza sin duplicar — sin endpoints de caja/cobro en API (Requiere backend MediCore (cola, idempotencia, tenant o SC completo). Prototipo mock en docs/frontend.)
+  -   25 [chromium] › specs\05-caja\cobro-offline.spec.ts:13:8 › 05 — Caja · cobro offline › [pendiente Fase 2] corte de caja iniciado offline es atómico al reconectar — módulo caja no entregado
+  -   26 [chromium] › specs\06-seguridad-clinica\sc-ui.spec.ts:145:3 › 06 — Seguridad clínica · UI (Vite + API) › SC-05: IdentityHeader visible en detalle, triage, urgencias y consultas con sujeto activo
+  -   27 [chromium] › specs\06-seguridad-clinica\sc-ui.spec.ts:196:3 › 06 — Seguridad clínica · UI (Vite + API) › SC-08 UI: signo fuera de rango se destaca; vacío no se marca normal
+  -   28 [chromium] › specs\06-seguridad-clinica\sc-ui.spec.ts:216:3 › 06 — Seguridad clínica · UI (Vite + API) › SC-09: contingencia muestra antigüedad de cola (QueueLiveBanner)
+  -   29 [chromium] › specs\06-seguridad-clinica\sc-ui.spec.ts:237:3 › 06 — Seguridad clínica · UI (Vite + API) › SC-10 UI: niveles de triage con texto + icono (no sólo color)
+  x   30 [contrato-api] › specs\00-smoke\api-auth.spec.ts:24:3 › 00 — Contrato API · autenticación › login válido devuelve accessToken con claim tenant_id y cookie mc_refresh httponly (659ms)
+  -   32 [contrato-api] › specs\00-smoke\api-auth.spec.ts:48:3 › 00 — Contrato API · autenticación › credenciales inválidas fallan sin revelar si el usuario existe
+  -   33 [contrato-api] › specs\00-smoke\api-auth.spec.ts:73:3 › 00 — Contrato API · autenticación › tenant inexistente no autentica aunque el usuario exista en otro tenant
+  -   34 [contrato-api] › specs\00-smoke\api-auth.spec.ts:78:3 › 00 — Contrato API · autenticación › GET /api/auth/me sin token responde 401
+  -   35 [contrato-api] › specs\00-smoke\api-auth.spec.ts:83:3 › 00 — Contrato API · autenticación › GET /api/auth/me con token devuelve los claims del tenant
+  -   36 [contrato-api] › specs\00-smoke\api-auth.spec.ts:95:3 › 00 — Contrato API · autenticación › token con firma alterada es rechazado
+  -   37 [contrato-api] › specs\00-smoke\api-auth.spec.ts:103:3 › 00 — Contrato API · autenticación › refresh rota el token y el refresh anterior deja de servir
+  -   38 [contrato-api] › specs\00-smoke\api-auth.spec.ts:134:3 › 00 — Contrato API · autenticación › refresh sin cookie responde 401
+  -   39 [contrato-api] › specs\00-smoke\api-auth.spec.ts:139:3 › 00 — Contrato API · autenticación › logout invalida el refresh de la estación que cierra
+  -   40 [contrato-api] › specs\00-smoke\api-auth.spec.ts:163:3 › 00 — Contrato API · autenticación › una segunda sesión del mismo usuario sobrevive al logout de la primera
+  -   41 [contrato-api] › specs\00-smoke\api-auth.spec.ts:199:3 › 00 — Contrato API · autenticación › logout sin cookie de refresh responde 400 y no cierra otras sesiones
+  -   42 [contrato-api] › specs\00-smoke\api-auth.spec.ts:221:3 › 00 — Contrato API · autenticación › login de médico con profesional ligado trae healthcareProfessional en la sesión
+  -   43 [contrato-api] › specs\00-smoke\api-auth.spec.ts:244:3 › 00 — Contrato API · autenticación › login de usuario sin profesional trae healthcareProfessional explícitamente vacío
+  -   44 [contrato-api] › specs\00-smoke\api-auth.spec.ts:265:8 › 00 — Contrato API · autenticación › [pendiente producto] bloqueo por 5 intentos fallidos — no se ejercita contra la base compartida de Dev (demo): dejaría la cuenta sintética bloqueada 15 minutos para todo el equipo. Requiere usuario sintético dedicado al caso.
+  x   45 [contrato-api] › specs\00-smoke\api-branches.spec.ts:12:3 › 00 — Contrato API · establecimiento / sucursales (M11) › GET /api/tenant/profile devuelve el tenant del token (581ms)
+  ok  31 [chromium] › specs\07-accesibilidad\wcag-basico.spec.ts:25:3 › 07 — Accesibilidad · WCAG básico › axe sin violaciones graves en /login (contraste del pie WCAG AA) (8.6s)
+  -   46 [chromium] › specs\07-accesibilidad\wcag-basico.spec.ts:42:8 › 07 — Accesibilidad · WCAG básico › axe en triage y cabecera de identidad (SC-05 / SC-10) — sesión + cola requerida; cubierto por sc-ui IdentityHeader
+  x    4 [chromium] › specs\00-smoke\login.spec.ts:33:3 › 00 — Smoke · Login › rechaza credenciales inválidas (18.8s)
+  ok  47 [chromium] › specs\07-accesibilidad\wcag-basico.spec.ts:49:3 › 07 — Accesibilidad · WCAG básico › recorrido teclado: foco llega a usuario y Acceder (2.8s)
+  x   48 [contrato-api] › specs\00-smoke\api-branches.spec.ts:24:3 › 00 — Contrato API · establecimiento / sucursales (M11) › GET /api/branches lista sucursales del tenant autenticado (454ms)
+  x    1 [chromium] › specs\00-smoke\login.spec.ts:42:3 › 00 — Smoke · Login › inicia sesión con administrador del mock y llega al dashboard (18.9s)
+  x   50 [contrato-api] › specs\00-smoke\api-branches.spec.ts:39:3 › 00 — Contrato API · establecimiento / sucursales (M11) › GET /api/branches/{id} de la sucursal demo responde 200 (397ms)
+  ok  49 [chromium] › specs\09-offline\sc-11-indexeddb.spec.ts:27:3 › 09 — Offline · SC-11 IndexedDB estación › cola medicore-outbox sobrevive cierre de pestaña y reinicio (SC-11 / SS-09) (3.7s)
+  x   51 [contrato-api] › specs\00-smoke\api-branches.spec.ts:50:3 › 00 — Contrato API · establecimiento / sucursales (M11) › GET /api/branches/{id} inexistente responde 404 (372ms)
+  x   52 [contrato-api] › specs\00-smoke\api-branches.spec.ts:58:3 › 00 — Contrato API · establecimiento / sucursales (M11) › PUT con BranchId nuevo hace alta en el tenant sin inventar FacilityType (351ms)
+  x   53 [contrato-api] › specs\00-smoke\api-branches.spec.ts:83:3 › 00 — Contrato API · establecimiento / sucursales (M11) › PUT actualiza domicilio preservando FacilityType/HasEmergencyService en null (343ms)
+  x   54 [contrato-api] › specs\00-smoke\api-branches.spec.ts:121:3 › 00 — Contrato API · establecimiento / sucursales (M11) › endpoints de branches/tenant rechazan sin token (410ms)
+  x   55 [contrato-api] › specs\00-smoke\api-branches.spec.ts:142:3 › 08 — Multi-tenant · sucursales (PUT/GET cruzado → 404) › token del tenant B no lee ni actualiza sucursales del tenant A (404, no 403) (374ms)
+  x   56 [contrato-api] › specs\00-smoke\api-clinical-queue-hub.spec.ts:54:3 › 00 — Contrato hub · clinical-queue › negotiate sin token responde 401 (366ms)
+  -   57 [contrato-api] › specs\00-smoke\api-clinical-queue-hub.spec.ts:59:3 › 00 — Contrato hub · clinical-queue › negotiate con Bearer responde 200
+  -   58 [contrato-api] › specs\00-smoke\api-clinical-queue-hub.spec.ts:69:3 › 00 — Contrato hub · clinical-queue › JoinBranch + POST encounter emite queueChanged sin PHI
+  -   59 [contrato-api] › specs\00-smoke\api-clinical-queue-hub.spec.ts:111:3 › 00 — Contrato hub · clinical-queue › token de otro tenant no recibe el grupo (si hay MEDICORE_TENANT_B)
+  x   60 [contrato-api] › specs\00-smoke\api-clinical-record.spec.ts:18:3 › 00 — Contrato API · clinical record (expediente) › GET record asegura expediente; alergias no_interrogado; audit record.read (355ms)
+  -   61 [contrato-api] › specs\00-smoke\api-clinical-record.spec.ts:53:3 › 00 — Contrato API · clinical record (expediente) › PUT allergy-status y POST allergies; DELETE soft
+  -   62 [contrato-api] › specs\00-smoke\api-clinical-record.spec.ts:92:3 › 00 — Contrato API · clinical record (expediente) › POST history append versión; addendum
+  -   63 [contrato-api] › specs\00-smoke\api-clinical-record.spec.ts:131:3 › 00 — Contrato API · clinical record (expediente) › rol sin permiso clínico responde 403
+  -   64 [contrato-api] › specs\00-smoke\api-clinical-record.spec.ts:151:3 › 00 — Contrato API · clinical record (expediente) › sin token responde 401
+  x   65 [contrato-api] › specs\00-smoke\api-encounters.spec.ts:18:3 › 00 — Contrato API · encounters › POST /api/encounters con subjectId+branchId responde 200; MP null (355ms)
+  -   66 [contrato-api] › specs\00-smoke\api-encounters.spec.ts:51:3 › 00 — Contrato API · encounters › GET /api/encounters/queue ordena y lista abiertos
+  -   67 [contrato-api] › specs\00-smoke\api-encounters.spec.ts:65:3 › 00 — Contrato API · encounters › POST state cerrado sin triage responde 409
+  -   68 [contrato-api] › specs\00-smoke\api-encounters.spec.ts:95:3 › 00 — Contrato API · encounters › POST care-without-consent con mismo profesional responde 409
+  -   69 [contrato-api] › specs\00-smoke\api-encounters.spec.ts:127:3 › 00 — Contrato API · encounters › sin token responde 401
+  x   70 [contrato-api] › specs\00-smoke\api-health.spec.ts:8:3 › 00 — Contrato API · salud del ambiente › GET /api/health responde success:true y expone el perfil de plataforma (350ms)
+  x   71 [contrato-api] › specs\00-smoke\api-health.spec.ts:23:3 › 00 — Contrato API · salud del ambiente › el ambiente bajo prueba no admite datos de pacientes reales (352ms)
+  x   72 [contrato-api] › specs\00-smoke\api-health.spec.ts:31:3 › 00 — Contrato API · salud del ambiente › el ambiente bajo prueba no es Production (358ms)
+  x   73 [contrato-api] › specs\00-smoke\api-multi-tenant.spec.ts:13:3 › 00 — Contrato API · aislamiento multi-tenant › el tenant del token corresponde al tenant autenticado (361ms)
+  x   74 [contrato-api] › specs\00-smoke\api-multi-tenant.spec.ts:23:3 › 00 — Contrato API · aislamiento multi-tenant › un dispositivo registrado sólo se lee con el token de su tenant (359ms)
+  x   75 [contrato-api] › specs\00-smoke\api-multi-tenant.spec.ts:50:3 › 00 — Contrato API · aislamiento multi-tenant › endpoints con TenantId de claims rechazan petición sin token (346ms)
+  x   76 [contrato-api] › specs\00-smoke\api-multi-tenant.spec.ts:65:3 › 00 — Contrato API · lectura cruzada entre tenants › un token del tenant A no lee datos del tenant B (343ms)
+  x   77 [contrato-api] › specs\00-smoke\api-notes.spec.ts:41:3 › 00 — Contrato API · clinical notes (consulta/firma) › POST create + GET list; firma con médico (cédula); addendum; PUT 405 (356ms)
+  -   78 [contrato-api] › specs\00-smoke\api-notes.spec.ts:112:3 › 00 — Contrato API · clinical notes (consulta/firma) › admin sin profesional: create ok, sign 403 (SC-12 fail closed)
+  -   79 [contrato-api] › specs\00-smoke\api-notes.spec.ts:134:3 › 00 — Contrato API · clinical notes (consulta/firma) › rol caja responde 403 al listar
+  -   80 [contrato-api] › specs\00-smoke\api-notes.spec.ts:150:3 › 00 — Contrato API · clinical notes (consulta/firma) › GET pending-evolution requiere branchId
+  -   81 [contrato-api] › specs\00-smoke\api-notes.spec.ts:165:3 › 00 — Contrato API · clinical notes (consulta/firma) › sin token responde 401
+  x   82 [contrato-api] › specs\00-smoke\api-prescriptions.spec.ts:58:3 › 00 — Contrato API · prescriptions (M8) › 409 sin captura alérgica; 200 tras Set (incluso no_interrogado); 422 controlado; firma (360ms)
+  x   83 [contrato-api] › specs\00-smoke\api-professionals.spec.ts:17:3 › 00 — Contrato API · professionals / specialties › admin lista especialidades y profesionales del seed (355ms)
+  -   84 [contrato-api] › specs\00-smoke\api-professionals.spec.ts:33:3 › 00 — Contrato API · professionals / specialties › admin crea especialidad, profesional, actualiza y baja lógica
+  -   85 [contrato-api] › specs\00-smoke\api-professionals.spec.ts:87:3 › 00 — Contrato API · professionals / specialties › cédula duplicada en el mismo tenant → 409
+  -   86 [contrato-api] › specs\00-smoke\api-professionals.spec.ts:114:3 › 00 — Contrato API · professionals / specialties › médico puede listar; no puede crear (403)
+  -   87 [contrato-api] › specs\00-smoke\api-professionals.spec.ts:132:3 › 00 — Contrato API · professionals / specialties › caja no lista profesionales (403); sin token 401
+  x   88 [contrato-api] › specs\00-smoke\api-subjects.spec.ts:20:3 › 00 — Contrato API · subjects › POST /api/subjects con sólo branchId responde 200 (359ms)
+  -   89 [contrato-api] › specs\00-smoke\api-subjects.spec.ts:39:3 › 00 — Contrato API · subjects › POST /api/subjects con genderIdentity opcional no bloquea ni inventa sexo
+  -   90 [contrato-api] › specs\00-smoke\api-subjects.spec.ts:57:3 › 00 — Contrato API · subjects › GET /api/subjects lista padrón
+  -   91 [contrato-api] › specs\00-smoke\api-subjects.spec.ts:68:3 › 00 — Contrato API · subjects › search-by-description admin 200 sin nombres; medico 403
+  -   92 [contrato-api] › specs\00-smoke\api-subjects.spec.ts:98:3 › 00 — Contrato API · subjects › sin token responde 401
+  -   93 [contrato-api] › specs\00-smoke\api-subjects.spec.ts:104:3 › 00 — Contrato API · subjects › POST /api/subjects rechaza birthDate centinela SINBA 9999-09-09 (400)
+  x   94 [contrato-api] › specs\00-smoke\api-sync-idempotencia.spec.ts:11:3 › 00 — Contrato API · cola e idempotencia › POST /api/sync/commands sin token responde 401 (358ms)
+  x   95 [contrato-api] › specs\00-smoke\api-sync-idempotencia.spec.ts:23:3 › 00 — Contrato API · cola e idempotencia › el mismo IdempotencyKey repetido no duplica efecto (342ms)
+  x   96 [contrato-api] › specs\00-smoke\api-sync-idempotencia.spec.ts:59:3 › 00 — Contrato API · cola e idempotencia › claves distintas producen efectos distintos (350ms)
+  x   97 [contrato-api] › specs\00-smoke\api-sync-idempotencia.spec.ts:83:3 › 00 — Contrato API · cola e idempotencia › IdempotencyKey vacía se rechaza con 400 (357ms)
+  x   98 [contrato-api] › specs\00-smoke\api-sync-idempotencia.spec.ts:99:3 › 00 — Contrato API · cola e idempotencia › CommandType vacío se rechaza con 400 (358ms)
+  x   99 [contrato-api] › specs\00-smoke\api-sync-idempotencia.spec.ts:115:3 › 00 — Contrato API · cola e idempotencia › subject.create vía sync acepta y crea sujeto (idempotente) (358ms)
+  x  100 [contrato-api] › specs\00-smoke\api-sync-idempotencia.spec.ts:151:3 › 00 — Contrato API · cola e idempotencia › encounter.open vía sync acepta y es idempotente (359ms)
+  x  101 [contrato-api] › specs\00-smoke\api-sync-idempotencia.spec.ts:194:3 › 00 — Contrato API · cola e idempotencia › triage.save Full sin encounterId responde 400 (353ms)
+  x  102 [contrato-api] › specs\00-smoke\api-sync-idempotencia.spec.ts:210:3 › 00 — Contrato API · cola e idempotencia › appointment.state cancelada sin motivo responde 400 (350ms)
+  x  103 [contrato-api] › specs\00-smoke\api-sync-idempotencia.spec.ts:229:3 › 00 — Contrato API · cola e idempotencia › allergyStatus.set vía sync exige subjectId (Full) (344ms)
+  x  104 [contrato-api] › specs\00-smoke\api-triage.spec.ts:18:3 › 00 — Contrato API · triage › GET escala efectiva de sucursal responde 200 con niveles (356ms)
+  -  105 [contrato-api] › specs\00-smoke\api-triage.spec.ts:37:3 › 00 — Contrato API · triage › POST triage sin nivel y sin signos medidos responde 200
+  -  106 [contrato-api] › specs\00-smoke\api-triage.spec.ts:78:3 › 00 — Contrato API · triage › POST triage con nivel de escala y cierre posterior deja de ser 409
+  x  107 [contrato-api] › specs\01-auth-seguridad\permisos-por-rol.spec.ts:19:3 › 01 — Auth / seguridad · permisos por rol (API) › caja no lee expediente clínico (403) (341ms)
+  -  108 [contrato-api] › specs\01-auth-seguridad\permisos-por-rol.spec.ts:40:3 › 01 — Auth / seguridad · permisos por rol (API) › médico no lista auditoría (403)
+  -  109 [contrato-api] › specs\01-auth-seguridad\permisos-por-rol.spec.ts:55:3 › 01 — Auth / seguridad · permisos por rol (API) › enfermería no emite receta (403 o 409 por captura alérgica)
+  -  110 [contrato-api] › specs\01-auth-seguridad\permisos-por-rol.spec.ts:99:8 › 01 — Auth / seguridad · permisos por rol (API) › [pendiente Fase 2] médico no ejecuta corte de caja — sin módulo de caja en API
+  x  111 [contrato-api] › specs\02-pacientes\no-identificado.spec.ts:19:3 › 02 — Pacientes · no identificado › ingresa paciente inconsciente sin datos de identidad (API / SC-13 parcial) (360ms)
+  -  112 [contrato-api] › specs\02-pacientes\no-identificado.spec.ts:37:3 › 02 — Pacientes · no identificado › etiqueta provisional distinta por sujeto (SC-17)
+  -  113 [contrato-api] › specs\02-pacientes\no-identificado.spec.ts:57:8 › 02 — Pacientes · no identificado › [pendiente UI vinculación] vinculación equivocada se corrige (SC-22) — API activa en sc-mapa; UI de corrección pendiente
+  x  114 [contrato-api] › specs\03-triage-urgencias\triage-sin-bloqueo.spec.ts:17:3 › 03 — Triage urgencias · sin bloqueo › clasifica triage sin datos administrativos (SC-14) (341ms)
+  -  115 [contrato-api] › specs\03-triage-urgencias\triage-sin-bloqueo.spec.ts:45:3 › 03 — Triage urgencias · sin bloqueo › no asigna nivel por omisión; cierre sin triage 409 (SC-03)
+  -  116 [contrato-api] › specs\03-triage-urgencias\triage-sin-bloqueo.spec.ts:73:8 › 03 — Triage urgencias · sin bloqueo › [pendiente UI offline] inicio de atención no se bloquea por fallo de red (SC-19) — sync subject.create/encounter.open/triage.* ya Full en API; falta E2E de estación con Core caído
+  x  117 [contrato-api] › specs\04-consulta-receta\flujo-consulta.spec.ts:17:3 › 04 — Consulta / receta › alerta de alergia bloqueante antes de prescribir (SC-01) (359ms)
+  -  118 [contrato-api] › specs\04-consulta-receta\flujo-consulta.spec.ts:58:3 › 04 — Consulta / receta › confirma alergia con justificación (SC-02)
+  x  119 [contrato-api] › specs\06-seguridad-clinica\sc-mapa.spec.ts:96:5 › 06 — Seguridad clínica · mapa SC-01…SC-24 › SC-01 … SC-12 — bloqueantes clínicos › SC-01: Las alergias y alertas del paciente se presentan de forma inequívoca antes de emitir una receta (350ms)
+  -  120 [contrato-api] › specs\06-seguridad-clinica\sc-mapa.spec.ts:116:5 › 06 — Seguridad clínica · mapa SC-01…SC-24 › SC-01 … SC-12 — bloqueantes clínicos › SC-02: Prescribir un medicamento al que el paciente es alérgico exige confirmación explícita con justificación registrada
+  -  121 [contrato-api] › specs\06-seguridad-clinica\sc-mapa.spec.ts:162:5 › 06 — Seguridad clínica · mapa SC-01…SC-24 › SC-01 … SC-12 — bloqueantes clínicos › SC-03: No se puede cerrar un episodio de urgencias sin clasificación de triage. Y en sentido inverso: el sistema no asigna un nivel por omisión. El .docx fija amarillo automático; se verifica que eso no ocurre y que en su lugar el episodio queda en estado explícito "sin clasificar", ordenado con prioridad alta hasta clasificarse (doc 03 §11.3). Bloquear el cierre es legítimo; bloquear el inicio no lo es
+  -  122 [contrato-api] › specs\06-seguridad-clinica\sc-mapa.spec.ts:183:5 › 06 — Seguridad clínica · mapa SC-01…SC-24 › SC-01 … SC-12 — bloqueantes clínicos › SC-04: El alta con recetas pendientes está bloqueada; forzarla exige motivo y genera evento de excepción
+  -  123 [contrato-api] › specs\06-seguridad-clinica\sc-mapa.spec.ts:265:10 › 06 — Seguridad clínica · mapa SC-01…SC-24 › SC-01 … SC-12 — bloqueantes clínicos › SC-05: La cabecera de identidad del paciente es visible en todo momento durante la atención
+  -  124 [contrato-api] › specs\06-seguridad-clinica\sc-mapa.spec.ts:273:5 › 06 — Seguridad clínica · mapa SC-01…SC-24 › SC-01 … SC-12 — bloqueantes clínicos › SC-06: Un documento firmado no puede modificarse por ninguna vía de la API
+  -  125 [contrato-api] › specs\06-seguridad-clinica\sc-mapa.spec.ts:318:5 › 06 — Seguridad clínica · mapa SC-01…SC-24 › SC-01 … SC-12 — bloqueantes clínicos › SC-07: La cola de urgencias ordena por nivel, luego estado, luego hora de llegada, incluso offline
+  -  126 [contrato-api] › specs\06-seguridad-clinica\sc-mapa.spec.ts:340:5 › 06 — Seguridad clínica · mapa SC-01…SC-24 › SC-01 … SC-12 — bloqueantes clínicos › SC-08: Los signos vitales fuera de rango crítico se destacan y nunca se guardan silenciosamente como normales
+  -  127 [contrato-api] › specs\06-seguridad-clinica\sc-mapa.spec.ts:376:10 › 06 — Seguridad clínica · mapa SC-01…SC-24 › SC-01 … SC-12 — bloqueantes clínicos › SC-09: En modo contingencia, ninguna pantalla presenta datos obsoletos sin indicar su antigüedad
+  -  128 [contrato-api] › specs\06-seguridad-clinica\sc-mapa.spec.ts:383:5 › 06 — Seguridad clínica · mapa SC-01…SC-24 › SC-01 … SC-12 — bloqueantes clínicos › SC-10: El nivel de triage es distinguible sin percepción de color (texto + icono)
+  -  129 [contrato-api] › specs\06-seguridad-clinica\sc-mapa.spec.ts:405:10 › 06 — Seguridad clínica · mapa SC-01…SC-24 › SC-01 … SC-12 — bloqueantes clínicos › SC-11: Los datos capturados offline nunca se pierden al cerrar el navegador o reiniciar la estación
+  -  130 [contrato-api] › specs\06-seguridad-clinica\sc-mapa.spec.ts:412:5 › 06 — Seguridad clínica · mapa SC-01…SC-24 › SC-01 … SC-12 — bloqueantes clínicos › SC-12: El sistema no permite atribuir una nota a un profesional distinto del autor autenticado
+  -  131 [contrato-api] › specs\06-seguridad-clinica\sc-mapa.spec.ts:442:5 › 06 — Seguridad clínica · mapa SC-01…SC-24 › SC-13 … SC-24 — nada bloquea el inicio de la atención (doc 08) › SC-13: Registrar y atender a un paciente inconsciente sin ningún dato de identidad y con el Core caído
+  -  132 [contrato-api] › specs\06-seguridad-clinica\sc-mapa.spec.ts:483:5 › 06 — Seguridad clínica · mapa SC-01…SC-24 › SC-13 … SC-24 — nada bloquea el inicio de la atención (doc 08) › SC-14: Clasificar triage sin ningún dato administrativo
+  -  133 [contrato-api] › specs\06-seguridad-clinica\sc-mapa.spec.ts:499:5 › 06 — Seguridad clínica · mapa SC-01…SC-24 › SC-13 … SC-24 — nada bloquea el inicio de la atención (doc 08) › SC-15: El sexo no tiene valor por omisión en la ruta de ingreso
+  -  134 [contrato-api] › specs\06-seguridad-clinica\sc-mapa.spec.ts:505:5 › 06 — Seguridad clínica · mapa SC-01…SC-24 › SC-13 … SC-24 — nada bloquea el inicio de la atención (doc 08) › SC-16: La edad desconocida no obliga a inventar un número
+  -  135 [contrato-api] › specs\06-seguridad-clinica\sc-mapa.spec.ts:533:5 › 06 — Seguridad clínica · mapa SC-01…SC-24 › SC-13 … SC-24 — nada bloquea el inicio de la atención (doc 08) › SC-17: Dos o más pacientes no identificados simultáneos nunca se confunden
+  -  136 [contrato-api] › specs\06-seguridad-clinica\sc-mapa.spec.ts:546:5 › 06 — Seguridad clínica · mapa SC-01…SC-24 › SC-13 … SC-24 — nada bloquea el inicio de la atención (doc 08) › SC-18: Nunca hay fusión automática de identidades
+  -  137 [contrato-api] › specs\06-seguridad-clinica\sc-mapa.spec.ts:574:5 › 06 — Seguridad clínica · mapa SC-01…SC-24 › SC-13 … SC-24 — nada bloquea el inicio de la atención (doc 08) › SC-19: Ningún fallo de red, de Core, de validación diferida o de sincronización produce un bloqueo en la ruta de ingreso
+  -  138 [contrato-api] › specs\06-seguridad-clinica\sc-mapa.spec.ts:614:5 › 06 — Seguridad clínica · mapa SC-01…SC-24 › SC-13 … SC-24 — nada bloquea el inicio de la atención (doc 08) › SC-20: Un catálogo faltante no impide avanzar
+  -  139 [contrato-api] › specs\06-seguridad-clinica\sc-mapa.spec.ts:639:5 › 06 — Seguridad clínica · mapa SC-01…SC-24 › SC-13 … SC-24 — nada bloquea el inicio de la atención (doc 08) › SC-21: La identidad asignada después no altera ni contradice lo ya registrado
+  -  140 [contrato-api] › specs\06-seguridad-clinica\sc-mapa.spec.ts:691:5 › 06 — Seguridad clínica · mapa SC-01…SC-24 › SC-13 … SC-24 — nada bloquea el inicio de la atención (doc 08) › SC-22: Una vinculación equivocada se corrige sin destruir el expediente
+  -  141 [contrato-api] › specs\06-seguridad-clinica\sc-mapa.spec.ts:821:5 › 06 — Seguridad clínica · mapa SC-01…SC-24 › SC-13 … SC-24 — nada bloquea el inicio de la atención (doc 08) › SC-23: La búsqueda por descripción no divulga a quien no acredita interés legítimo
+  -  142 [contrato-api] › specs\06-seguridad-clinica\sc-mapa.spec.ts:849:5 › 06 — Seguridad clínica · mapa SC-01…SC-24 › SC-13 … SC-24 — nada bloquea el inicio de la atención (doc 08) › SC-24: La hoja de notificación al Ministerio Público se genera fuera de línea y no bloquea
+  -  143 [contrato-api] › specs\06-seguridad-clinica\sc-mapa.spec.ts:918:5 › 06 — Seguridad clínica · mapa SC-01…SC-24 › Multi-tenant (mapa auxiliar M12) › token de otro tenant no lee sujetos del tenant A
+  x  144 [contrato-api] › specs\08-multi-tenant\aislamiento.spec.ts:17:5 › 08 — Multi-tenant · aislamiento › lectura cruzada entre tenants › tenant A no lee pacientes de tenant B (342ms)
+  x  145 [contrato-api] › specs\08-multi-tenant\aislamiento.spec.ts:42:5 › 08 — Multi-tenant · aislamiento › lectura cruzada entre tenants › tenant B no lee encuentro abierto en tenant A (bravo) (344ms)
+  x  146 [contrato-api] › specs\08-multi-tenant\aislamiento.spec.ts:80:3 › 08 — Multi-tenant · aislamiento › manipular recurso ajeno por id inexistente responde 404 (tenant del token) (361ms)
+  -  147 [contrato-api] › specs\08-multi-tenant\aislamiento.spec.ts:90:8 › 08 — Multi-tenant · aislamiento › [pendiente exportaciones] listados y exportaciones no filtran por conteo cruzado — requiere segundo tenant + export
+  x  148 [contrato-api] › specs\09-offline\cola-idempotencia.spec.ts:20:3 › 09 — Offline · cola e idempotencia › reintento del mismo ULID no duplica escritura (344ms)
+  -  149 [contrato-api] › specs\09-offline\cola-idempotencia.spec.ts:47:3 › 09 — Offline · cola e idempotencia › subject.create + encounter.open vía cola sync (idempotente)
+  -  150 [contrato-api] › specs\09-offline\cola-idempotencia.spec.ts:98:8 › 09 — Offline · cola e idempotencia › cola sobrevive cierre de pestaña y reinicio (SC-11 / SS-09) — activo en sc-11-indexeddb.spec.ts (chromium + Vite); API=http://localhost:5080
+  -  151 [contrato-api] › specs\09-offline\cola-idempotencia.spec.ts:105:8 › 09 — Offline · cola e idempotencia › [pendiente Sync por lotes] drenado por lotes sin duplicar al interrumpir (SS-10)
+
+
+  1) [contrato-api] › specs\00-smoke\api-appointments.spec.ts:20:3 › 00 — Contrato API · appointments › GET /api/consulting-rooms lista consultorios de CENTRAL 
+
+    Error: No hay API en http://localhost:5080. Levanta el stack real: `dotnet run --project backend/Api --launch-profile http`. Detalle: apiRequestContext.get: connect ECONNREFUSED ::1:5080
+    Call log:
+      - → GET http://localhost:5080/api/health
+        - user-agent: Playwright/1.62.1 (x64; windows 10.0) node/22.22
+        - accept: */*
+        - accept-encoding: gzip,deflate,br
+
+        at Error: No hay API en http://localhost:5080. Levanta el stack real: `dotnet run --project backend/Api --launch-profile http`. Detalle: apiRequestContext.get: connect ECONNREFUSED ::1:5080
+        at Object.base.extend.salud.auto (C:\Proyectos\AppFabric\MedicalCore\tests\e2e\fixtures\api.ts:122:13)
+
+    Error Context: test-results\00-smoke-api-appointments--69725-sta-consultorios-de-CENTRAL-contrato-api\error-context.md
+
+  2) [contrato-api] › specs\00-smoke\api-audit.spec.ts:16:3 › 00 — Contrato API · auditoría › admin puede listar por actor (200) 
+
+    Error: No hay API en http://localhost:5080. Levanta el stack real: `dotnet run --project backend/Api --launch-profile http`. Detalle: apiRequestContext.get: connect ECONNREFUSED ::1:5080
+    Call log:
+      - → GET http://localhost:5080/api/health
+        - user-agent: Playwright/1.62.1 (x64; windows 10.0) node/22.22
+        - accept: */*
+        - accept-encoding: gzip,deflate,br
+
+        at Error: No hay API en http://localhost:5080. Levanta el stack real: `dotnet run --project backend/Api --launch-profile http`. Detalle: apiRequestContext.get: connect ECONNREFUSED ::1:5080
+        at Object.base.extend.salud.auto (C:\Proyectos\AppFabric\MedicalCore\tests\e2e\fixtures\api.ts:122:13)
+
+    Error Context: test-results\00-smoke-api-audit-00-—-Co-c54bd-puede-listar-por-actor-200--contrato-api\error-context.md
+
+  3) [contrato-api] › specs\00-smoke\api-auth.spec.ts:24:3 › 00 — Contrato API · autenticación › login válido devuelve accessToken con claim tenant_id y cookie mc_refresh httponly 
+
+    Error: No hay API en http://localhost:5080. Levanta el stack real: `dotnet run --project backend/Api --launch-profile http`. Detalle: apiRequestContext.get: connect ECONNREFUSED ::1:5080
+    Call log:
+      - → GET http://localhost:5080/api/health
+        - user-agent: Playwright/1.62.1 (x64; windows 10.0) node/22.22
+        - accept: */*
+        - accept-encoding: gzip,deflate,br
+
+        at Error: No hay API en http://localhost:5080. Levanta el stack real: `dotnet run --project backend/Api --launch-profile http`. Detalle: apiRequestContext.get: connect ECONNREFUSED ::1:5080
+        at Object.base.extend.salud.auto (C:\Proyectos\AppFabric\MedicalCore\tests\e2e\fixtures\api.ts:122:13)
+
+    Error Context: test-results\00-smoke-api-auth-00-—-Con-fc520--cookie-mc-refresh-httponly-contrato-api\error-context.md
+
+  4) [contrato-api] › specs\00-smoke\api-branches.spec.ts:12:3 › 00 — Contrato API · establecimiento / sucursales (M11) › GET /api/tenant/profile devuelve el tenant del token 
+
+    Error: No hay API en http://localhost:5080. Levanta el stack real: `dotnet run --project backend/Api --launch-profile http`. Detalle: apiRequestContext.get: connect ECONNREFUSED ::1:5080
+    Call log:
+      - → GET http://localhost:5080/api/health
+        - user-agent: Playwright/1.62.1 (x64; windows 10.0) node/22.22
+        - accept: */*
+        - accept-encoding: gzip,deflate,br
+
+        at Error: No hay API en http://localhost:5080. Levanta el stack real: `dotnet run --project backend/Api --launch-profile http`. Detalle: apiRequestContext.get: connect ECONNREFUSED ::1:5080
+        at Object.base.extend.salud.auto (C:\Proyectos\AppFabric\MedicalCore\tests\e2e\fixtures\api.ts:122:13)
+
+    Error Context: test-results\00-smoke-api-branches-00-—-738d8-evuelve-el-tenant-del-token-contrato-api\error-context.md
+
+  5) [contrato-api] › specs\00-smoke\api-branches.spec.ts:24:3 › 00 — Contrato API · establecimiento / sucursales (M11) › GET /api/branches lista sucursales del tenant autenticado 
+
+    Error: No hay API en http://localhost:5080. Levanta el stack real: `dotnet run --project backend/Api --launch-profile http`. Detalle: apiRequestContext.get: connect ECONNREFUSED ::1:5080
+    Call log:
+      - → GET http://localhost:5080/api/health
+        - user-agent: Playwright/1.62.1 (x64; windows 10.0) node/22.22
+        - accept: */*
+        - accept-encoding: gzip,deflate,br
+
+        at Error: No hay API en http://localhost:5080. Levanta el stack real: `dotnet run --project backend/Api --launch-profile http`. Detalle: apiRequestContext.get: connect ECONNREFUSED ::1:5080
+        at Object.base.extend.salud.auto (C:\Proyectos\AppFabric\MedicalCore\tests\e2e\fixtures\api.ts:122:13)
+
+    Error Context: test-results\00-smoke-api-branches-00-—-8f966-ales-del-tenant-autenticado-contrato-api\error-context.md
+
+  6) [contrato-api] › specs\00-smoke\api-branches.spec.ts:39:3 › 00 — Contrato API · establecimiento / sucursales (M11) › GET /api/branches/{id} de la sucursal demo responde 200 
+
+    Error: No hay API en http://localhost:5080. Levanta el stack real: `dotnet run --project backend/Api --launch-profile http`. Detalle: apiRequestContext.get: connect ECONNREFUSED ::1:5080
+    Call log:
+      - → GET http://localhost:5080/api/health
+        - user-agent: Playwright/1.62.1 (x64; windows 10.0) node/22.22
+        - accept: */*
+        - accept-encoding: gzip,deflate,br
+
+        at Error: No hay API en http://localhost:5080. Levanta el stack real: `dotnet run --project backend/Api --launch-profile http`. Detalle: apiRequestContext.get: connect ECONNREFUSED ::1:5080
+        at Object.base.extend.salud.auto (C:\Proyectos\AppFabric\MedicalCore\tests\e2e\fixtures\api.ts:122:13)
+
+    Error Context: test-results\00-smoke-api-branches-00-—-3d46a--sucursal-demo-responde-200-contrato-api\error-context.md
+
+  7) [contrato-api] › specs\00-smoke\api-branches.spec.ts:50:3 › 00 — Contrato API · establecimiento / sucursales (M11) › GET /api/branches/{id} inexistente responde 404 
+
+    Error: No hay API en http://localhost:5080. Levanta el stack real: `dotnet run --project backend/Api --launch-profile http`. Detalle: apiRequestContext.get: connect ECONNREFUSED ::1:5080
+    Call log:
+      - → GET http://localhost:5080/api/health
+        - user-agent: Playwright/1.62.1 (x64; windows 10.0) node/22.22
+        - accept: */*
+        - accept-encoding: gzip,deflate,br
+
+        at Error: No hay API en http://localhost:5080. Levanta el stack real: `dotnet run --project backend/Api --launch-profile http`. Detalle: apiRequestContext.get: connect ECONNREFUSED ::1:5080
+        at Object.base.extend.salud.auto (C:\Proyectos\AppFabric\MedicalCore\tests\e2e\fixtures\api.ts:122:13)
+
+    Error Context: test-results\00-smoke-api-branches-00-—-4a582-id-inexistente-responde-404-contrato-api\error-context.md
+
+  8) [contrato-api] › specs\00-smoke\api-branches.spec.ts:58:3 › 00 — Contrato API · establecimiento / sucursales (M11) › PUT con BranchId nuevo hace alta en el tenant sin inventar FacilityType 
+
+    Error: No hay API en http://localhost:5080. Levanta el stack real: `dotnet run --project backend/Api --launch-profile http`. Detalle: apiRequestContext.get: connect ECONNREFUSED ::1:5080
+    Call log:
+      - → GET http://localhost:5080/api/health
+        - user-agent: Playwright/1.62.1 (x64; windows 10.0) node/22.22
+        - accept: */*
+        - accept-encoding: gzip,deflate,br
+
+        at Error: No hay API en http://localhost:5080. Levanta el stack real: `dotnet run --project backend/Api --launch-profile http`. Detalle: apiRequestContext.get: connect ECONNREFUSED ::1:5080
+        at Object.base.extend.salud.auto (C:\Proyectos\AppFabric\MedicalCore\tests\e2e\fixtures\api.ts:122:13)
+
+    Error Context: test-results\00-smoke-api-branches-00-—-f8f41-t-sin-inventar-FacilityType-contrato-api\error-context.md
+
+  9) [contrato-api] › specs\00-smoke\api-branches.spec.ts:83:3 › 00 — Contrato API · establecimiento / sucursales (M11) › PUT actualiza domicilio preservando FacilityType/HasEmergencyService en null 
+
+    Error: No hay API en http://localhost:5080. Levanta el stack real: `dotnet run --project backend/Api --launch-profile http`. Detalle: apiRequestContext.get: connect ECONNREFUSED ::1:5080
+    Call log:
+      - → GET http://localhost:5080/api/health
+        - user-agent: Playwright/1.62.1 (x64; windows 10.0) node/22.22
+        - accept: */*
+        - accept-encoding: gzip,deflate,br
+
+        at Error: No hay API en http://localhost:5080. Levanta el stack real: `dotnet run --project backend/Api --launch-profile http`. Detalle: apiRequestContext.get: connect ECONNREFUSED ::1:5080
+        at Object.base.extend.salud.auto (C:\Proyectos\AppFabric\MedicalCore\tests\e2e\fixtures\api.ts:122:13)
+
+    Error Context: test-results\00-smoke-api-branches-00-—-c956f-HasEmergencyService-en-null-contrato-api\error-context.md
+
+  10) [contrato-api] › specs\00-smoke\api-branches.spec.ts:121:3 › 00 — Contrato API · establecimiento / sucursales (M11) › endpoints de branches/tenant rechazan sin token 
+
+    Error: No hay API en http://localhost:5080. Levanta el stack real: `dotnet run --project backend/Api --launch-profile http`. Detalle: apiRequestContext.get: connect ECONNREFUSED ::1:5080
+    Call log:
+      - → GET http://localhost:5080/api/health
+        - user-agent: Playwright/1.62.1 (x64; windows 10.0) node/22.22
+        - accept: */*
+        - accept-encoding: gzip,deflate,br
+
+        at Error: No hay API en http://localhost:5080. Levanta el stack real: `dotnet run --project backend/Api --launch-profile http`. Detalle: apiRequestContext.get: connect ECONNREFUSED ::1:5080
+        at Object.base.extend.salud.auto (C:\Proyectos\AppFabric\MedicalCore\tests\e2e\fixtures\api.ts:122:13)
+
+    Error Context: test-results\00-smoke-api-branches-00-—-3d763-s-tenant-rechazan-sin-token-contrato-api\error-context.md
+
+  11) [contrato-api] › specs\00-smoke\api-branches.spec.ts:142:3 › 08 — Multi-tenant · sucursales (PUT/GET cruzado → 404) › token del tenant B no lee ni actualiza sucursales del tenant A (404, no 403) 
+
+    Error: No hay API en http://localhost:5080. Levanta el stack real: `dotnet run --project backend/Api --launch-profile http`. Detalle: apiRequestContext.get: connect ECONNREFUSED ::1:5080
+    Call log:
+      - → GET http://localhost:5080/api/health
+        - user-agent: Playwright/1.62.1 (x64; windows 10.0) node/22.22
+        - accept: */*
+        - accept-encoding: gzip,deflate,br
+
+        at Error: No hay API en http://localhost:5080. Levanta el stack real: `dotnet run --project backend/Api --launch-profile http`. Detalle: apiRequestContext.get: connect ECONNREFUSED ::1:5080
+        at Object.base.extend.salud.auto (C:\Proyectos\AppFabric\MedicalCore\tests\e2e\fixtures\api.ts:122:13)
+
+    Error Context: test-results\00-smoke-api-branches-08-—-db58b-es-del-tenant-A-404-no-403--contrato-api\error-context.md
+
+  12) [contrato-api] › specs\00-smoke\api-clinical-queue-hub.spec.ts:54:3 › 00 — Contrato hub · clinical-queue › negotiate sin token responde 401 
+
+    Error: No hay API en http://localhost:5080. Levanta el stack real: `dotnet run --project backend/Api --launch-profile http`. Detalle: apiRequestContext.get: connect ECONNREFUSED ::1:5080
+    Call log:
+      - → GET http://localhost:5080/api/health
+        - user-agent: Playwright/1.62.1 (x64; windows 10.0) node/22.22
+        - accept: */*
+        - accept-encoding: gzip,deflate,br
+
+        at Error: No hay API en http://localhost:5080. Levanta el stack real: `dotnet run --project backend/Api --launch-profile http`. Detalle: apiRequestContext.get: connect ECONNREFUSED ::1:5080
+        at Object.base.extend.salud.auto (C:\Proyectos\AppFabric\MedicalCore\tests\e2e\fixtures\api.ts:122:13)
+
+    Error Context: test-results\00-smoke-api-clinical-queu-a5a28-iate-sin-token-responde-401-contrato-api\error-context.md
+
+  13) [contrato-api] › specs\00-smoke\api-clinical-record.spec.ts:18:3 › 00 — Contrato API · clinical record (expediente) › GET record asegura expediente; alergias no_interrogado; audit record.read 
+
+    Error: No hay API en http://localhost:5080. Levanta el stack real: `dotnet run --project backend/Api --launch-profile http`. Detalle: apiRequestContext.get: connect ECONNREFUSED ::1:5080
+    Call log:
+      - → GET http://localhost:5080/api/health
+        - user-agent: Playwright/1.62.1 (x64; windows 10.0) node/22.22
+        - accept: */*
+        - accept-encoding: gzip,deflate,br
+
+        at Error: No hay API en http://localhost:5080. Levanta el stack real: `dotnet run --project backend/Api --launch-profile http`. Detalle: apiRequestContext.get: connect ECONNREFUSED ::1:5080
+        at Object.base.extend.salud.auto (C:\Proyectos\AppFabric\MedicalCore\tests\e2e\fixtures\api.ts:122:13)
+
+    Error Context: test-results\00-smoke-api-clinical-reco-d5e7e-terrogado-audit-record-read-contrato-api\error-context.md
+
+  14) [contrato-api] › specs\00-smoke\api-encounters.spec.ts:18:3 › 00 — Contrato API · encounters › POST /api/encounters con subjectId+branchId responde 200; MP null 
+
+    Error: No hay API en http://localhost:5080. Levanta el stack real: `dotnet run --project backend/Api --launch-profile http`. Detalle: apiRequestContext.get: connect ECONNREFUSED ::1:5080
+    Call log:
+      - → GET http://localhost:5080/api/health
+        - user-agent: Playwright/1.62.1 (x64; windows 10.0) node/22.22
+        - accept: */*
+        - accept-encoding: gzip,deflate,br
+
+        at Error: No hay API en http://localhost:5080. Levanta el stack real: `dotnet run --project backend/Api --launch-profile http`. Detalle: apiRequestContext.get: connect ECONNREFUSED ::1:5080
+        at Object.base.extend.salud.auto (C:\Proyectos\AppFabric\MedicalCore\tests\e2e\fixtures\api.ts:122:13)
+
+    Error Context: test-results\00-smoke-api-encounters-00-f21f4-anchId-responde-200-MP-null-contrato-api\error-context.md
+
+  15) [contrato-api] › specs\00-smoke\api-health.spec.ts:8:3 › 00 — Contrato API · salud del ambiente › GET /api/health responde success:true y expone el perfil de plataforma 
+
+    Error: No hay API en http://localhost:5080. Levanta el stack real: `dotnet run --project backend/Api --launch-profile http`. Detalle: apiRequestContext.get: connect ECONNREFUSED ::1:5080
+    Call log:
+      - → GET http://localhost:5080/api/health
+        - user-agent: Playwright/1.62.1 (x64; windows 10.0) node/22.22
+        - accept: */*
+        - accept-encoding: gzip,deflate,br
+
+        at Error: No hay API en http://localhost:5080. Levanta el stack real: `dotnet run --project backend/Api --launch-profile http`. Detalle: apiRequestContext.get: connect ECONNREFUSED ::1:5080
+        at Object.base.extend.salud.auto (C:\Proyectos\AppFabric\MedicalCore\tests\e2e\fixtures\api.ts:122:13)
+
+    Error Context: test-results\00-smoke-api-health-00-—-C-93bf3-one-el-perfil-de-plataforma-contrato-api\error-context.md
+
+  16) [contrato-api] › specs\00-smoke\api-health.spec.ts:23:3 › 00 — Contrato API · salud del ambiente › el ambiente bajo prueba no admite datos de pacientes reales 
+
+    Error: No hay API en http://localhost:5080. Levanta el stack real: `dotnet run --project backend/Api --launch-profile http`. Detalle: apiRequestContext.get: connect ECONNREFUSED ::1:5080
+    Call log:
+      - → GET http://localhost:5080/api/health
+        - user-agent: Playwright/1.62.1 (x64; windows 10.0) node/22.22
+        - accept: */*
+        - accept-encoding: gzip,deflate,br
+
+        at Error: No hay API en http://localhost:5080. Levanta el stack real: `dotnet run --project backend/Api --launch-profile http`. Detalle: apiRequestContext.get: connect ECONNREFUSED ::1:5080
+        at Object.base.extend.salud.auto (C:\Proyectos\AppFabric\MedicalCore\tests\e2e\fixtures\api.ts:122:13)
+
+    Error Context: test-results\00-smoke-api-health-00-—-C-b529f-e-datos-de-pacientes-reales-contrato-api\error-context.md
+
+  17) [contrato-api] › specs\00-smoke\api-health.spec.ts:31:3 › 00 — Contrato API · salud del ambiente › el ambiente bajo prueba no es Production 
+
+    Error: No hay API en http://localhost:5080. Levanta el stack real: `dotnet run --project backend/Api --launch-profile http`. Detalle: apiRequestContext.get: connect ECONNREFUSED ::1:5080
+    Call log:
+      - → GET http://localhost:5080/api/health
+        - user-agent: Playwright/1.62.1 (x64; windows 10.0) node/22.22
+        - accept: */*
+        - accept-encoding: gzip,deflate,br
+
+        at Error: No hay API en http://localhost:5080. Levanta el stack real: `dotnet run --project backend/Api --launch-profile http`. Detalle: apiRequestContext.get: connect ECONNREFUSED ::1:5080
+        at Object.base.extend.salud.auto (C:\Proyectos\AppFabric\MedicalCore\tests\e2e\fixtures\api.ts:122:13)
+
+    Error Context: test-results\00-smoke-api-health-00-—-C-d62d3-ajo-prueba-no-es-Production-contrato-api\error-context.md
+
+  18) [contrato-api] › specs\00-smoke\api-multi-tenant.spec.ts:13:3 › 00 — Contrato API · aislamiento multi-tenant › el tenant del token corresponde al tenant autenticado 
+
+    Error: No hay API en http://localhost:5080. Levanta el stack real: `dotnet run --project backend/Api --launch-profile http`. Detalle: apiRequestContext.get: connect ECONNREFUSED ::1:5080
+    Call log:
+      - → GET http://localhost:5080/api/health
+        - user-agent: Playwright/1.62.1 (x64; windows 10.0) node/22.22
+        - accept: */*
+        - accept-encoding: gzip,deflate,br
+
+        at Error: No hay API en http://localhost:5080. Levanta el stack real: `dotnet run --project backend/Api --launch-profile http`. Detalle: apiRequestContext.get: connect ECONNREFUSED ::1:5080
+        at Object.base.extend.salud.auto (C:\Proyectos\AppFabric\MedicalCore\tests\e2e\fixtures\api.ts:122:13)
+
+    Error Context: test-results\00-smoke-api-multi-tenant--0eb71-ponde-al-tenant-autenticado-contrato-api\error-context.md
+
+  19) [contrato-api] › specs\00-smoke\api-multi-tenant.spec.ts:23:3 › 00 — Contrato API · aislamiento multi-tenant › un dispositivo registrado sólo se lee con el token de su tenant 
+
+    Error: No hay API en http://localhost:5080. Levanta el stack real: `dotnet run --project backend/Api --launch-profile http`. Detalle: apiRequestContext.get: connect ECONNREFUSED ::1:5080
+    Call log:
+      - → GET http://localhost:5080/api/health
+        - user-agent: Playwright/1.62.1 (x64; windows 10.0) node/22.22
+        - accept: */*
+        - accept-encoding: gzip,deflate,br
+
+        at Error: No hay API en http://localhost:5080. Levanta el stack real: `dotnet run --project backend/Api --launch-profile http`. Detalle: apiRequestContext.get: connect ECONNREFUSED ::1:5080
+        at Object.base.extend.salud.auto (C:\Proyectos\AppFabric\MedicalCore\tests\e2e\fixtures\api.ts:122:13)
+
+    Error Context: test-results\00-smoke-api-multi-tenant--fb350-e-con-el-token-de-su-tenant-contrato-api\error-context.md
+
+  20) [contrato-api] › specs\00-smoke\api-multi-tenant.spec.ts:50:3 › 00 — Contrato API · aislamiento multi-tenant › endpoints con TenantId de claims rechazan petición sin token 
+
+    Error: No hay API en http://localhost:5080. Levanta el stack real: `dotnet run --project backend/Api --launch-profile http`. Detalle: apiRequestContext.get: connect ECONNREFUSED ::1:5080
+    Call log:
+      - → GET http://localhost:5080/api/health
+        - user-agent: Playwright/1.62.1 (x64; windows 10.0) node/22.22
+        - accept: */*
+        - accept-encoding: gzip,deflate,br
+
+        at Error: No hay API en http://localhost:5080. Levanta el stack real: `dotnet run --project backend/Api --launch-profile http`. Detalle: apiRequestContext.get: connect ECONNREFUSED ::1:5080
+        at Object.base.extend.salud.auto (C:\Proyectos\AppFabric\MedicalCore\tests\e2e\fixtures\api.ts:122:13)
+
+    Error Context: test-results\00-smoke-api-multi-tenant--1ce23-rechazan-petición-sin-token-contrato-api\error-context.md
+
+  21) [contrato-api] › specs\00-smoke\api-multi-tenant.spec.ts:65:3 › 00 — Contrato API · lectura cruzada entre tenants › un token del tenant A no lee datos del tenant B 
+
+    Error: No hay API en http://localhost:5080. Levanta el stack real: `dotnet run --project backend/Api --launch-profile http`. Detalle: apiRequestContext.get: connect ECONNREFUSED ::1:5080
+    Call log:
+      - → GET http://localhost:5080/api/health
+        - user-agent: Playwright/1.62.1 (x64; windows 10.0) node/22.22
+        - accept: */*
+        - accept-encoding: gzip,deflate,br
+
+        at Error: No hay API en http://localhost:5080. Levanta el stack real: `dotnet run --project backend/Api --launch-profile http`. Detalle: apiRequestContext.get: connect ECONNREFUSED ::1:5080
+        at Object.base.extend.salud.auto (C:\Proyectos\AppFabric\MedicalCore\tests\e2e\fixtures\api.ts:122:13)
+
+    Error Context: test-results\00-smoke-api-multi-tenant--819ac-A-no-lee-datos-del-tenant-B-contrato-api\error-context.md
+
+  22) [contrato-api] › specs\00-smoke\api-notes.spec.ts:41:3 › 00 — Contrato API · clinical notes (consulta/firma) › POST create + GET list; firma con médico (cédula); addendum; PUT 405 
+
+    Error: No hay API en http://localhost:5080. Levanta el stack real: `dotnet run --project backend/Api --launch-profile http`. Detalle: apiRequestContext.get: connect ECONNREFUSED ::1:5080
+    Call log:
+      - → GET http://localhost:5080/api/health
+        - user-agent: Playwright/1.62.1 (x64; windows 10.0) node/22.22
+        - accept: */*
+        - accept-encoding: gzip,deflate,br
+
+        at Error: No hay API en http://localhost:5080. Levanta el stack real: `dotnet run --project backend/Api --launch-profile http`. Detalle: apiRequestContext.get: connect ECONNREFUSED ::1:5080
+        at Object.base.extend.salud.auto (C:\Proyectos\AppFabric\MedicalCore\tests\e2e\fixtures\api.ts:122:13)
+
+    Error Context: test-results\00-smoke-api-notes-00-—-Co-c71b0-ico-cédula-addendum-PUT-405-contrato-api\error-context.md
+
+  23) [contrato-api] › specs\00-smoke\api-prescriptions.spec.ts:58:3 › 00 — Contrato API · prescriptions (M8) › 409 sin captura alérgica; 200 tras Set (incluso no_interrogado); 422 controlado; firma 
+
+    Error: No hay API en http://localhost:5080. Levanta el stack real: `dotnet run --project backend/Api --launch-profile http`. Detalle: apiRequestContext.get: connect ECONNREFUSED ::1:5080
+    Call log:
+      - → GET http://localhost:5080/api/health
+        - user-agent: Playwright/1.62.1 (x64; windows 10.0) node/22.22
+        - accept: */*
+        - accept-encoding: gzip,deflate,br
+
+        at Error: No hay API en http://localhost:5080. Levanta el stack real: `dotnet run --project backend/Api --launch-profile http`. Detalle: apiRequestContext.get: connect ECONNREFUSED ::1:5080
+        at Object.base.extend.salud.auto (C:\Proyectos\AppFabric\MedicalCore\tests\e2e\fixtures\api.ts:122:13)
+
+    Error Context: test-results\00-smoke-api-prescriptions-d7a42-rogado-422-controlado-firma-contrato-api\error-context.md
+
+  24) [contrato-api] › specs\00-smoke\api-professionals.spec.ts:17:3 › 00 — Contrato API · professionals / specialties › admin lista especialidades y profesionales del seed 
+
+    Error: No hay API en http://localhost:5080. Levanta el stack real: `dotnet run --project backend/Api --launch-profile http`. Detalle: apiRequestContext.get: connect ECONNREFUSED ::1:5080
+    Call log:
+      - → GET http://localhost:5080/api/health
+        - user-agent: Playwright/1.62.1 (x64; windows 10.0) node/22.22
+        - accept: */*
+        - accept-encoding: gzip,deflate,br
+
+        at Error: No hay API en http://localhost:5080. Levanta el stack real: `dotnet run --project backend/Api --launch-profile http`. Detalle: apiRequestContext.get: connect ECONNREFUSED ::1:5080
+        at Object.base.extend.salud.auto (C:\Proyectos\AppFabric\MedicalCore\tests\e2e\fixtures\api.ts:122:13)
+
+    Error Context: test-results\00-smoke-api-professionals-be6ff-es-y-profesionales-del-seed-contrato-api\error-context.md
+
+  25) [contrato-api] › specs\00-smoke\api-subjects.spec.ts:20:3 › 00 — Contrato API · subjects › POST /api/subjects con sólo branchId responde 200 
+
+    Error: No hay API en http://localhost:5080. Levanta el stack real: `dotnet run --project backend/Api --launch-profile http`. Detalle: apiRequestContext.get: connect ECONNREFUSED ::1:5080
+    Call log:
+      - → GET http://localhost:5080/api/health
+        - user-agent: Playwright/1.62.1 (x64; windows 10.0) node/22.22
+        - accept: */*
+        - accept-encoding: gzip,deflate,br
+
+        at Error: No hay API en http://localhost:5080. Levanta el stack real: `dotnet run --project backend/Api --launch-profile http`. Detalle: apiRequestContext.get: connect ECONNREFUSED ::1:5080
+        at Object.base.extend.salud.auto (C:\Proyectos\AppFabric\MedicalCore\tests\e2e\fixtures\api.ts:122:13)
+
+    Error Context: test-results\00-smoke-api-subjects-00-—-24d17--sólo-branchId-responde-200-contrato-api\error-context.md
+
+  26) [contrato-api] › specs\00-smoke\api-sync-idempotencia.spec.ts:11:3 › 00 — Contrato API · cola e idempotencia › POST /api/sync/commands sin token responde 401 
+
+    Error: No hay API en http://localhost:5080. Levanta el stack real: `dotnet run --project backend/Api --launch-profile http`. Detalle: apiRequestContext.get: connect ECONNREFUSED ::1:5080
+    Call log:
+      - → GET http://localhost:5080/api/health
+        - user-agent: Playwright/1.62.1 (x64; windows 10.0) node/22.22
+        - accept: */*
+        - accept-encoding: gzip,deflate,br
+
+        at Error: No hay API en http://localhost:5080. Levanta el stack real: `dotnet run --project backend/Api --launch-profile http`. Detalle: apiRequestContext.get: connect ECONNREFUSED ::1:5080
+        at Object.base.extend.salud.auto (C:\Proyectos\AppFabric\MedicalCore\tests\e2e\fixtures\api.ts:122:13)
+
+    Error Context: test-results\00-smoke-api-sync-idempote-da866-ands-sin-token-responde-401-contrato-api\error-context.md
+
+  27) [contrato-api] › specs\00-smoke\api-sync-idempotencia.spec.ts:23:3 › 00 — Contrato API · cola e idempotencia › el mismo IdempotencyKey repetido no duplica efecto 
+
+    Error: No hay API en http://localhost:5080. Levanta el stack real: `dotnet run --project backend/Api --launch-profile http`. Detalle: apiRequestContext.get: connect ECONNREFUSED ::1:5080
+    Call log:
+      - → GET http://localhost:5080/api/health
+        - user-agent: Playwright/1.62.1 (x64; windows 10.0) node/22.22
+        - accept: */*
+        - accept-encoding: gzip,deflate,br
+
+        at Error: No hay API en http://localhost:5080. Levanta el stack real: `dotnet run --project backend/Api --launch-profile http`. Detalle: apiRequestContext.get: connect ECONNREFUSED ::1:5080
+        at Object.base.extend.salud.auto (C:\Proyectos\AppFabric\MedicalCore\tests\e2e\fixtures\api.ts:122:13)
+
+    Error Context: test-results\00-smoke-api-sync-idempote-df7f0--repetido-no-duplica-efecto-contrato-api\error-context.md
+
+  28) [contrato-api] › specs\00-smoke\api-sync-idempotencia.spec.ts:59:3 › 00 — Contrato API · cola e idempotencia › claves distintas producen efectos distintos 
+
+    Error: No hay API en http://localhost:5080. Levanta el stack real: `dotnet run --project backend/Api --launch-profile http`. Detalle: apiRequestContext.get: connect ECONNREFUSED ::1:5080
+    Call log:
+      - → GET http://localhost:5080/api/health
+        - user-agent: Playwright/1.62.1 (x64; windows 10.0) node/22.22
+        - accept: */*
+        - accept-encoding: gzip,deflate,br
+
+        at Error: No hay API en http://localhost:5080. Levanta el stack real: `dotnet run --project backend/Api --launch-profile http`. Detalle: apiRequestContext.get: connect ECONNREFUSED ::1:5080
+        at Object.base.extend.salud.auto (C:\Proyectos\AppFabric\MedicalCore\tests\e2e\fixtures\api.ts:122:13)
+
+    Error Context: test-results\00-smoke-api-sync-idempote-2691c--producen-efectos-distintos-contrato-api\error-context.md
+
+  29) [contrato-api] › specs\00-smoke\api-sync-idempotencia.spec.ts:83:3 › 00 — Contrato API · cola e idempotencia › IdempotencyKey vacía se rechaza con 400 
+
+    Error: No hay API en http://localhost:5080. Levanta el stack real: `dotnet run --project backend/Api --launch-profile http`. Detalle: apiRequestContext.get: connect ECONNREFUSED ::1:5080
+    Call log:
+      - → GET http://localhost:5080/api/health
+        - user-agent: Playwright/1.62.1 (x64; windows 10.0) node/22.22
+        - accept: */*
+        - accept-encoding: gzip,deflate,br
+
+        at Error: No hay API en http://localhost:5080. Levanta el stack real: `dotnet run --project backend/Api --launch-profile http`. Detalle: apiRequestContext.get: connect ECONNREFUSED ::1:5080
+        at Object.base.extend.salud.auto (C:\Proyectos\AppFabric\MedicalCore\tests\e2e\fixtures\api.ts:122:13)
+
+    Error Context: test-results\00-smoke-api-sync-idempote-8be55-ey-vacía-se-rechaza-con-400-contrato-api\error-context.md
+
+  30) [contrato-api] › specs\00-smoke\api-sync-idempotencia.spec.ts:99:3 › 00 — Contrato API · cola e idempotencia › CommandType vacío se rechaza con 400 
+
+    Error: No hay API en http://localhost:5080. Levanta el stack real: `dotnet run --project backend/Api --launch-profile http`. Detalle: apiRequestContext.get: connect ECONNREFUSED ::1:5080
+    Call log:
+      - → GET http://localhost:5080/api/health
+        - user-agent: Playwright/1.62.1 (x64; windows 10.0) node/22.22
+        - accept: */*
+        - accept-encoding: gzip,deflate,br
+
+        at Error: No hay API en http://localhost:5080. Levanta el stack real: `dotnet run --project backend/Api --launch-profile http`. Detalle: apiRequestContext.get: connect ECONNREFUSED ::1:5080
+        at Object.base.extend.salud.auto (C:\Proyectos\AppFabric\MedicalCore\tests\e2e\fixtures\api.ts:122:13)
+
+    Error Context: test-results\00-smoke-api-sync-idempote-087f7-pe-vacío-se-rechaza-con-400-contrato-api\error-context.md
+
+  31) [contrato-api] › specs\00-smoke\api-sync-idempotencia.spec.ts:115:3 › 00 — Contrato API · cola e idempotencia › subject.create vía sync acepta y crea sujeto (idempotente) 
+
+    Error: No hay API en http://localhost:5080. Levanta el stack real: `dotnet run --project backend/Api --launch-profile http`. Detalle: apiRequestContext.get: connect ECONNREFUSED ::1:5080
+    Call log:
+      - → GET http://localhost:5080/api/health
+        - user-agent: Playwright/1.62.1 (x64; windows 10.0) node/22.22
+        - accept: */*
+        - accept-encoding: gzip,deflate,br
+
+        at Error: No hay API en http://localhost:5080. Levanta el stack real: `dotnet run --project backend/Api --launch-profile http`. Detalle: apiRequestContext.get: connect ECONNREFUSED ::1:5080
+        at Object.base.extend.salud.auto (C:\Proyectos\AppFabric\MedicalCore\tests\e2e\fixtures\api.ts:122:13)
+
+    Error Context: test-results\00-smoke-api-sync-idempote-e7147--y-crea-sujeto-idempotente--contrato-api\error-context.md
+
+  32) [contrato-api] › specs\00-smoke\api-sync-idempotencia.spec.ts:151:3 › 00 — Contrato API · cola e idempotencia › encounter.open vía sync acepta y es idempotente 
+
+    Error: No hay API en http://localhost:5080. Levanta el stack real: `dotnet run --project backend/Api --launch-profile http`. Detalle: apiRequestContext.get: connect ECONNREFUSED ::1:5080
+    Call log:
+      - → GET http://localhost:5080/api/health
+        - user-agent: Playwright/1.62.1 (x64; windows 10.0) node/22.22
+        - accept: */*
+        - accept-encoding: gzip,deflate,br
+
+        at Error: No hay API en http://localhost:5080. Levanta el stack real: `dotnet run --project backend/Api --launch-profile http`. Detalle: apiRequestContext.get: connect ECONNREFUSED ::1:5080
+        at Object.base.extend.salud.auto (C:\Proyectos\AppFabric\MedicalCore\tests\e2e\fixtures\api.ts:122:13)
+
+    Error Context: test-results\00-smoke-api-sync-idempote-5f95d-ync-acepta-y-es-idempotente-contrato-api\error-context.md
+
+  33) [contrato-api] › specs\00-smoke\api-sync-idempotencia.spec.ts:194:3 › 00 — Contrato API · cola e idempotencia › triage.save Full sin encounterId responde 400 
+
+    Error: No hay API en http://localhost:5080. Levanta el stack real: `dotnet run --project backend/Api --launch-profile http`. Detalle: apiRequestContext.get: connect ECONNREFUSED ::1:5080
+    Call log:
+      - → GET http://localhost:5080/api/health
+        - user-agent: Playwright/1.62.1 (x64; windows 10.0) node/22.22
+        - accept: */*
+        - accept-encoding: gzip,deflate,br
+
+        at Error: No hay API en http://localhost:5080. Levanta el stack real: `dotnet run --project backend/Api --launch-profile http`. Detalle: apiRequestContext.get: connect ECONNREFUSED ::1:5080
+        at Object.base.extend.salud.auto (C:\Proyectos\AppFabric\MedicalCore\tests\e2e\fixtures\api.ts:122:13)
+
+    Error Context: test-results\00-smoke-api-sync-idempote-e4aa8-in-encounterId-responde-400-contrato-api\error-context.md
+
+  34) [contrato-api] › specs\00-smoke\api-sync-idempotencia.spec.ts:210:3 › 00 — Contrato API · cola e idempotencia › appointment.state cancelada sin motivo responde 400 
+
+    Error: No hay API en http://localhost:5080. Levanta el stack real: `dotnet run --project backend/Api --launch-profile http`. Detalle: apiRequestContext.get: connect ECONNREFUSED ::1:5080
+    Call log:
+      - → GET http://localhost:5080/api/health
+        - user-agent: Playwright/1.62.1 (x64; windows 10.0) node/22.22
+        - accept: */*
+        - accept-encoding: gzip,deflate,br
+
+        at Error: No hay API en http://localhost:5080. Levanta el stack real: `dotnet run --project backend/Api --launch-profile http`. Detalle: apiRequestContext.get: connect ECONNREFUSED ::1:5080
+        at Object.base.extend.salud.auto (C:\Proyectos\AppFabric\MedicalCore\tests\e2e\fixtures\api.ts:122:13)
+
+    Error Context: test-results\00-smoke-api-sync-idempote-6c475-ada-sin-motivo-responde-400-contrato-api\error-context.md
+
+  35) [contrato-api] › specs\00-smoke\api-sync-idempotencia.spec.ts:229:3 › 00 — Contrato API · cola e idempotencia › allergyStatus.set vía sync exige subjectId (Full) 
+
+    Error: No hay API en http://localhost:5080. Levanta el stack real: `dotnet run --project backend/Api --launch-profile http`. Detalle: apiRequestContext.get: connect ECONNREFUSED ::1:5080
+    Call log:
+      - → GET http://localhost:5080/api/health
+        - user-agent: Playwright/1.62.1 (x64; windows 10.0) node/22.22
+        - accept: */*
+        - accept-encoding: gzip,deflate,br
+
+        at Error: No hay API en http://localhost:5080. Levanta el stack real: `dotnet run --project backend/Api --launch-profile http`. Detalle: apiRequestContext.get: connect ECONNREFUSED ::1:5080
+        at Object.base.extend.salud.auto (C:\Proyectos\AppFabric\MedicalCore\tests\e2e\fixtures\api.ts:122:13)
+
+    Error Context: test-results\00-smoke-api-sync-idempote-d57e6--sync-exige-subjectId-Full--contrato-api\error-context.md
+
+  36) [contrato-api] › specs\00-smoke\api-triage.spec.ts:18:3 › 00 — Contrato API · triage › GET escala efectiva de sucursal responde 200 con niveles 
+
+    Error: No hay API en http://localhost:5080. Levanta el stack real: `dotnet run --project backend/Api --launch-profile http`. Detalle: apiRequestContext.get: connect ECONNREFUSED ::1:5080
+    Call log:
+      - → GET http://localhost:5080/api/health
+        - user-agent: Playwright/1.62.1 (x64; windows 10.0) node/22.22
+        - accept: */*
+        - accept-encoding: gzip,deflate,br
+
+        at Error: No hay API en http://localhost:5080. Levanta el stack real: `dotnet run --project backend/Api --launch-profile http`. Detalle: apiRequestContext.get: connect ECONNREFUSED ::1:5080
+        at Object.base.extend.salud.auto (C:\Proyectos\AppFabric\MedicalCore\tests\e2e\fixtures\api.ts:122:13)
+
+    Error Context: test-results\00-smoke-api-triage-00-—-C-146a7-al-responde-200-con-niveles-contrato-api\error-context.md
+
+  37) [contrato-api] › specs\01-auth-seguridad\permisos-por-rol.spec.ts:19:3 › 01 — Auth / seguridad · permisos por rol (API) › caja no lee expediente clínico (403) 
+
+    Error: No hay API en http://localhost:5080. Levanta el stack real: `dotnet run --project backend/Api --launch-profile http`. Detalle: apiRequestContext.get: connect ECONNREFUSED ::1:5080
+    Call log:
+      - → GET http://localhost:5080/api/health
+        - user-agent: Playwright/1.62.1 (x64; windows 10.0) node/22.22
+        - accept: */*
+        - accept-encoding: gzip,deflate,br
+
+        at Error: No hay API en http://localhost:5080. Levanta el stack real: `dotnet run --project backend/Api --launch-profile http`. Detalle: apiRequestContext.get: connect ECONNREFUSED ::1:5080
+        at Object.base.extend.salud.auto (C:\Proyectos\AppFabric\MedicalCore\tests\e2e\fixtures\api.ts:122:13)
+
+    Error Context: test-results\01-auth-seguridad-permisos-6366a-lee-expediente-clínico-403--contrato-api\error-context.md
+
+  38) [contrato-api] › specs\02-pacientes\no-identificado.spec.ts:19:3 › 02 — Pacientes · no identificado › ingresa paciente inconsciente sin datos de identidad (API / SC-13 parcial) 
+
+    Error: No hay API en http://localhost:5080. Levanta el stack real: `dotnet run --project backend/Api --launch-profile http`. Detalle: apiRequestContext.get: connect ECONNREFUSED ::1:5080
+    Call log:
+      - → GET http://localhost:5080/api/health
+        - user-agent: Playwright/1.62.1 (x64; windows 10.0) node/22.22
+        - accept: */*
+        - accept-encoding: gzip,deflate,br
+
+        at Error: No hay API en http://localhost:5080. Levanta el stack real: `dotnet run --project backend/Api --launch-profile http`. Detalle: apiRequestContext.get: connect ECONNREFUSED ::1:5080
+        at Object.base.extend.salud.auto (C:\Proyectos\AppFabric\MedicalCore\tests\e2e\fixtures\api.ts:122:13)
+
+    Error Context: test-results\02-pacientes-no-identifica-1e46a-dentidad-API-SC-13-parcial--contrato-api\error-context.md
+
+  39) [contrato-api] › specs\03-triage-urgencias\triage-sin-bloqueo.spec.ts:17:3 › 03 — Triage urgencias · sin bloqueo › clasifica triage sin datos administrativos (SC-14) 
+
+    Error: No hay API en http://localhost:5080. Levanta el stack real: `dotnet run --project backend/Api --launch-profile http`. Detalle: apiRequestContext.get: connect ECONNREFUSED ::1:5080
+    Call log:
+      - → GET http://localhost:5080/api/health
+        - user-agent: Playwright/1.62.1 (x64; windows 10.0) node/22.22
+        - accept: */*
+        - accept-encoding: gzip,deflate,br
+
+        at Error: No hay API en http://localhost:5080. Levanta el stack real: `dotnet run --project backend/Api --launch-profile http`. Detalle: apiRequestContext.get: connect ECONNREFUSED ::1:5080
+        at Object.base.extend.salud.auto (C:\Proyectos\AppFabric\MedicalCore\tests\e2e\fixtures\api.ts:122:13)
+
+    Error Context: test-results\03-triage-urgencias-triage-4c4c8-atos-administrativos-SC-14--contrato-api\error-context.md
+
+  40) [contrato-api] › specs\04-consulta-receta\flujo-consulta.spec.ts:17:3 › 04 — Consulta / receta › alerta de alergia bloqueante antes de prescribir (SC-01) 
+
+    Error: No hay API en http://localhost:5080. Levanta el stack real: `dotnet run --project backend/Api --launch-profile http`. Detalle: apiRequestContext.get: connect ECONNREFUSED ::1:5080
+    Call log:
+      - → GET http://localhost:5080/api/health
+        - user-agent: Playwright/1.62.1 (x64; windows 10.0) node/22.22
+        - accept: */*
+        - accept-encoding: gzip,deflate,br
+
+        at Error: No hay API en http://localhost:5080. Levanta el stack real: `dotnet run --project backend/Api --launch-profile http`. Detalle: apiRequestContext.get: connect ECONNREFUSED ::1:5080
+        at Object.base.extend.salud.auto (C:\Proyectos\AppFabric\MedicalCore\tests\e2e\fixtures\api.ts:122:13)
+
+    Error Context: test-results\04-consulta-receta-flujo-c-7e0ab--antes-de-prescribir-SC-01--contrato-api\error-context.md
+
+  41) [contrato-api] › specs\06-seguridad-clinica\sc-mapa.spec.ts:96:5 › 06 — Seguridad clínica · mapa SC-01…SC-24 › SC-01 … SC-12 — bloqueantes clínicos › SC-01: Las alergias y alertas del paciente se presentan de forma inequívoca antes de emitir una receta 
+
+    Error: No hay API en http://localhost:5080. Levanta el stack real: `dotnet run --project backend/Api --launch-profile http`. Detalle: apiRequestContext.get: connect ECONNREFUSED ::1:5080
+    Call log:
+      - → GET http://localhost:5080/api/health
+        - user-agent: Playwright/1.62.1 (x64; windows 10.0) node/22.22
+        - accept: */*
+        - accept-encoding: gzip,deflate,br
+
+        at Error: No hay API en http://localhost:5080. Levanta el stack real: `dotnet run --project backend/Api --launch-profile http`. Detalle: apiRequestContext.get: connect ECONNREFUSED ::1:5080
+        at Object.base.extend.salud.auto (C:\Proyectos\AppFabric\MedicalCore\tests\e2e\fixtures\api.ts:122:13)
+
+    Error Context: test-results\06-seguridad-clinica-sc-ma-31f14--antes-de-emitir-una-receta-contrato-api\error-context.md
+
+  42) [contrato-api] › specs\08-multi-tenant\aislamiento.spec.ts:17:5 › 08 — Multi-tenant · aislamiento › lectura cruzada entre tenants › tenant A no lee pacientes de tenant B 
+
+    Error: No hay API en http://localhost:5080. Levanta el stack real: `dotnet run --project backend/Api --launch-profile http`. Detalle: apiRequestContext.get: connect ECONNREFUSED ::1:5080
+    Call log:
+      - → GET http://localhost:5080/api/health
+        - user-agent: Playwright/1.62.1 (x64; windows 10.0) node/22.22
+        - accept: */*
+        - accept-encoding: gzip,deflate,br
+
+        at Error: No hay API en http://localhost:5080. Levanta el stack real: `dotnet run --project backend/Api --launch-profile http`. Detalle: apiRequestContext.get: connect ECONNREFUSED ::1:5080
+        at Object.base.extend.salud.auto (C:\Proyectos\AppFabric\MedicalCore\tests\e2e\fixtures\api.ts:122:13)
+
+    Error Context: test-results\08-multi-tenant-aislamient-6c747-o-lee-pacientes-de-tenant-B-contrato-api\error-context.md
+
+  43) [contrato-api] › specs\08-multi-tenant\aislamiento.spec.ts:42:5 › 08 — Multi-tenant · aislamiento › lectura cruzada entre tenants › tenant B no lee encuentro abierto en tenant A (bravo) 
+
+    Error: No hay API en http://localhost:5080. Levanta el stack real: `dotnet run --project backend/Api --launch-profile http`. Detalle: apiRequestContext.get: connect ECONNREFUSED ::1:5080
+    Call log:
+      - → GET http://localhost:5080/api/health
+        - user-agent: Playwright/1.62.1 (x64; windows 10.0) node/22.22
+        - accept: */*
+        - accept-encoding: gzip,deflate,br
+
+        at Error: No hay API en http://localhost:5080. Levanta el stack real: `dotnet run --project backend/Api --launch-profile http`. Detalle: apiRequestContext.get: connect ECONNREFUSED ::1:5080
+        at Object.base.extend.salud.auto (C:\Proyectos\AppFabric\MedicalCore\tests\e2e\fixtures\api.ts:122:13)
+
+    Error Context: test-results\08-multi-tenant-aislamient-23375--abierto-en-tenant-A-bravo--contrato-api\error-context.md
+
+  44) [contrato-api] › specs\08-multi-tenant\aislamiento.spec.ts:80:3 › 08 — Multi-tenant · aislamiento › manipular recurso ajeno por id inexistente responde 404 (tenant del token) 
+
+    Error: No hay API en http://localhost:5080. Levanta el stack real: `dotnet run --project backend/Api --launch-profile http`. Detalle: apiRequestContext.get: connect ECONNREFUSED ::1:5080
+    Call log:
+      - → GET http://localhost:5080/api/health
+        - user-agent: Playwright/1.62.1 (x64; windows 10.0) node/22.22
+        - accept: */*
+        - accept-encoding: gzip,deflate,br
+
+        at Error: No hay API en http://localhost:5080. Levanta el stack real: `dotnet run --project backend/Api --launch-profile http`. Detalle: apiRequestContext.get: connect ECONNREFUSED ::1:5080
+        at Object.base.extend.salud.auto (C:\Proyectos\AppFabric\MedicalCore\tests\e2e\fixtures\api.ts:122:13)
+
+    Error Context: test-results\08-multi-tenant-aislamient-ef628-ponde-404-tenant-del-token--contrato-api\error-context.md
+
+  45) [contrato-api] › specs\09-offline\cola-idempotencia.spec.ts:20:3 › 09 — Offline · cola e idempotencia › reintento del mismo ULID no duplica escritura 
+
+    Error: No hay API en http://localhost:5080. Levanta el stack real: `dotnet run --project backend/Api --launch-profile http`. Detalle: apiRequestContext.get: connect ECONNREFUSED ::1:5080
+    Call log:
+      - → GET http://localhost:5080/api/health
+        - user-agent: Playwright/1.62.1 (x64; windows 10.0) node/22.22
+        - accept: */*
+        - accept-encoding: gzip,deflate,br
+
+        at Error: No hay API en http://localhost:5080. Levanta el stack real: `dotnet run --project backend/Api --launch-profile http`. Detalle: apiRequestContext.get: connect ECONNREFUSED ::1:5080
+        at Object.base.extend.salud.auto (C:\Proyectos\AppFabric\MedicalCore\tests\e2e\fixtures\api.ts:122:13)
+
+    Error Context: test-results\09-offline-cola-idempotenc-11966-o-ULID-no-duplica-escritura-contrato-api\error-context.md
+
+  46) [chromium] › specs\00-smoke\login.spec.ts:33:3 › 00 — Smoke · Login › rechaza credenciales inválidas 
+
+    Error: expect(locator).toBeVisible() failed
+
+    Locator: locator('text=/incorrectos|Por favor ingresa/i')
+    Expected: visible
+    Timeout: 10000ms
+    Error: element(s) not found
+
+    Call log:
+      - Expect "toBeVisible" with timeout 10000ms
+      - waiting for locator('text=/incorrectos|Por favor ingresa/i')
+
+
+       at ..\helpers\assertions.ts:18
+
+      16 | /** Mensaje de error de credenciales en el login. */
+      17 | export async function expectLoginError(page: Page): Promise<void> {
+    > 18 |   await expect(page.locator(sel.login.error)).toBeVisible();
+         |                                               ^
+      19 | }
+      20 |
+      21 | /** Aserción genérica de offline (navigator.onLine). */
+        at expectLoginError (C:\Proyectos\AppFabric\MedicalCore\tests\e2e\helpers\assertions.ts:18:47)
+        at C:\Proyectos\AppFabric\MedicalCore\tests\e2e\specs\00-smoke\login.spec.ts:38:11
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results\00-smoke-login-00-—-Smoke--653ee-haza-credenciales-inválidas-chromium\test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    attachment #2: video (video/webm) ──────────────────────────────────────────────────────────────
+    test-results\00-smoke-login-00-—-Smoke--653ee-haza-credenciales-inválidas-chromium\video.webm
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results\00-smoke-login-00-—-Smoke--653ee-haza-credenciales-inválidas-chromium\error-context.md
+
+  47) [chromium] › specs\00-smoke\login.spec.ts:42:3 › 00 — Smoke · Login › inicia sesión con administrador del mock y llega al dashboard 
+
+    Error: expect(page).toHaveURL(expected) failed
+
+    Expected pattern: /\/app\//
+    Received string:  "http://localhost:5173/login"
+    Timeout: 10000ms
+
+    Call log:
+      - Expect "toHaveURL" with timeout 10000ms
+        23 × locator resolved to <html lang="en">…</html>
+           - unexpected value "http://localhost:5173/login"
+
+
+       at ..\helpers\assertions.ts:13
+
+      11 | /** Tras login exitoso, la app autenticada responde en /app/*. */
+      12 | export async function expectAuthenticatedApp(page: Page): Promise<void> {
+    > 13 |   await expect(page).toHaveURL(/\/app\//);
+         |                      ^
+      14 | }
+      15 |
+      16 | /** Mensaje de error de credenciales en el login. */
+        at expectAuthenticatedApp (C:\Proyectos\AppFabric\MedicalCore\tests\e2e\helpers\assertions.ts:13:22)
+        at C:\Proyectos\AppFabric\MedicalCore\tests\e2e\specs\00-smoke\login.spec.ts:48:11
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results\00-smoke-login-00-—-Smoke--03865-l-mock-y-llega-al-dashboard-chromium\test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    attachment #2: video (video/webm) ──────────────────────────────────────────────────────────────
+    test-results\00-smoke-login-00-—-Smoke--03865-l-mock-y-llega-al-dashboard-chromium\video.webm
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results\00-smoke-login-00-—-Smoke--03865-l-mock-y-llega-al-dashboard-chromium\error-context.md
+
+  47 failed
+    [contrato-api] › specs\00-smoke\api-appointments.spec.ts:20:3 › 00 — Contrato API · appointments › GET /api/consulting-rooms lista consultorios de CENTRAL 
+    [contrato-api] › specs\00-smoke\api-audit.spec.ts:16:3 › 00 — Contrato API · auditoría › admin puede listar por actor (200) 
+    [contrato-api] › specs\00-smoke\api-auth.spec.ts:24:3 › 00 — Contrato API · autenticación › login válido devuelve accessToken con claim tenant_id y cookie mc_refresh httponly 
+    [contrato-api] › specs\00-smoke\api-branches.spec.ts:12:3 › 00 — Contrato API · establecimiento / sucursales (M11) › GET /api/tenant/profile devuelve el tenant del token 
+    [contrato-api] › specs\00-smoke\api-branches.spec.ts:24:3 › 00 — Contrato API · establecimiento / sucursales (M11) › GET /api/branches lista sucursales del tenant autenticado 
+    [contrato-api] › specs\00-smoke\api-branches.spec.ts:39:3 › 00 — Contrato API · establecimiento / sucursales (M11) › GET /api/branches/{id} de la sucursal demo responde 200 
+    [contrato-api] › specs\00-smoke\api-branches.spec.ts:50:3 › 00 — Contrato API · establecimiento / sucursales (M11) › GET /api/branches/{id} inexistente responde 404 
+    [contrato-api] › specs\00-smoke\api-branches.spec.ts:58:3 › 00 — Contrato API · establecimiento / sucursales (M11) › PUT con BranchId nuevo hace alta en el tenant sin inventar FacilityType 
+    [contrato-api] › specs\00-smoke\api-branches.spec.ts:83:3 › 00 — Contrato API · establecimiento / sucursales (M11) › PUT actualiza domicilio preservando FacilityType/HasEmergencyService en null 
+    [contrato-api] › specs\00-smoke\api-branches.spec.ts:121:3 › 00 — Contrato API · establecimiento / sucursales (M11) › endpoints de branches/tenant rechazan sin token 
+    [contrato-api] › specs\00-smoke\api-branches.spec.ts:142:3 › 08 — Multi-tenant · sucursales (PUT/GET cruzado → 404) › token del tenant B no lee ni actualiza sucursales del tenant A (404, no 403) 
+    [contrato-api] › specs\00-smoke\api-clinical-queue-hub.spec.ts:54:3 › 00 — Contrato hub · clinical-queue › negotiate sin token responde 401 
+    [contrato-api] › specs\00-smoke\api-clinical-record.spec.ts:18:3 › 00 — Contrato API · clinical record (expediente) › GET record asegura expediente; alergias no_interrogado; audit record.read 
+    [contrato-api] › specs\00-smoke\api-encounters.spec.ts:18:3 › 00 — Contrato API · encounters › POST /api/encounters con subjectId+branchId responde 200; MP null 
+    [contrato-api] › specs\00-smoke\api-health.spec.ts:8:3 › 00 — Contrato API · salud del ambiente › GET /api/health responde success:true y expone el perfil de plataforma 
+    [contrato-api] › specs\00-smoke\api-health.spec.ts:23:3 › 00 — Contrato API · salud del ambiente › el ambiente bajo prueba no admite datos de pacientes reales 
+    [contrato-api] › specs\00-smoke\api-health.spec.ts:31:3 › 00 — Contrato API · salud del ambiente › el ambiente bajo prueba no es Production 
+    [contrato-api] › specs\00-smoke\api-multi-tenant.spec.ts:13:3 › 00 — Contrato API · aislamiento multi-tenant › el tenant del token corresponde al tenant autenticado 
+    [contrato-api] › specs\00-smoke\api-multi-tenant.spec.ts:23:3 › 00 — Contrato API · aislamiento multi-tenant › un dispositivo registrado sólo se lee con el token de su tenant 
+    [contrato-api] › specs\00-smoke\api-multi-tenant.spec.ts:50:3 › 00 — Contrato API · aislamiento multi-tenant › endpoints con TenantId de claims rechazan petición sin token 
+    [contrato-api] › specs\00-smoke\api-multi-tenant.spec.ts:65:3 › 00 — Contrato API · lectura cruzada entre tenants › un token del tenant A no lee datos del tenant B 
+    [contrato-api] › specs\00-smoke\api-notes.spec.ts:41:3 › 00 — Contrato API · clinical notes (consulta/firma) › POST create + GET list; firma con médico (cédula); addendum; PUT 405 
+    [contrato-api] › specs\00-smoke\api-prescriptions.spec.ts:58:3 › 00 — Contrato API · prescriptions (M8) › 409 sin captura alérgica; 200 tras Set (incluso no_interrogado); 422 controlado; firma 
+    [contrato-api] › specs\00-smoke\api-professionals.spec.ts:17:3 › 00 — Contrato API · professionals / specialties › admin lista especialidades y profesionales del seed 
+    [contrato-api] › specs\00-smoke\api-subjects.spec.ts:20:3 › 00 — Contrato API · subjects › POST /api/subjects con sólo branchId responde 200 
+    [contrato-api] › specs\00-smoke\api-sync-idempotencia.spec.ts:11:3 › 00 — Contrato API · cola e idempotencia › POST /api/sync/commands sin token responde 401 
+    [contrato-api] › specs\00-smoke\api-sync-idempotencia.spec.ts:23:3 › 00 — Contrato API · cola e idempotencia › el mismo IdempotencyKey repetido no duplica efecto 
+    [contrato-api] › specs\00-smoke\api-sync-idempotencia.spec.ts:59:3 › 00 — Contrato API · cola e idempotencia › claves distintas producen efectos distintos 
+    [contrato-api] › specs\00-smoke\api-sync-idempotencia.spec.ts:83:3 › 00 — Contrato API · cola e idempotencia › IdempotencyKey vacía se rechaza con 400 
+    [contrato-api] › specs\00-smoke\api-sync-idempotencia.spec.ts:99:3 › 00 — Contrato API · cola e idempotencia › CommandType vacío se rechaza con 400 
+    [contrato-api] › specs\00-smoke\api-sync-idempotencia.spec.ts:115:3 › 00 — Contrato API · cola e idempotencia › subject.create vía sync acepta y crea sujeto (idempotente) 
+    [contrato-api] › specs\00-smoke\api-sync-idempotencia.spec.ts:151:3 › 00 — Contrato API · cola e idempotencia › encounter.open vía sync acepta y es idempotente 
+    [contrato-api] › specs\00-smoke\api-sync-idempotencia.spec.ts:194:3 › 00 — Contrato API · cola e idempotencia › triage.save Full sin encounterId responde 400 
+    [contrato-api] › specs\00-smoke\api-sync-idempotencia.spec.ts:210:3 › 00 — Contrato API · cola e idempotencia › appointment.state cancelada sin motivo responde 400 
+    [contrato-api] › specs\00-smoke\api-sync-idempotencia.spec.ts:229:3 › 00 — Contrato API · cola e idempotencia › allergyStatus.set vía sync exige subjectId (Full) 
+    [contrato-api] › specs\00-smoke\api-triage.spec.ts:18:3 › 00 — Contrato API · triage › GET escala efectiva de sucursal responde 200 con niveles 
+    [contrato-api] › specs\01-auth-seguridad\permisos-por-rol.spec.ts:19:3 › 01 — Auth / seguridad · permisos por rol (API) › caja no lee expediente clínico (403) 
+    [contrato-api] › specs\02-pacientes\no-identificado.spec.ts:19:3 › 02 — Pacientes · no identificado › ingresa paciente inconsciente sin datos de identidad (API / SC-13 parcial) 
+    [contrato-api] › specs\03-triage-urgencias\triage-sin-bloqueo.spec.ts:17:3 › 03 — Triage urgencias · sin bloqueo › clasifica triage sin datos administrativos (SC-14) 
+    [contrato-api] › specs\04-consulta-receta\flujo-consulta.spec.ts:17:3 › 04 — Consulta / receta › alerta de alergia bloqueante antes de prescribir (SC-01) 
+    [contrato-api] › specs\06-seguridad-clinica\sc-mapa.spec.ts:96:5 › 06 — Seguridad clínica · mapa SC-01…SC-24 › SC-01 … SC-12 — bloqueantes clínicos › SC-01: Las alergias y alertas del paciente se presentan de forma inequívoca antes de emitir una receta 
+    [contrato-api] › specs\08-multi-tenant\aislamiento.spec.ts:17:5 › 08 — Multi-tenant · aislamiento › lectura cruzada entre tenants › tenant A no lee pacientes de tenant B 
+    [contrato-api] › specs\08-multi-tenant\aislamiento.spec.ts:42:5 › 08 — Multi-tenant · aislamiento › lectura cruzada entre tenants › tenant B no lee encuentro abierto en tenant A (bravo) 
+    [contrato-api] › specs\08-multi-tenant\aislamiento.spec.ts:80:3 › 08 — Multi-tenant · aislamiento › manipular recurso ajeno por id inexistente responde 404 (tenant del token) 
+    [contrato-api] › specs\09-offline\cola-idempotencia.spec.ts:20:3 › 09 — Offline · cola e idempotencia › reintento del mismo ULID no duplica escritura 
+    [chromium] › specs\00-smoke\login.spec.ts:33:3 › 00 — Smoke · Login › rechaza credenciales inválidas 
+    [chromium] › specs\00-smoke\login.spec.ts:42:3 › 00 — Smoke · Login › inicia sesión con administrador del mock y llega al dashboard 
+  26 skipped
+  73 did not run
+  5 passed (1.6m)
+
+================ Resumen de la suite ================
+  build     FALLO (exit 1)
+  test      OK (2 proyecto(s))
+  frontend  FALLO (type-check=2, lint=1)
+  e2e       FALLO (exit 1)
+=====================================================
+Etapas con falla: build, frontend, e2e
+SUITE_EXIT=
+SUITE_EXIT=1 

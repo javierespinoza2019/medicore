@@ -29,7 +29,7 @@ Estaciones (SPA/PWA) → Core API (.NET) → SQL Server (SPs)
 | Confirmar UI | Contra IndexedDB, no contra la red |
 | Leer online | Servidor (verdad) |
 | Leer offline | Caché mínima + antigüedad visible (SC-09) |
-| Live | SignalR (o equiv.) para colas/sala cuando hay red |
+| Live | SignalR `/hubs/clinical-queue` para colas/sala cuando hay red (invalidación; ver `docs/operacion/live-cola.md`) |
 | Logout | Purga lecturas; **no** borra cola de salida |
 
 No prometas coordinación multiusuario offline.
@@ -47,6 +47,19 @@ Api → Business → DataAccess(SPs) → SQL. Worker separado para outbox.
 ## Hospedaje
 
 Shared = ventas. Dedicado antes de paciente real. Deploy escalonado de API solo en controlado.
+Proveedor/región de Production y QA: **aplazados** (doc 06 §2 / #70 / #71) — no inventar.
+
+## Sesiones (auth)
+
+- Logout ordinario: **solo esta estación** (doc 06 #73).
+- Revocación global (SP listo; endpoints pendientes): cambio de contraseña, bloqueo/baja admin,
+  botón «cerrar en todos…»; **no** lockout por intentos (doc 06 #75).
+  Detalle: `docs/operacion/auth-sesiones.md`.
+
+## Roles (AuthZ)
+
+Plantillas fijas (+ `trabajo_social`); permisos ajustables por tenant (matriz UI/API pendiente);
+SuperAdmin solo plataforma; consulta de auditoría = admin/SuperAdmin (doc 06 §19).
 
 ## Portabilidad (Fase 0)
 

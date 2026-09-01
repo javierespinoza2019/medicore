@@ -16,6 +16,8 @@ Actúa como mantenedor del proyecto **MediCore** (sistema clínico México: ambu
 - No reintroduzcas Edge ni app BI separada.
 - DGIS/SINBA es capacidad fija; sin red va a outbox.
 - No asumas ni inventes; pregunta o deja pendiente con fuente.
+- Estupefacientes fuera de alcance (impedir). Triage = escala configurable (no 4 colores fijos).
+- Decisiones recientes: encabezado de `docs/analisis/06-decisiones-abiertas.md` + skill `medicore-maintain`.
 
 ## Arranque de código
 

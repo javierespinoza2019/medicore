@@ -11,7 +11,7 @@ function leer(nombre: string, porOmision: string): string {
 }
 
 export const entorno = {
-  baseURL: leer('MEDICORE_BASE_URL', 'http://localhost:5173'),
+  baseURL: leer('MEDICORE_BASE_URL', 'http://127.0.0.1:5173'),
   modo: leer('MEDICORE_E2E_MODE', 'mock') as ModoE2E,
   password: leer('MEDICORE_E2E_PASSWORD', 'Admin123!'),
   tenantA: leer('MEDICORE_TENANT_A', 'tenant-alfa-ficticio'),

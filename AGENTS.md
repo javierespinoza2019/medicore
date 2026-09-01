@@ -15,6 +15,14 @@ Mantener y construir MediCore: sistema clínico web (ambulatorio + urgencias) pa
 4. Si toca arquitectura, sync, hospedaje, SPs: cargar skill `medicore-architecture`.
 5. Flujo general de mantenimiento: skill `medicore-maintain`.
 
+## Al cerrar la tarea
+
+Actualizar la memoria viva del repo (doc 12, este archivo, reglas, skills, `docs/operacion/**`,
+`docs/analisis/06-decisiones-abiertas.md`) **cuando el cambio lo amerite**, y dejar las pruebas del
+módulo tocado. Qué se actualiza en cada caso: [`.cursor/rules/medicore-cierre-de-tarea.mdc`](.cursor/rules/medicore-cierre-de-tarea.mdc).
+Estrategia y suite: [`docs/operacion/pruebas.md`](docs/operacion/pruebas.md) — se corre completa con
+`./tools/run-all-tests.ps1`.
+
 ## No negociables
 
 - **Sin Edge** en clínica. Core central + SPA/PWA.
@@ -23,11 +31,31 @@ Mantener y construir MediCore: sistema clínico web (ambulatorio + urgencias) pa
 - **Sin mocks** en builds demo/staging/prod; datos sintéticos solo vía API → SP → BD.
 - **DGIS/SINBA** siempre en el producto (no feature flag). CFDI / FHIR / RENAPO sí son flags.
 - Persistencia de negocio solo vía **Stored Procedures** (`sp_{Entity}_{Action}`).
+- **Prohibido `DELETE`, `DROP` y `TRUNCATE`** contra la base de datos (SP, script, migración o consola). Baja lógica (`IsDeleted`, reverso/`void`, addendum); el esquema se deprecia, no se destruye. Si una tarea parece exigirlo: **preguntar** y registrar la decisión.
 - `TenantId` desde claims JWT; API es fuente de verdad de autorización.
 - Offline: escritura siempre a cola local + idempotencia; lectura del servidor con enlace.
 - BI = módulo en la app principal con permisos; solo agregados; sin app aparte.
-- Estupefacientes/psicotrópicos: **impedir** hasta decisión + Reglamento de Insumos.
+- Estupefacientes/psicotrópicos: **fuera de alcance** (Fases 1–4); el sistema debe **impedir** su prescripción/surtido. Reabrir solo con decisión escrita + Reglamento de Insumos verificado (doc 06 §64/68).
 - Pacientes reales: solo en entorno dedicado (nunca shared de demo).
+- Triage: escala **configurable**; no hardcodear 4 colores de producto (doc 06 §63).
+- Monitor de turnos: **solo número** por omisión (doc 06 #21).
+- Logout: solo sesión actual (#73); revocación global según política #75 (`docs/operacion/auth-sesiones.md`).
+
+## Oleada de decisiones 2026-08-30 (resumen)
+
+Ratificadas en doc 06: firma A · roles B (+`trabajo_social`) · controlados A · establecimiento A ·
+triage A · monitor #21 · revocación global #75 (política). **Aplazado:** hospedaje Prod (#2/#70/#71).
+Índice vivo: encabezado de [`docs/analisis/06-decisiones-abiertas.md`](docs/analisis/06-decisiones-abiertas.md).
+
+## Ambientes
+
+Dev, QA y Production con el mismo artefacto; sólo cambia configuración
+([`docs/operacion/ambientes.md`](docs/operacion/ambientes.md)).
+
+- Secretos nunca en el repositorio: `ConnectionStrings__MediCore` y `Jwt__SigningKey` por variable de entorno.
+- El perfil `Platform` (demo, seed sintético, PHI, destino DGIS) se valida al arrancar; configuración contradictoria **no arranca**.
+- Seed sintético prohibido en Production; E2E bloqueado contra Production.
+- `AllowRealPatientData=true` requiere entorno dedicado y decisión explícita.
 
 ## Estructura objetivo del repo
 

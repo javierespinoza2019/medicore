@@ -1,0 +1,27 @@
+{
+  "$schema": "https://json.schemastore.org/launchsettings.json",
+  "profiles": {
+    "http": {
+      "commandName": "Project",
+      "dotnetRunMessages": true,
+      "launchBrowser": false,
+      "applicationUrl": "http://localhost:5080",
+      "environmentVariables": {
+        "ASPNETCORE_ENVIRONMENT": "Development"
+      }
+    },
+    "qa-local": {
+      "commandName": "Project",
+      "dotnetRunMessages": true,
+      "launchBrowser": false,
+      "applicationUrl": "https://localhost:5443",
+      "environmentVariables": {
+        "ASPNETCORE_ENVIRONMENT": "QA",
+        "ConnectionStrings__MediCore": "Server=localhost;Database=MediCore_QA;Trusted_Connection=True;TrustServerCertificate=True;Encrypt=False",
+        "Jwt__SigningKey": "QA_LOCAL_ONLY_SIGNING_KEY_MIN_32_CHARS",
+        "Cors__Origins__0": "http://localhost:5173",
+        "AllowedHosts": "*"
+      }
+    }
+  }
+}

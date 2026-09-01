@@ -20,9 +20,12 @@ La atención no se detiene. No bloquees ingreso a urgencias con CURP/nombre/pago
 - **DGIS/SINBA**: siempre en el producto (no feature flag). CFDI, FHIR, RENAPO: flags.
 - BI: módulo `features/bi` en la app principal; solo lectura; solo agregados; sin app aparte.
 - Persistencia: solo Stored Procedures; `TenantId` en claims y en todo SP de negocio.
+- **Prohibido `DELETE`, `DROP` y `TRUNCATE` contra la BD.** Baja lógica + reverso/addendum; esquema se deprecia, no se destruye. Si algo parece requerirlo: preguntar antes.
 - Sin mocks en demo/staging/prod. Seed sintético en BD.
-- Estupefacientes: impedir hasta decisión explícita + norma verificada.
-- Shared hosting = demo sin PHI. Paciente real = entorno dedicado.
+- Estupefacientes: fuera de alcance Fases 1–4; el sistema los **impide** (doc 06 §64/68). Reabrir solo con decisión escrita + norma verificada.
+- Shared hosting = demo sin PHI. Paciente real = entorno dedicado. Hospedaje Prod concreto: **aplazado** (doc 06 §2).
+- Triage: escala configurable; no 4 colores de producto (doc 06 §63). Monitor: solo número (#21).
+- Logout: sesión actual (#73); revocación global = política #75 (`docs/operacion/auth-sesiones.md`).
 
 ## Conducta del agente
 
@@ -30,3 +33,9 @@ La atención no se detiene. No bloquees ingreso a urgencias con CURP/nombre/pago
 - No afirmes cumplimiento NOM/LFPDPPP sin fuente oficial + fecha.
 - Preferir generalizar patrones buenos ya en código (`desconocido`, `null` en glucosa) antes de inventar modelos nuevos.
 - Español de México; cambios mínimos y enfocados a la tarea.
+
+## Cierre de tarea
+
+Al terminar cualquier tarea: actualizar la memoria viva del repo y dejar las pruebas del módulo.
+Qué se actualiza en cada caso: `.cursor/rules/medicore-cierre-de-tarea.mdc`.
+Estrategia y suite de pruebas: `docs/operacion/pruebas.md` (`tools/run-all-tests.ps1`).

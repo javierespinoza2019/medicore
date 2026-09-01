@@ -23,6 +23,7 @@ Alineado a `docs/2- Arquitectura para Cruzar y comparar.txt` y propuesta 12.
 
 - Naming: `sp_{Entity}_{Action}`.
 - Todo SP de negocio recibe `@TenantId` y filtra por él.
+- **Prohibido `DELETE` / `DROP` / `TRUNCATE`**: baja lógica y reverso. Repos no exponen borrado físico; métodos de baja se llaman `SoftDelete*`.
 - Soft delete / append-only clínico; UTC (`SYSUTCDATETIME()`).
 - Idempotencia en mutaciones (`IdempotencyKey`), especialmente caja.
 - Outbox en la **misma transacción** que el hecho de negocio.
@@ -32,6 +33,9 @@ Alineado a `docs/2- Arquitectura para Cruzar y comparar.txt` y propuesta 12.
 
 - API es fuente de verdad. FE no sustituye permisos.
 - Refresh en cookie httpOnly (ADR-006); access en memoria.
+- Logout revoca **sólo** el refresh token presentado (decisión 73): otras estaciones del mismo
+  usuario siguen trabajando. Sin cookie válida se responde 400, nunca cierre global por omisión.
+  El cierre global (`sp_Auth_RevokeAllRefreshTokensForUser`) es sólo para revocación por seguridad.
 - Feature flags: Branch > Tenant > Global. Fallo al leer flags = error, no “todo off”.
 
 ## Worker

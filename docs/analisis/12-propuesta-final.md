@@ -1,9 +1,13 @@
 # 12 — Propuesta final consolidada
 
-Fecha: **2026-08-23**  
-Estado: **lista para decisión de arranque** — no se implementa el sistema hasta autorización explícita del cliente.
+Fecha: **2026-08-23** · Actualizado: **2026-08-30**  
+Estado: **Fase 1 clínica en curso / puerta M12 parcial** — núcleo M1–M11; oleada de decisiones
+producto 2026-08-30 registrada en doc 06 (firma, roles, controlados, establecimiento, triage,
+monitor, #75; hospedaje Prod aplazado).
 
 Este documento es la **fuente de verdad** de producto/arquitectura tras el análisis. Donde un documento anterior contradiga este (p. ej. Edge, app BI aparte, DGIS como flag), **prevalece este**.
+
+**Implementación:** código vivo en `backend/` y `frontend/`. El prototipo de referencia permanece en `docs/frontend`.
 
 ---
 
@@ -24,7 +28,7 @@ Respaldo normativo (verificado en doc 01): LGS 51 Bis 2, 469; Reglamento de pres
 | Stack | .NET monolito modular + SQL Server (SPs) + React/TS/Vite/Tailwind |
 | UI | Prioridad al prototipo `docs/frontend`; endurecer seguridad y modelo |
 | Fuera | Hospital, quirófanos, UCI, portal paciente → contrato aparte |
-| Pendiente | Estupefacientes/psicotrópicos → impedir hasta norma + decisión |
+| Controlados | Estupefacientes/psicotrópicos **fuera de alcance** Fases 1–4; el sistema los **impide** (doc 06 §64/68) |
 
 ---
 
@@ -66,7 +70,7 @@ Módulo `features/bi` **en la app principal** (no app aparte).
 
 ## 6. Decisiones de negocio cerradas
 
-Cobro offline · farmacia offline · firma local+sello · rechazo diferido · BI en app principal · shared = ventas sintéticas · dedicado antes de PHI · dispositivos registrados · identidad progresiva · refresh httpOnly · DGIS/SINBA fijo · sin Edge · sin mocks que tapen integración.
+Cobro offline · farmacia offline · firma local+sello · rechazo diferido · BI en app principal · shared = ventas sintéticas · dedicado antes de PHI · dispositivos registrados · identidad progresiva · refresh httpOnly · DGIS/SINBA fijo · sin Edge · sin mocks que tapen integración · **roles = plantillas fijas + permisos ajustables por tenant** (sin nombres libres; SuperAdmin solo plataforma; plantilla `trabajo_social`; consulta de auditoría = admin/SuperAdmin hasta fase posterior — doc 06 §19) · **estupefacientes/psicotrópicos fuera de alcance** (impedidos; doc 06 §64/68) · **establecimiento:** F1–4 = ambulatorio+urgencias; demo Central con urgencias / Norte·Sur ambulatorio; responsable operativo provisional = admin (doc 06 §10) · **triage:** escala configurable; demo 5 niveles sintéticos; sin hardcode de 4 colores ni afirmación de escala oficial (doc 06 §63).
 
 ---
 
@@ -105,7 +109,7 @@ Prioridad si el equipo es chico: no fabricar datos → fundación real → dedic
 2. 24/7 sin degradación si cae la BD central.  
 3. Certificación NOM-024 automática.  
 4. CFDI/FHIR/RENAPO sin Internet o con flag off (DGIS/SINBA: el módulo no se apaga; sin red solo se difiere el **envío**).  
-5. Estupefacientes.  
+5. Estupefacientes/psicotrópicos (fuera de alcance; el producto los impide).  
 6. Demo creíble sin backend real.
 
 ---

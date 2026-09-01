@@ -15,6 +15,15 @@ export const sel = {
     brand: 'text=MediCore',
     dashboardPath: /\/app\/dashboard/,
   },
+  nav: {
+    sidebar: 'nav-sidebar',
+    toggleCollapse: 'nav-toggle-collapse',
+    /** `data-testid` de grupo PermissionGate/AppLayout (`nav-group-{key}`). */
+    group: (key: string) => `nav-group-${key}`,
+    groupBtn: (key: string) => `nav-group-btn-${key}`,
+    /** `data-testid` de ítem hoja (`nav-item-{key}`). */
+    item: (key: string) => `nav-item-${key}`,
+  },
   pacientes: {
     path: '/app/pacientes',
     nuevoPath: '/app/pacientes/nuevo',
@@ -30,5 +39,12 @@ export const sel = {
   },
   consultas: {
     path: '/app/consultas',
+  },
+  agenda: {
+    path: '/app/agenda',
+  },
+  admin: {
+    medicosPath: '/app/administracion/medicos',
+    especialidadesPath: '/app/administracion/especialidades',
   },
 } as const;
