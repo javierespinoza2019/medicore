@@ -1,0 +1,40 @@
+---
+description: MediCore — convenciones backend .NET + SQL Server (SPs)
+globs: backend/**/*
+alwaysApply: false
+---
+
+# MediCore — backend
+
+Alineado a `docs/2- Arquitectura para Cruzar y comparar.txt` y propuesta 12.
+
+## Capas
+
+| Proyecto | Puede | No puede |
+|---|---|---|
+| Api | Controllers, JWT, CORS, hubs, DI, health | SQL, reglas de negocio |
+| Business | Orquestación, validaciones, PDF, interop | SQL / Dapper |
+| DataAccess | Repos + Dapper `CommandType.StoredProcedure` | JWT, UI |
+| Models | Entities/DTOs | Lógica |
+| Common | ApiResponse, claims, UTC | Infra pesada |
+| Worker | Outbox (DGIS siempre; CFDI/FHIR/RENAPO según flag) | Controllers HTTP de negocio |
+
+## Persistencia
+
+- Naming: `sp_{Entity}_{Action}`.
+- Todo SP de negocio recibe `@TenantId` y filtra por él.
+- Soft delete / append-only clínico; UTC (`SYSUTCDATETIME()`).
+- Idempotencia en mutaciones (`IdempotencyKey`), especialmente caja.
+- Outbox en la **misma transacción** que el hecho de negocio.
+- Archivos: solo `FileId` GUID en entidades; storage detrás de abstracción (portable on-prem).
+
+## AuthZ
+
+- API es fuente de verdad. FE no sustituye permisos.
+- Refresh en cookie httpOnly (ADR-006); access en memoria.
+- Feature flags: Branch > Tenant > Global. Fallo al leer flags = error, no “todo off”.
+
+## Worker
+
+- DGIS/SINBA jobs **siempre registrados**.
+- Demo: destino no productivo para DGIS; no apagar el módulo.

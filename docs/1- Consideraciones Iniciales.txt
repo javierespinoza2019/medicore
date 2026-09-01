@@ -1,0 +1,118 @@
+Documento Técnico del Sistema — MediCore
+Plataforma Integral de Gestión Clínica
+Versión: MVP completo (Fase 1–5 terminadas) · Fecha de referencia: 2026-08-21
+
+1. Resumen Ejecutivo
+MediCore es una plataforma SaaS empresarial para la gestión integral de clínicas privadas, diseñada para cubrir el ciclo completo de atención del paciente: registro → agenda → recepción → triage → consulta → diagnóstico → receta → estudios → dispensación → cobro → facturación → expediente clínico, con capas transversales de normatividad sanitaria, seguridad (RBAC + auditoría), interoperabilidad (HL7 FHIR) e inteligencia operativa (reportes).
+
+La arquitectura está orientada a evolucionar desde un Centro Médico / Clínica hacia un Hospital completo (hospitalización, farmacia, laboratorio, imagenología, quirófanos, UCI).
+
+2. Arquitectura Técnica
+2.1 Stack Tecnológico
+Capa	Tecnología	Notas
+Frontend	React 19 + TypeScript	Vite como build tool
+UI / Estilos	Tailwind CSS (v3.4)	Design System con paleta dinámica (tokens OKLCH)
+Enrutamiento	React Router DOM (v6)	BrowserRouter con __BASE_PATH__
+Iconografía	Remix Icon + FontAwesome	Vía CDN, sin imports de node_modules
+Estado	React Context + patrón de listeners	Estado compartido reactivo a nivel módulo
+Persistencia (MVP)	LocalStorage + mocks tipados	Datos realistas en src/mocks/
+Backend (previsto)	Supabase (Auth / DB / Storage / Edge Functions)	Pendiente de conexión
+Pagos (previsto)	Stripe / Toss / PayPal	No conectados
+2.2 Estructura de Carpetas
+src/
+├── components/
+│   ├── base/          # Componentes atómicos (Button, Card, Input, Modal, Select, Tabs...)
+│   └── feature/       # Componentes funcionales (AppLayout, FirmaDigital, Pagination...)
+├── hooks/             # Hooks de estado global (useAuth, useCaja, useEstudios, useUrgencias...)
+├── mocks/             # Datos simulados tipados por dominio
+├── pages/             # Componentes de página (1 carpeta por módulo)
+│   └── [modulo]/
+│       ├── page.tsx   # Entry point
+│       └── components/# Componentes propios del módulo
+├── router/            # config.tsx (rutas) + index.ts (AppRoutes)
+├── i18n/              # Internacionalización
+└── utils/             # Helpers (permissions, appSettings, export, image...)
+2.3 Patrón de Estado Compartido
+Los módulos que necesitan datos en tiempo real entre pantallas usan un patrón de estado compartido a nivel módulo con listeners:
+
+Una lista mutable compartida (sharedAppointments, sharedEstudios, sharedUrgencias).
+Un Set de listeners suscritos vía useEffect.
+Funciones globales de mutación (updateAppointmentGlobal, addEstudioGlobal, etc.) que notifican a todos los suscriptores.
+Hooks reactivos (useAppointmentsState, useEstudiosState, useUrgenciasState) que disparan re-render mediante un tick.
+Esto garantiza que, por ejemplo, Triage ↔ Urgencias ↔ Sala de Espera y Consultas ↔ Estudios operen sobre la misma lista y se sincronicen sin recargar.
+
+3. Modelo de Datos (Entidades Principales)
+Al ser MVP sin backend, se usan mocks tipados. La estructura prevista para migración a Supabase incluye:
+
+Entidad	Campos clave	Relaciones
+patients	curp, nombre, apellidos, fecha_nacimiento, sexo, telefono, email, direccion, contacto_emergencia, aseguradora, poliza	1:N con appointments, consultations, vital_signs
+doctors	nombre, especialidad_id, cedula, telefono, email, status	N:1 specialties
+specialties	nombre, descripcion	1:N doctors
+appointments	patient_id, doctor_id, consultorio_id, fecha, hora_inicio, hora_fin, estado, motivo	N:1 patients/doctors/consultorios
+consultations	patient_id, doctor_id, appointment_id, motivo, padecimiento, exploracion, notas	N:1 patients/doctors
+diagnoses	consultation_id, codigo_cie10, descripcion, tipo (principal/secundario)	N:1 consultations
+prescriptions	consultation_id, medicamento, concentracion, dosis, frecuencia, via, duracion	N:1 consultations
+vital_signs	patient_id, peso, talla, imc, temperatura, tension, fc, fr, saturacion, glucosa, dolor	N:1 patients
+payments	patient_id, servicio, importe, descuento, total, metodo_pago, estado	N:1 patients
+users	nombre, email, password_hash, rol_id, sucursal_id, status	N:1 roles
+audit_log	user_id, accion, modulo, registro_id, ip, resultado	N:1 users
+4. Seguridad y Control de Acceso
+4.1 Autenticación
+AuthProvider (React Context) gestiona sesión, persistida en localStorage.
+Guard de autenticación: redirección a /login sin sesión activa.
+login(email, password) valida contra usuarios activos; loginAs(userId) para cambio rápido de rol (demo).
+Selector de sucursal activa con persistencia; sincronización entre pestañas vía evento storage.
+4.2 Roles (RBAC — 8 perfiles)
+Rol	Etiqueta	Alcance principal
+admin	Administrador	Acceso total, incluye HL7, seguridad y normatividad
+directivo	Directivo	Todo menos edición clínica; sí auditoría, usuarios y reportes
+medico	Médico	Flujo clínico completo (consulta, receta, estudios, triage)
+enfermeria	Enfermería	Triage, urgencias (vista), notas de enfermería
+recepcion	Recepción	Agenda, sala de espera, pacientes, caja
+caja	Caja y Cobros	Cobros, cortes, facturación, farmacia, estudios
+farmacia	Farmacia	Dispensación, recetas, estudios
+laboratorio	Laboratorio	Estudios, resultados
+4.3 Matriz de Permisos (2 niveles)
+Por ruta (roleRoutes): controla qué pantallas puede abrir cada rol, con soporte de prefijos (/app/pacientes/, /app/normatividad/).
+Por acción (rolePermissions): control fino de 17 capacidades (crear/editar/eliminar paciente, cobrar, cerrar caja, dispensar, administrar usuarios, ver auditoría, exportar, etc.).
+4.4 Auditoría
+Bitácora de trazabilidad con registro de usuario, acción, módulo, registro afectado, IP y resultado, con filtros y exportación.
+
+5. Módulos del Sistema (Detalle Funcional)
+5.1 Operación
+Módulo	Ruta	Funcionalidades
+Dashboard	/app/dashboard	KPIs por rol, métricas del día, gráficos
+Agenda	/app/agenda	Vistas Día/Semana/Mes/Lista, consultorios por columna, filtros por médico/estado, nueva cita con validaciones, reglas de bloqueo, reimpresión de ticket, registro de asistencia y triage
+Sala de Espera	/app/sala-espera	Cola en tiempo real, timers en vivo, estados de atención, derivación a triage/consulta/urgencias
+Monitor de Turnos	/app/monitor-turnos	Pantalla pública de turnos (sin layout, en tiempo real)
+Triage	/app/triage	Signos vitales, IMC automático, escala EVA, signos de alarma, niveles de urgencia, protección de cambios no guardados, impresión
+Urgencias	/app/urgencias	Ingresos, atención, recetas de urgencia, altas, integración con triage y sala de espera
+5.2 Pacientes y Clínico
+Módulo	Ruta	Funcionalidades
+Pacientes	/app/pacientes	Padrón completo, filtros, alta con wizard (/nuevo), exportación
+Expediente	/app/pacientes/:id	Expediente clínico unificado con línea de tiempo (consultas, estudios, egresos, recetas, notas)
+Consultas	/app/consultas	Nota SOAP, búsqueda CIE-10, historia clínica, nota de evolución, certificados médicos, recetas inline, solicitud de estudios
+Recetas	/app/recetas	Creación, impresión, firma digital (e.firma/FIEL)
+Estudios	/app/estudios	Solicitud, estados (solicitado/en_proceso/completado), captura de resultados por parámetro con rangos de referencia
+Farmacia	/app/farmacia	Inventario, dispensación, movimientos, integración con recetas
+5.3 Finanzas
+Módulo	Ruta	Funcionalidades
+Caja y Cobros	/app/caja	Cobros, transacciones del día, métodos de pago (efectivo/tarjeta/transferencia/mixto), recibos, pendientes
+Cortes de Caja	/app/caja/cortes	Historial de cierres, diferencias, conciliación
+Facturación CFDI	/app/facturacion	Comprobantes fiscales CFDI 4.0, catálogos SAT, clave de producto/servicio automática según origen del cobro, PDF/XML, cancelación
+5.4 Normatividad (11 submódulos)
+Módulo	Norma base	Funcionalidad
+Aviso de Privacidad	LFPDPPP	Aviso integral y simplificado, impresión/PDF
+Consentimientos Informados	NOM-004	Crear, firmar, imprimir, anular
+Derechos ARCO	LFPDPPP	Solicitudes ARCO, plazos, respuesta, impresión
+Referencias / Contrarreferencias	NOM-004	Notas de origen/destino, impresión
+Hojas de Egreso	NOM-004 Art. 6.3.7	Nota de egreso hospitalario, impresión
+Retención Documental	NOM-004 + NOM-024	Políticas y plazos de conservación
+Vigilancia Epidemiológica	NOM-017	Notificación SUIVE, impresión
+Gestión de Profesionales	—	Vigencia de cédulas, certificaciones, alertas
+Notas de Enfermería	NOM-004 Art. 6.3.4	Cuidados por turno, medicamentos, impresión
+Documento de Seguridad	LFPDPPP	Medidas administrativas/técnicas/físicas
+Checklist NOM-005/016	NOM-005/016	Evaluación de infraestructura, equipamiento, exportación Excel
+5.5 Administración y Seguridad
+Módulo	Ruta	Funcionalidad
+Usuarios	/app/administracion/usuarios	CRUD

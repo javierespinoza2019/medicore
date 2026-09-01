@@ -1,0 +1,32 @@
+---
+description: MediCore — restricciones no negociables de producto y arquitectura (siempre)
+alwaysApply: true
+---
+
+# MediCore — núcleo
+
+Fuente de verdad: `docs/analisis/12-propuesta-final.md`. Si hay conflicto con docs 05–07 históricos (Edge, modalidades duales), prevalece el 12.
+
+## Premisa
+
+La atención no se detiene. No bloquees ingreso a urgencias con CURP/nombre/pago/consentimiento. Identidad progresiva (doc 08).
+
+## Arquitectura
+
+- Core central + SPA/PWA. **Prohibido** reintroducir Edge/sync bidireccional de expediente.
+- Offline: un solo camino — cola local durable + idempotencia; sync en segundo plano.
+- Leer del servidor con enlace; caché mínima con antigüedad visible.
+- Outbox para efectos externos; fallos de CFDI/DGIS/FHIR no tumban la consulta.
+- **DGIS/SINBA**: siempre en el producto (no feature flag). CFDI, FHIR, RENAPO: flags.
+- BI: módulo `features/bi` en la app principal; solo lectura; solo agregados; sin app aparte.
+- Persistencia: solo Stored Procedures; `TenantId` en claims y en todo SP de negocio.
+- Sin mocks en demo/staging/prod. Seed sintético en BD.
+- Estupefacientes: impedir hasta decisión explícita + norma verificada.
+- Shared hosting = demo sin PHI. Paciente real = entorno dedicado.
+
+## Conducta del agente
+
+- No asumas reglas truncadas del `.docx` ni vigencia normativa de memoria.
+- No afirmes cumplimiento NOM/LFPDPPP sin fuente oficial + fecha.
+- Preferir generalizar patrones buenos ya en código (`desconocido`, `null` en glucosa) antes de inventar modelos nuevos.
+- Español de México; cambios mínimos y enfocados a la tarea.

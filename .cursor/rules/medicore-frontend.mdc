@@ -1,0 +1,34 @@
+---
+description: MediCore — convenciones frontend React PWA + offline + BI
+globs: frontend/**/*,docs/frontend/**/*
+alwaysApply: false
+---
+
+# MediCore — frontend
+
+## Datos
+
+- **Prohibido** usar `mocks/` o estado inventado en builds demo/staging/prod.
+- Toda lectura/escritura de negocio pasa por `api/` → backend.
+- Offline: cola en IndexedDB con clave de idempotencia al capturar; confirmación contra escritura local.
+- Al cerrar sesión: purgar caché de lectura; **nunca** borrar la cola de salida.
+- Solo dispositivos registrados: caché clínica + cola. Otros: solo en línea.
+
+## Seguridad clínica en UI
+
+- Ningún control clínico con valor por omisión que fabrique dato (sexo, triage, alergias, antecedentes).
+- Distinguir `no_interrogado` / `se_desconoce` / `no_aplica` / valor conocido.
+- Triage: nunca solo por color (texto + icono). Tokens de triage **no** son white-label.
+- Cabecera de identidad visible durante la atención.
+- BI (`features/bi`): lazy; solo agregados; sin deep-link a expediente; sin offline clínico.
+
+## UX
+
+- Conservar AppLayout, tokens OKLCH, densidad del prototipo.
+- No bloquear urgencias con diálogos de “error de red”; indicador pasivo de sync.
+- Assets locales (no CDN) para operación degradada.
+
+## TypeScript
+
+- Preferir `strict: true` en código nuevo.
+- No `alert()` / `confirm()`; modales propios.

@@ -1,0 +1,25 @@
+{
+  "name": "medicore-e2e",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Suite Playwright E2E de MediCore. Catálogo ejecutable de casos clínicos, offline y SC.",
+  "type": "module",
+  "scripts": {
+    "test": "playwright test",
+    "test:smoke": "playwright test specs/00-smoke",
+    "test:sc": "playwright test specs/06-seguridad-clinica",
+    "test:offline": "playwright test specs/03-triage-urgencias/dos-estaciones-offline.spec.ts specs/09-offline",
+    "test:a11y": "playwright test specs/07-accesibilidad",
+    "test:headed": "playwright test --headed",
+    "test:ui": "playwright test --ui",
+    "report": "playwright show-report",
+    "trace": "playwright show-trace",
+    "typecheck": "tsc --noEmit"
+  },
+  "devDependencies": {
+    "@axe-core/playwright": "^4.10.2",
+    "@playwright/test": "^1.56.1",
+    "@types/node": "^22.10.2",
+    "typescript": "^5.7.2"
+  }
+}

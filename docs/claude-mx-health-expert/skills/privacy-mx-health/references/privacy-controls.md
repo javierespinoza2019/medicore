@@ -1,0 +1,22 @@
+# Privacy control catalogue
+
+- data inventory and classification
+- purpose registry
+- privacy-notice versioning
+- evidence of notice delivery
+- granular consent where applicable
+- consent revocation workflow
+- ARCO case management
+- identity/representation verification
+- transfer registry
+- processor/vendor register
+- contract/DPA evidence
+- subprocessor register
+- risk analysis
+- administrative/physical/technical controls
+- privacy incident management
+- retention and secure disposal
+- confidentiality/training evidence
+- privacy-by-design review for product changes
+- export/download governance
+- pseudonymization/de-identification for secondary use where appropriate

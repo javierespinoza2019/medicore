@@ -1,0 +1,16 @@
+---
+description: MediCore — scripts SQL, migraciones y Stored Procedures
+globs: backend/database/**/*
+alwaysApply: false
+---
+
+# MediCore — database
+
+- DDL idempotente y versionado en `backend/database/migrations/`.
+- SPs en `backend/database/procedures/` por dominio.
+- Naming: `sp_{Entity}_{Action}`.
+- Toda tabla de negocio: `TenantId` (+ índices compuestos típicos).
+- Seeds solo sintéticos (`seeds/`); nunca PHI real.
+- Outbox y auditoría append-only; no hard-delete de hechos clínicos/pagos (void/reverso).
+- Centinelas DGIS (`Desconocido`, `09/09/9999`, `999`) solo en **capa de reporte**, no contaminar modelo clínico.
+- Prohibido autogenerar CURP (NOM-024 6.5.1).

@@ -1,0 +1,13 @@
+---
+description: MediCore — pruebas E2E Playwright y mapa SC
+globs: e2e/**/*,tests/e2e/**/*
+alwaysApply: false
+---
+
+# MediCore — E2E
+
+- Herramienta: Playwright.
+- Aceptación cuenta solo contra **stack real** (API + BD). Smoke contra `docs/frontend` mock = andamiaje, no integración hecha.
+- Conservar IDs SC-01… en títulos/`test.skip` hasta implementar.
+- Offline: usar `context.setOffline` y multi-context (dos estaciones).
+- No borrar el mapa SC para “poner verde” la suite.
