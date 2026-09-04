@@ -7,6 +7,9 @@ import {
 import { listBranches, type BranchDto } from '@/api/branches';
 import { useAuth } from '@/hooks/useAuth';
 import { esFallaDeEnlace } from '@/api/errors';
+import { resolveBranchId } from '@/utils/branchResolution';
+
+export { resolveBranchId };
 import {
   formatCacheAge,
   getLiveQueueStatus,
@@ -14,46 +17,6 @@ import {
   subscribeLiveQueueStatus,
   type LiveQueueStatus,
 } from '@/sync/liveQueue';
-
-/** Resuelve GUID de sucursal: sesión puede traer id prototipo (suc1) o GUID real. */
-const PROTO_BRANCH_CODE: Record<string, string> = {
-  suc1: 'CENTRAL',
-  suc2: 'NORTE',
-  suc3: 'SUR',
-};
-
-/**
- * GUIDs seed demo (tenant demo) para contingencia sin catálogo de sucursales.
- * Evita bloquear ingreso (SC-19) si listBranches no alcanzó a cargar o el Core cayó.
- */
-const PROTO_BRANCH_ID: Record<string, string> = {
-  suc1: '22222222-2222-2222-2222-222222222222', // CENTRAL seed
-  suc2: '22222222-2222-2222-2222-222222222002', // NORTE seed
-  suc3: '22222222-2222-2222-2222-222222222003', // SUR seed
-};
-
-export function resolveBranchId(
-  sucursalActualId: string | null,
-  branches: BranchDto[],
-): string | null {
-  if (sucursalActualId && /^[0-9a-f-]{36}$/i.test(sucursalActualId)) {
-    if (!branches.length) return sucursalActualId;
-    const hit = branches.find((b) => b.branchId.toLowerCase() === sucursalActualId.toLowerCase());
-    return hit?.branchId ?? sucursalActualId;
-  }
-
-  if (!branches.length) {
-    return sucursalActualId ? (PROTO_BRANCH_ID[sucursalActualId] ?? null) : null;
-  }
-
-  const protoCode = sucursalActualId ? PROTO_BRANCH_CODE[sucursalActualId] : undefined;
-  if (protoCode) {
-    const byCode = branches.find((b) => b.code.toUpperCase() === protoCode);
-    if (byCode) return byCode.branchId;
-  }
-  const central = branches.find((b) => b.code.toUpperCase() === 'CENTRAL');
-  return central?.branchId ?? branches[0].branchId;
-}
 
 /**
  * Cola de urgencias desde API real (M4 + live M10).

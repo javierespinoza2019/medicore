@@ -10,8 +10,9 @@
  */
 
 import type { LoginResult } from '@/api/client';
-import type { User, UserRole } from '@/mocks/users';
-import { roleLabels } from '@/mocks/users';
+import type { User, UserRole } from '@/types/session';
+import { roleLabels } from '@/types/session';
+import { branchIdsFromCodes } from '@/utils/branchResolution';
 
 const knownRoles: UserRole[] = [
   'admin',
@@ -25,15 +26,15 @@ const knownRoles: UserRole[] = [
   'trabajo_social',
 ];
 
-/**
- * Puente transitorio entre el código de sucursal del servidor y el id que aún usan
- * los catálogos del prototipo. Desaparece cuando los módulos lean sucursales del API.
- */
-const branchByCode: Record<string, { id: string; nombre: string }> = {
-  CENTRAL: { id: 'suc1', nombre: 'Clínica Central - CDMX' },
-  NORTE: { id: 'suc2', nombre: 'Sucursal Norte - CDMX' },
-  SUR: { id: 'suc3', nombre: 'Sucursal Sur - CDMX' },
-};
+/** Etiqueta provisional mientras el catálogo de sucursales carga en la UI. */
+function branchLabelFromCode(code: string): string {
+  const labels: Record<string, string> = {
+    CENTRAL: 'Clínica Central - CDMX',
+    NORTE: 'Sucursal Norte - CDMX',
+    SUR: 'Sucursal Sur - CDMX',
+  };
+  return labels[code.toUpperCase()] ?? code;
+}
 
 export function resolveRole(roles: string[]): UserRole | null {
   // SuperAdmin del seed base opera con los permisos de administrador.
@@ -45,9 +46,13 @@ export function toSessionUser(result: LoginResult): User | null {
   const rol = resolveRole(result.roles);
   if (!rol) return null;
 
-  const branches = result.branchCodes
-    .map((code) => branchByCode[code.toUpperCase()])
-    .filter((b): b is { id: string; nombre: string } => Boolean(b));
+  const branchIds = (result.branchIds ?? []).filter((id) =>
+    /^[0-9a-f-]{36}$/i.test(id),
+  );
+  const branchCodes = (result.branchCodes ?? []).map((c) => c.toUpperCase());
+  const sucursalIds =
+    branchIds.length > 0 ? branchIds : branchIdsFromCodes(branchCodes);
+  const sucursales = branchCodes.map(branchLabelFromCode);
 
   const profesional = result.healthcareProfessional ?? null;
   // Sólo el id que mandó el servidor. Sin profesional → sin doctorId (fail closed).
@@ -64,8 +69,8 @@ export function toSessionUser(result: LoginResult): User | null {
     telefono: '',
     rol,
     rolLabel: roleLabels[rol],
-    sucursalIds: branches.map((b) => b.id),
-    sucursales: branches.map((b) => b.nombre),
+    sucursalIds,
+    sucursales,
     doctorId,
     cedulaProfesional,
     especialidad,

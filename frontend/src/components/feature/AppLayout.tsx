@@ -1,13 +1,12 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
-import { navigationItems } from '@/mocks/navigation';
-import { sucursales } from '@/mocks/branches';
-import type { NavItem } from '@/mocks/navigation';
-import type { UserRole } from '@/mocks/users';
+import { navigationItems, type NavItem } from '@/config/navigation';
+import type { UserRole } from '@/types/session';
 import Avatar from '@/components/base/Avatar';
 import Dropdown, { DropdownItem, DropdownDivider } from '@/components/base/Dropdown';
 import { useTheme } from '@/hooks/useTheme';
 import { useAuth } from '@/hooks/useAuth';
+import { useUserBranches } from '@/hooks/useUserBranches';
 import { canAccessRoute, type PermissionKey } from '@/utils/permissions';
 import InstitucionalLogo from '@/components/feature/InstitucionalLogo';
 import { IndicadorDeEnlace } from '@/components/feature/EstadoEnlace';
@@ -59,6 +58,7 @@ export default function AppLayout({ children }: AppLayoutProps) {
   const location = useLocation();
   const { theme, setTheme } = useTheme();
   const { user, isLoading, logout, sucursalActualId, setSucursalActual, canRequestBreakGlass, permissions } = useAuth();
+  const { userBranches, currentBranch } = useUserBranches();
   const [breakGlassOpen, setBreakGlassOpen] = useState(false);
   const [changePasswordOpen, setChangePasswordOpen] = useState(false);
 
@@ -72,10 +72,15 @@ export default function AppLayout({ children }: AppLayoutProps) {
   const userRoleLabel = user?.rolLabel || '';
   const especialidadLabel = user?.especialidad || '';
 
-  // Sucursales asignadas al usuario actual
-  const userBranches = sucursales.filter((s) => user?.sucursalIds?.includes(s.id));
-  const currentBranchName = sucursales.find((s) => s.id === sucursalActualId)?.nombre || 'Sin sucursal';
-  const canSwitchBranch = userBranches.length > 1;
+  const userBranchList = userBranches.length > 0
+    ? userBranches
+    : (user?.sucursalIds ?? []).map((id, i) => ({
+        id,
+        nombre: user.sucursales[i] ?? 'Sucursal',
+        telefono: '',
+      }));
+  const currentBranchName = currentBranch?.nombre ?? 'Sin sucursal';
+  const canSwitchBranch = userBranchList.length > 1;
 
   const visibleNavItems = filterNavByRole(navigationItems, role, permissions);
 
@@ -534,7 +539,7 @@ export default function AppLayout({ children }: AppLayoutProps) {
               }
               align="right"
             >
-              {userBranches.map((branch) => (
+              {userBranchList.map((branch) => (
                 <DropdownItem
                   key={branch.id}
                   onClick={() => setSucursalActual(branch.id)}

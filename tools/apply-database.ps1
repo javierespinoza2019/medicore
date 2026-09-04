@@ -95,6 +95,7 @@ foreach ($migration in $migrations) {
 
 Invoke-SqlFile (Join-Path $root "procedures\auth\sp_Auth.sql") $Database
 Invoke-SqlFile (Join-Path $root "procedures\auth\sp_BreakGlass.sql") $Database
+Invoke-SqlFile (Join-Path $root "procedures\user\sp_User.sql") $Database
 Invoke-SqlFile (Join-Path $root "procedures\role\sp_Role.sql") $Database
 Invoke-SqlFile (Join-Path $root "procedures\sync\sp_Sync_Outbox.sql") $Database
 Invoke-SqlFile (Join-Path $root "procedures\device\sp_Device.sql") $Database

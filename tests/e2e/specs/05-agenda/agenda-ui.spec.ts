@@ -5,7 +5,7 @@ import { sel } from '../../helpers/selectors';
 import { users } from '../../data/users';
 
 /**
- * Agenda UI (Vite + API real): profesionales desde `/api/professionals`, sin `@/mocks/doctors`.
+ * Agenda UI (Vite + API real): profesionales y consultorios desde API, sin mocks.
  */
 
 async function servidorDisponible(url: string): Promise<boolean> {
@@ -59,14 +59,69 @@ test.describe('05 — Agenda · UI (Vite + API, sin mocks/doctors)', () => {
   test('lista el día y carga profesionales desde API al abrir nueva cita', async ({ page }) => {
     await loginRecepcionUi(page);
 
-    const professionalsPromise = page.waitForResponse(
+    await page.goto(sel.agenda.path);
+
+    await expect(page.getByTestId('page-agenda')).toBeVisible({ timeout: 15_000 });
+    await expect(page.getByTestId('page-agenda').getByRole('heading', { name: 'Agenda' })).toBeVisible();
+
+    await page.getByRole('button', { name: /Nueva cita/i }).click();
+    const dialog = page.getByRole('dialog', { name: /Nueva cita/i });
+    await expect(dialog).toBeVisible();
+
+    // Wizard paso 1 → 2: elegir paciente y avanzar a médico/horario.
+    await dialog.getByRole('listbox').getByRole('option').first().click();
+    await dialog.getByRole('button', { name: 'Siguiente', exact: true }).click();
+
+    const select = dialog
+      .getByTestId('agenda-professional-select')
+      .or(dialog.getByLabel('Seleccionar médico'));
+    await expect(select).toBeVisible({ timeout: 10_000 });
+
+    await expect(async () => {
+      const optionTexts = await select.locator('option').allTextContents();
+      const realOptions = optionTexts.filter((t) => t.trim() && !/^Seleccionar/i.test(t));
+      expect(realOptions.length).toBeGreaterThanOrEqual(1);
+    }).toPass({ timeout: 10_000 });
+
+    const optionTexts = await select.locator('option').allTextContents();
+    // No deben aparecer médicos solo-mock del prototipo.
+    expect(optionTexts.join(' ')).not.toMatch(/Ricardo Olvera|Gabriela Herrera|Fernando Castillo/i);
+    // Seed demo esperado en Dev (API real).
+    expect(optionTexts.join(' ')).toMatch(/Alejandro García|Patricia Mendoza/i);
+
+    await dialog.getByRole('button', { name: 'Cancelar' }).click();
+    await expect(dialog).not.toBeVisible();
+
+    await page.getByTestId('page-agenda').getByRole('button', { name: 'Actualizar', exact: true }).click();
+    await expect(page.getByTestId('page-agenda')).toBeVisible();
+  });
+
+  test('configuración de consultorios persiste alta vía API (sin ids locales)', async ({ page }) => {
+    await loginRecepcionUi(page);
+    await page.goto(sel.agenda.path);
+    await expect(page.getByTestId('page-agenda')).toBeVisible({ timeout: 15_000 });
+
+    await page.getByRole('button', { name: /Configuración/i }).click();
+    const config = page.getByRole('dialog', { name: /Configuración de agenda/i });
+    await expect(config).toBeVisible();
+    await expect(config.getByTestId('agenda-consultorios-tab')).toBeVisible();
+    await expect(config.getByText(/Consultorio 101/i)).toBeVisible();
+
+    const suffix = Date.now().toString(36).slice(-6).toUpperCase();
+    const code = `E2E-${suffix}`;
+    const name = `E2E Consultorio ${suffix}`;
+
+    await config.getByRole('button', { name: /Agregar consultorio/i }).click();
+    await config.getByLabel('Nombre').fill(name);
+    await config.getByLabel('Código').fill(code);
+
+    const upsertPromise = page.waitForResponse(
       (r) => {
         try {
           const path = new URL(r.url()).pathname;
           return (
-            path === '/api/professionals' &&
-            r.request().method() === 'GET' &&
-            r.ok()
+            path.startsWith('/api/consulting-rooms/') &&
+            r.request().method() === 'PUT'
           );
         } catch {
           return false;
@@ -75,29 +130,11 @@ test.describe('05 — Agenda · UI (Vite + API, sin mocks/doctors)', () => {
       { timeout: 20_000 },
     );
 
-    await page.goto(sel.agenda.path);
+    await config.getByRole('button', { name: /Guardar/i }).click();
+    const upsertRes = await upsertPromise;
+    expect(upsertRes.ok(), await upsertRes.text()).toBe(true);
 
-    await expect(page.getByTestId('page-agenda')).toBeVisible({ timeout: 15_000 });
-    await expect(page.getByTestId('page-agenda').getByRole('heading', { name: 'Agenda' })).toBeVisible();
-
-    const profRes = await professionalsPromise;
-    const body = await profRes.json();
-    expect(body.success).toBe(true);
-    const names = (body.data as Array<{ fullName: string }>).map((p) => p.fullName);
-    expect(names.length).toBeGreaterThanOrEqual(1);
-
-    await page.getByRole('button', { name: /Nueva cita/i }).click();
-    const select = page.getByTestId('agenda-professional-select');
-    await expect(select).toBeVisible({ timeout: 10_000 });
-
-    const optionTexts = await select.locator('option').allTextContents();
-    for (const name of names) {
-      expect(optionTexts.some((t) => t.includes(name))).toBe(true);
-    }
-    // No deben aparecer médicos solo-mock (ids d3… del prototipo).
-    expect(optionTexts.join(' ')).not.toMatch(/Ricardo Olvera|Gabriela Herrera|Fernando Castillo/i);
-
-    await page.getByRole('button', { name: /Actualizar/i }).click();
-    await expect(page.getByTestId('page-agenda')).toBeVisible();
+    await expect(config.getByText(name)).toBeVisible({ timeout: 15_000 });
+    await expect(config.getByText(code, { exact: true })).toBeVisible();
   });
 });

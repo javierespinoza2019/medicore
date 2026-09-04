@@ -117,4 +117,52 @@ test.describe('00 — Contrato API · subjects', () => {
     expect(body.success).toBe(false);
     expect(String(body.message ?? '').toLowerCase()).toMatch(/sinba|9999|centinela/);
   });
+
+  test('ciclo foto sujeto: PUT imagen → GET bytes → DELETE limpia (#44)', async ({ apiCtx }) => {
+    const sesion = await sesionValida(apiCtx);
+    const create = await apiCtx.post('/api/subjects', {
+      headers: autorizacion(sesion),
+      data: { branchId: BRANCH_DEMO },
+    });
+    expect(create.status(), await create.text()).toBe(200);
+    const subjectId = (await create.json()).data.subjectId as string;
+
+    const png = Buffer.from(
+      'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8z8BQDwAEhQGAhKmMIQAAAABJRU5ErkJggg==',
+      'base64',
+    );
+
+    const upload = await apiCtx.put(`/api/subjects/${subjectId}/photo`, {
+      headers: autorizacion(sesion),
+      multipart: {
+        file: {
+          name: 'foto-e2e.png',
+          mimeType: 'image/png',
+          buffer: png,
+        },
+      },
+    });
+    expect(upload.status(), await upload.text()).toBe(200);
+    const uploaded = await upload.json();
+    expect(uploaded.success).toBe(true);
+    expect(uploaded.data.photoRelativePath).toMatch(/\/Pacientes\//i);
+    expect(uploaded.data.photoRelativePath).toMatch(/foto\.png$/i);
+
+    const getPhoto = await apiCtx.get(`/api/subjects/${subjectId}/photo`, {
+      headers: autorizacion(sesion),
+    });
+    expect(getPhoto.status()).toBe(200);
+    expect(getPhoto.headers()['content-type'] ?? '').toMatch(/image\/png/i);
+    expect((await getPhoto.body()).byteLength).toBeGreaterThan(10);
+
+    const clear = await apiCtx.delete(`/api/subjects/${subjectId}/photo`, {
+      headers: autorizacion(sesion),
+    });
+    expect(clear.status(), await clear.text()).toBe(200);
+    expect((await clear.json()).data.photoRelativePath).toBeNull();
+    expect(
+      (await apiCtx.get(`/api/subjects/${subjectId}/photo`, { headers: autorizacion(sesion) }))
+        .status(),
+    ).toBe(404);
+  });
 });

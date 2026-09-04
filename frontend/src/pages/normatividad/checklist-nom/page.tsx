@@ -1,8 +1,8 @@
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import Card from '@/components/base/Card';
 import Badge from '@/components/base/Badge';
 import Button from '@/components/base/Button';
-import { sucursales } from '@/mocks/branches';
+import { useUserBranches } from '@/hooks/useUserBranches';
 import { exportToExcel } from '@/utils/exportUtils';
 
 interface ChecklistItem {
@@ -64,10 +64,21 @@ const prioridadColors: Record<ChecklistItem['prioridad'], { label: string; color
 const categorias = [...new Set(checklistBase.map((i) => i.categoria))];
 
 export default function ChecklistNOM() {
-  const [sucursalId, setSucursalId] = useState(sucursales[0]?.id || '');
+  const { userBranches, resolvedBranchId } = useUserBranches();
+  const [sucursalId, setSucursalId] = useState('');
   const [checklist, setChecklist] = useState<ChecklistItem[]>(checklistBase.map((i) => ({ ...i })));
   const [filtroEstado, setFiltroEstado] = useState<ChecklistItem['estado'] | 'todos'>('todos');
   const [search, setSearch] = useState('');
+
+  useEffect(() => {
+    if (resolvedBranchId && !sucursalId) {
+      setSucursalId(resolvedBranchId);
+    } else if (!sucursalId && userBranches.length > 0) {
+      setSucursalId(userBranches[0].id);
+    }
+  }, [resolvedBranchId, sucursalId, userBranches]);
+
+  const sucursal = userBranches.find((s) => s.id === sucursalId);
 
   const filtered = useMemo(() => checklist.filter((i) => {
     const q = search.toLowerCase();
@@ -91,8 +102,6 @@ export default function ChecklistNOM() {
     setChecklist((prev) => prev.map((i) => i.id === id ? { ...i, estado } : i));
   };
 
-  const sucursal = sucursales.find((s) => s.id === sucursalId);
-
   return (
     <div className="p-4 md:p-6 space-y-5">
       <div className="flex items-center justify-between flex-wrap gap-3">
@@ -112,7 +121,7 @@ export default function ChecklistNOM() {
               Prioridad: prioridadColors[item.prioridad].label,
               Notas: item.notas || '',
             }));
-            const suc = sucursales.find((s) => s.id === sucursalId);
+            const suc = userBranches.find((s) => s.id === sucursalId);
             exportToExcel(rows, `Checklist_NOM_${suc?.nombre?.replace(/\s+/g, '_') || 'Establecimiento'}_${new Date().toISOString().split('T')[0]}`, 'ChecklistNOM');
           }}>
             Exportar Excel
@@ -131,13 +140,15 @@ export default function ChecklistNOM() {
         <div className="flex-1">
           <label className="text-2xs font-semibold text-foreground-500 uppercase tracking-wider">Establecimiento evaluado</label>
           <select value={sucursalId} onChange={(e) => setSucursalId(e.target.value)} className="block w-full px-3 py-1.5 mt-1 text-sm bg-background-50 border border-secondary-200 rounded-lg text-foreground-900 outline-none focus:border-primary-400 transition-base">
-            {sucursales.map((s) => <option key={s.id} value={s.id}>{s.nombre}</option>)}
+            {userBranches.map((s) => (
+              <option key={s.id} value={s.id}>{s.nombre}</option>
+            ))}
           </select>
         </div>
         {sucursal && (
           <div className="text-right text-xs text-foreground-500">
             <p className="font-medium">{sucursal.nombre}</p>
-            <p className="text-2xs">{sucursal.ciudad}, {sucursal.estado}</p>
+            {sucursal.telefono && <p className="text-2xs">{sucursal.telefono}</p>}
           </div>
         )}
       </div>

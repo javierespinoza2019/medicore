@@ -12,6 +12,9 @@ export const APPOINTMENT_OFFLINE_COMMAND_TYPES = [
 export type AppointmentState =
   | 'agendada'
   | 'confirmada'
+  | 'llego'
+  | 'en_espera'
+  | 'en_consulta'
   | 'atendida'
   | 'no_asistio'
   | 'cancelada';
@@ -23,6 +26,9 @@ export type ConsultingRoomDto = {
   code: string;
   name: string;
   isActive: boolean;
+  specialtyId: string | null;
+  specialtyName: string | null;
+  professionalIds: string[];
   createdAtUtc: string;
   updatedAtUtc: string;
 };
@@ -88,6 +94,8 @@ export type UpsertConsultingRoomRequest = {
   code: string;
   name: string;
   isActive: boolean;
+  specialtyId?: string | null;
+  professionalIds?: string[];
 };
 
 export async function listConsultingRooms(

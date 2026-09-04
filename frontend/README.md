@@ -23,9 +23,8 @@ en `docs/analisis/06-decisiones-abiertas.md` (19-bis).
 
 ## Importante
 
-- `src/mocks/` es **legado del prototipo**. No usar en builds demo/staging/prod.
-  El módulo de sesión aún depende de `src/mocks/users.ts` sólo para el tipo `User` y las etiquetas
-  de rol.
+- Sin carpeta `src/mocks/` en el frontend vivo: sesión tipada en `src/types/session.ts`;
+  módulos sin API usan `ModulePlaceholder` (no datos inventados).
 - Escritura de negocio: cola local → `POST /api/sync/commands`.
 - Logout debe purgar caché de lectura; **no** borrar la cola de salida.
 

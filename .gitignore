@@ -69,6 +69,8 @@ __pycache__/
 .venv/
 venv/
 
-# --- Logs ---
-*.log
-logs/
+# --- MediCore file storage (logos / adjuntos; no versionar contenido) ---
+/backend/Api/files/**
+!/backend/Api/files/.gitkeep
+/files/**
+!/files/.gitkeep

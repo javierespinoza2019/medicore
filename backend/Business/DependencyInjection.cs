@@ -4,6 +4,7 @@ using MediCore.Business.Auth;
 using MediCore.Business.ClinicalRecord;
 using MediCore.Business.Device;
 using MediCore.Business.Encounter;
+using MediCore.Business.Files;
 using MediCore.Business.Notes;
 using MediCore.Business.Prescription;
 using MediCore.Business.Professional;
@@ -13,6 +14,8 @@ using MediCore.Business.Sync;
 using MediCore.Business.Sync.Handlers;
 using MediCore.Business.Tenant;
 using MediCore.Business.Triage;
+using MediCore.Business.UserAdmin;
+using MediCore.Common;
 using MediCore.DataAccess;
 using MediCore.DataAccess.Appointment;
 using MediCore.DataAccess.Audit;
@@ -29,6 +32,7 @@ using MediCore.DataAccess.Role;
 using MediCore.DataAccess.Sync;
 using MediCore.DataAccess.Tenant;
 using MediCore.DataAccess.Triage;
+using MediCore.DataAccess.UserAdmin;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace MediCore.Business;
@@ -61,6 +65,8 @@ public static class DependencyInjection
         services.AddScoped<IBreakGlassService, BreakGlassService>();
         services.AddScoped<IRoleRepository, RoleRepository>();
         services.AddScoped<IRoleService, RoleService>();
+        services.AddScoped<ITenantUserRepository, TenantUserRepository>();
+        services.AddScoped<ITenantUserService, TenantUserService>();
 
         services.AddScoped<IAuthService, AuthService>();
         services.AddScoped<ISyncService, SyncService>();
@@ -77,6 +83,9 @@ public static class DependencyInjection
         services.AddScoped<IDeviceService, DeviceService>();
         services.AddScoped<ITenantService, TenantService>();
         services.AddScoped<IBranchService, BranchService>();
+        services.AddScoped<ILogoBrandingService, LogoBrandingService>();
+        services.AddScoped<ISubjectPhotoService, SubjectPhotoService>();
+        services.AddSingleton<IFileStorage, LocalFileStorage>();
         services.AddScoped<IAuditService, AuditService>();
         services.AddScoped<ISubjectService, SubjectService>();
         services.AddScoped<IAppointmentService, AppointmentService>();

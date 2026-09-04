@@ -186,7 +186,8 @@ export async function apiFetch<T>(
   retry = true,
 ): Promise<ApiResponse<T>> {
   const headers = new Headers(init.headers);
-  if (!headers.has('Content-Type') && init.body) {
+  // FormData: el navegador pone multipart boundary; no forzar application/json.
+  if (!headers.has('Content-Type') && init.body && !(init.body instanceof FormData)) {
     headers.set('Content-Type', 'application/json');
   }
   if (accessToken) {
@@ -267,4 +268,31 @@ export async function revokeAllSessions() {
 
 export async function health() {
   return apiFetch<{ status: string; product: string; phase: string }>('/api/health');
+}
+
+/**
+ * Descarga un recurso binario autenticado (p. ej. logo) y devuelve un object URL.
+ * El llamador debe `URL.revokeObjectURL` al descartarlo.
+ */
+export async function apiFetchBlobUrl(path: string, retry = true): Promise<string | null> {
+  const headers = new Headers();
+  if (accessToken) headers.set('Authorization', `Bearer ${accessToken}`);
+
+  const intento = await pedir(`${API_BASE}${path}`, {
+    method: 'GET',
+    headers,
+    credentials: 'include',
+  });
+
+  if (!intento.ok || !intento.res) return null;
+
+  if (intento.res.status === 401 && retry) {
+    const ok = await tryRefresh();
+    if (ok) return apiFetchBlobUrl(path, false);
+    return null;
+  }
+
+  if (!intento.res.ok) return null;
+  const blob = await intento.res.blob();
+  return URL.createObjectURL(blob);
 }

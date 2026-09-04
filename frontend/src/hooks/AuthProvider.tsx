@@ -1,5 +1,5 @@
 import { useState, useCallback, useEffect } from 'react';
-import type { User, UserRole } from '@/mocks/users';
+import type { User, UserRole } from '@/types/session';
 import { login as apiLogin, logout as apiLogout, restoreSession } from '@/api/client';
 import type { LoginResult } from '@/api/client';
 import { toSessionUser } from '@/auth/session';
@@ -9,6 +9,7 @@ import type { ApiFailure } from '@/api/errors';
 import { startOutboxDrain, tryDrainOutbox } from '@/sync/outboxDrain';
 import { normalizeSessionPermissions, type PermissionKey } from '@/utils/permissions';
 import { breakGlassEligibleRoles, type BreakGlassGrant } from '@/api/auth';
+import { resolveStoredBranchId } from '@/utils/branchResolution';
 
 const BRANCH_STORAGE_KEY = 'medicore_auth_branch';
 
@@ -16,7 +17,10 @@ function resolveInitialBranch(sessionUser: User | null): string | null {
   if (!sessionUser || sessionUser.sucursalIds.length === 0) return null;
   try {
     const saved = localStorage.getItem(BRANCH_STORAGE_KEY);
-    if (saved && sessionUser.sucursalIds.includes(saved)) return saved;
+    if (saved) {
+      const resolved = resolveStoredBranchId(saved, sessionUser.sucursalIds);
+      if (resolved) return resolved;
+    }
   } catch {
     // almacenamiento no disponible
   }

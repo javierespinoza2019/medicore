@@ -11,29 +11,53 @@ AS
 BEGIN
     SET NOCOUNT ON;
 
+    -- Result set 1: consultorios (+ especialidad)
     SELECT
-        RoomId, TenantId, BranchId, Code, Name, IsActive,
-        CreatedAtUtc, UpdatedAtUtc
-    FROM dbo.ConsultingRoom
-    WHERE TenantId = @TenantId
-      AND IsDeleted = 0
-      AND (@BranchId IS NULL OR BranchId = @BranchId)
-      AND (@OnlyActive = 0 OR IsActive = 1)
-    ORDER BY Code;
+        r.RoomId, r.TenantId, r.BranchId, r.Code, r.Name, r.IsActive,
+        r.SpecialtyId, s.Name AS SpecialtyName,
+        r.CreatedAtUtc, r.UpdatedAtUtc
+    FROM dbo.ConsultingRoom r
+    LEFT JOIN dbo.Specialty s
+        ON s.SpecialtyId = r.SpecialtyId
+       AND s.TenantId = r.TenantId
+       AND s.IsDeleted = 0
+    WHERE r.TenantId = @TenantId
+      AND r.IsDeleted = 0
+      AND (@BranchId IS NULL OR r.BranchId = @BranchId)
+      AND (@OnlyActive = 0 OR r.IsActive = 1)
+    ORDER BY r.Code;
+
+    -- Result set 2: médicos asignados (activos) de esos consultorios
+    SELECT
+        crp.RoomId,
+        crp.HealthcareProfessionalId
+    FROM dbo.ConsultingRoomProfessional crp
+    INNER JOIN dbo.ConsultingRoom r
+        ON r.RoomId = crp.RoomId
+       AND r.TenantId = crp.TenantId
+       AND r.IsDeleted = 0
+    WHERE crp.TenantId = @TenantId
+      AND crp.IsDeleted = 0
+      AND crp.IsActive = 1
+      AND (@BranchId IS NULL OR r.BranchId = @BranchId)
+      AND (@OnlyActive = 0 OR r.IsActive = 1);
 END
 GO
 
 CREATE OR ALTER PROCEDURE dbo.sp_ConsultingRoom_Upsert
-    @TenantId       UNIQUEIDENTIFIER,
-    @RoomId         UNIQUEIDENTIFIER,
-    @BranchId       UNIQUEIDENTIFIER,
-    @Code           NVARCHAR(64),
-    @Name           NVARCHAR(200),
-    @IsActive       BIT = 1,
-    @ActorUserId    UNIQUEIDENTIFIER
+    @TenantId               UNIQUEIDENTIFIER,
+    @RoomId                 UNIQUEIDENTIFIER,
+    @BranchId               UNIQUEIDENTIFIER,
+    @Code                   NVARCHAR(64),
+    @Name                   NVARCHAR(200),
+    @IsActive               BIT = 1,
+    @SpecialtyId            UNIQUEIDENTIFIER = NULL,
+    @ProfessionalIdsCsv     NVARCHAR(MAX) = NULL, -- GUIDs separados por coma; vacío = quitar todos
+    @ActorUserId            UNIQUEIDENTIFIER
 AS
 BEGIN
     SET NOCOUNT ON;
+    SET XACT_ABORT ON;
 
     IF NOT EXISTS (
         SELECT 1 FROM dbo.Branch
@@ -41,6 +65,15 @@ BEGIN
     )
     BEGIN
         THROW 50210, N'La sucursal no existe en el tenant o está dada de baja.', 1;
+    END
+
+    IF @SpecialtyId IS NOT NULL
+       AND NOT EXISTS (
+            SELECT 1 FROM dbo.Specialty
+            WHERE TenantId = @TenantId AND SpecialtyId = @SpecialtyId AND IsDeleted = 0
+       )
+    BEGIN
+        THROW 50212, N'La especialidad no existe en el tenant o está dada de baja.', 1;
     END
 
     IF EXISTS (
@@ -55,6 +88,31 @@ BEGIN
         THROW 50211, N'Ya existe un consultorio con ese código en la sucursal.', 1;
     END
 
+    -- Parseo de profesionales
+    DECLARE @Wanted TABLE (HealthcareProfessionalId UNIQUEIDENTIFIER PRIMARY KEY);
+    IF NULLIF(LTRIM(RTRIM(@ProfessionalIdsCsv)), N'') IS NOT NULL
+    BEGIN
+        INSERT INTO @Wanted (HealthcareProfessionalId)
+        SELECT DISTINCT TRY_CONVERT(UNIQUEIDENTIFIER, LTRIM(RTRIM(value)))
+        FROM STRING_SPLIT(@ProfessionalIdsCsv, N',')
+        WHERE TRY_CONVERT(UNIQUEIDENTIFIER, LTRIM(RTRIM(value))) IS NOT NULL;
+    END
+
+    IF EXISTS (
+        SELECT 1 FROM @Wanted w
+        WHERE NOT EXISTS (
+            SELECT 1 FROM dbo.HealthcareProfessional hp
+            WHERE hp.TenantId = @TenantId
+              AND hp.HealthcareProfessionalId = w.HealthcareProfessionalId
+              AND hp.IsDeleted = 0
+        )
+    )
+    BEGIN
+        THROW 50213, N'Uno o más profesionales no existen en el tenant o están dados de baja.', 1;
+    END
+
+    BEGIN TRAN;
+
     IF EXISTS (
         SELECT 1 FROM dbo.ConsultingRoom
         WHERE RoomId = @RoomId AND TenantId = @TenantId AND IsDeleted = 0
@@ -65,24 +123,67 @@ BEGIN
             Name = @Name,
             BranchId = @BranchId,
             IsActive = @IsActive,
+            SpecialtyId = @SpecialtyId,
             UpdatedAtUtc = SYSUTCDATETIME()
         WHERE RoomId = @RoomId AND TenantId = @TenantId AND IsDeleted = 0;
     END
     ELSE
     BEGIN
         INSERT INTO dbo.ConsultingRoom (
-            RoomId, TenantId, BranchId, Code, Name, IsActive
+            RoomId, TenantId, BranchId, Code, Name, IsActive, SpecialtyId
         )
         VALUES (
-            @RoomId, @TenantId, @BranchId, @Code, @Name, @IsActive
+            @RoomId, @TenantId, @BranchId, @Code, @Name, @IsActive, @SpecialtyId
         );
     END
 
+    -- Baja lógica de asignaciones que ya no están en la lista
+    UPDATE crp
+    SET IsDeleted = 1,
+        IsActive = 0,
+        UpdatedAtUtc = SYSUTCDATETIME()
+    FROM dbo.ConsultingRoomProfessional crp
+    WHERE crp.TenantId = @TenantId
+      AND crp.RoomId = @RoomId
+      AND crp.IsDeleted = 0
+      AND NOT EXISTS (
+          SELECT 1 FROM @Wanted w WHERE w.HealthcareProfessionalId = crp.HealthcareProfessionalId
+      );
+
+    -- Reactivar o insertar
+    MERGE dbo.ConsultingRoomProfessional AS t
+    USING @Wanted AS s
+       ON t.TenantId = @TenantId
+      AND t.RoomId = @RoomId
+      AND t.HealthcareProfessionalId = s.HealthcareProfessionalId
+    WHEN MATCHED THEN
+        UPDATE SET IsDeleted = 0, IsActive = 1, UpdatedAtUtc = SYSUTCDATETIME()
+    WHEN NOT MATCHED THEN
+        INSERT (TenantId, RoomId, HealthcareProfessionalId, IsActive, IsDeleted)
+        VALUES (@TenantId, @RoomId, s.HealthcareProfessionalId, 1, 0);
+
+    COMMIT TRAN;
+
+    -- Devolver igual que List (1 fila + asignaciones)
     SELECT
-        RoomId, TenantId, BranchId, Code, Name, IsActive,
-        CreatedAtUtc, UpdatedAtUtc
-    FROM dbo.ConsultingRoom
-    WHERE RoomId = @RoomId AND TenantId = @TenantId AND IsDeleted = 0;
+        r.RoomId, r.TenantId, r.BranchId, r.Code, r.Name, r.IsActive,
+        r.SpecialtyId, s.Name AS SpecialtyName,
+        r.CreatedAtUtc, r.UpdatedAtUtc
+    FROM dbo.ConsultingRoom r
+    LEFT JOIN dbo.Specialty s
+        ON s.SpecialtyId = r.SpecialtyId
+       AND s.TenantId = r.TenantId
+       AND s.IsDeleted = 0
+    WHERE r.RoomId = @RoomId AND r.TenantId = @TenantId AND r.IsDeleted = 0;
+
+    SELECT
+        crp.RoomId,
+        crp.HealthcareProfessionalId
+    FROM dbo.ConsultingRoomProfessional crp
+    WHERE crp.TenantId = @TenantId
+      AND crp.RoomId = @RoomId
+      AND crp.IsDeleted = 0
+      AND crp.IsActive = 1;
 END
 GO
 
@@ -387,7 +488,9 @@ BEGIN
     SET NOCOUNT ON;
     SET XACT_ABORT ON;
 
-    IF @ToState NOT IN (N'agendada', N'confirmada', N'atendida', N'no_asistio', N'cancelada')
+    IF @ToState NOT IN (
+        N'agendada', N'confirmada', N'llego', N'en_espera', N'en_consulta',
+        N'atendida', N'no_asistio', N'cancelada')
         THROW 50225, N'Estado de cita no reconocido.', 1;
 
     IF @ToState = N'cancelada' AND (NULLIF(LTRIM(RTRIM(@Reason)), N'') IS NULL)
@@ -414,8 +517,18 @@ BEGIN
     IF @FromState = @ToState
         THROW 50227, N'La cita ya está en ese estado.', 1;
 
-    IF @FromState = N'cancelada'
-        THROW 50228, N'Una cita cancelada no cambia de estado.', 1;
+    IF @FromState IN (N'cancelada', N'atendida', N'no_asistio')
+        THROW 50228, N'Una cita en estado terminal no cambia de estado.', 1;
+
+    -- Matriz de transiciones (alineada a AppointmentStates.CanTransition).
+    IF NOT (
+           (@FromState = N'agendada' AND @ToState IN (N'confirmada', N'llego', N'atendida', N'cancelada', N'no_asistio'))
+        OR (@FromState = N'confirmada' AND @ToState IN (N'llego', N'en_espera', N'en_consulta', N'atendida', N'cancelada', N'no_asistio'))
+        OR (@FromState = N'llego' AND @ToState IN (N'en_espera', N'en_consulta', N'cancelada', N'no_asistio'))
+        OR (@FromState = N'en_espera' AND @ToState IN (N'en_consulta', N'cancelada', N'no_asistio'))
+        OR (@FromState = N'en_consulta' AND @ToState IN (N'atendida', N'cancelada'))
+    )
+        THROW 50229, N'Transición de estado de cita no permitida.', 1;
 
     BEGIN TRAN;
 

@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/hooks/useAuth';
 import type { ApiFailure } from '@/api/errors';
 import { AvisoDeFalla } from '@/components/feature/EstadoEnlace';
-
+import InstitucionalLogo from '@/components/feature/InstitucionalLogo';
 
 export default function Login() {
   const navigate = useNavigate();
@@ -57,9 +57,12 @@ export default function Login() {
         <div className="relative z-10 flex flex-col justify-between p-12 xl:p-16 w-full">
           <div>
             <div className="mb-8">
-              <div className="w-12 h-12 flex items-center justify-center rounded-xl bg-white/10 backdrop-blur-sm">
-                <i className="ri-heart-pulse-line text-2xl text-white"></i>
-              </div>
+              <InstitucionalLogo
+                fallbackIcon="ri-heart-pulse-line"
+                fallbackClassName="w-12 h-12 flex items-center justify-center rounded-xl bg-white/10 backdrop-blur-sm"
+                iconClassName="text-2xl text-white"
+                imgClassName="w-12 h-12 object-contain rounded-xl"
+              />
             </div>
             <h1 className="text-4xl xl:text-5xl font-bold text-white font-heading tracking-tight leading-tight">
               MediCore

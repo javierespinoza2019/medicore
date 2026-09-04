@@ -33,6 +33,7 @@ description: >-
 | Revocación global (#75) | A — política: password / baja admin / «cerrar todos»; no lockout | — |
 | Break-glass (#23) | Sí — justificación + alerta auditable | — |
 | SaMD (#8) | Fuera de alcance F1–4 — documental/admin | — |
+| Foto paciente (#44) | Sí — biométrico; licitud del establecimiento | Entregada (API/UI/files) |
 
 Trabajo de producto reciente: **uno a uno** (sin enjambre). Suite: `docs/operacion/pruebas.md`.
 

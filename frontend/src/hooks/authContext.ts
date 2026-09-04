@@ -1,5 +1,5 @@
 import { createContext } from 'react';
-import type { User, UserRole } from '@/mocks/users';
+import type { User, UserRole } from '@/types/session';
 import type { ApiFailure } from '@/api/errors';
 import type { PermissionKey } from '@/utils/permissions';
 import type { BreakGlassGrant } from '@/api/auth';

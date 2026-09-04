@@ -93,6 +93,14 @@ public abstract class MediCoreControllerBase : ControllerBase
         return EffectivePermissionAccess.CanManageCatalogs(IsSuperAdmin(), perms);
     }
 
+    protected async Task<bool> CanManageUsersAsync(
+        IEffectivePermissionService permissionService,
+        CancellationToken ct)
+    {
+        var perms = await PermissionsAsync(permissionService, ct);
+        return EffectivePermissionAccess.CanManageUsers(IsSuperAdmin(), perms);
+    }
+
     protected async Task<bool> CanAccessPatientsAsync(
         IEffectivePermissionService permissionService,
         CancellationToken ct)

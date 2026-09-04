@@ -74,6 +74,8 @@ export type SubjectDto = {
   /** Identidad de género / trato; opcional, nunca inventada. */
   genderIdentity: string | null;
   curp: string | null;
+  /** Ruta relativa bajo files/; null = sin foto (#44). */
+  photoRelativePath: string | null;
   createdAtUtc: string;
   updatedAtUtc: string;
   /** Id solicitado en la ruta; puede diferir si hay vínculo vigente. */
@@ -234,4 +236,22 @@ export async function revertSubjectLink(
       body: JSON.stringify(body),
     },
   );
+}
+
+export async function uploadSubjectPhoto(
+  subjectId: string,
+  file: File,
+): Promise<ApiResponse<SubjectDto>> {
+  const body = new FormData();
+  body.append('file', file);
+  return apiFetch<SubjectDto>(`/api/subjects/${encodeURIComponent(subjectId)}/photo`, {
+    method: 'PUT',
+    body,
+  });
+}
+
+export async function clearSubjectPhoto(subjectId: string): Promise<ApiResponse<SubjectDto>> {
+  return apiFetch<SubjectDto>(`/api/subjects/${encodeURIComponent(subjectId)}/photo`, {
+    method: 'DELETE',
+  });
 }

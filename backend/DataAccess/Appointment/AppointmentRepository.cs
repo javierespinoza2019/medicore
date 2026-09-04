@@ -47,8 +47,17 @@ public sealed class AppointmentRepository(ISqlConnectionFactory connectionFactor
             new { TenantId = tenantId, BranchId = branchId, OnlyActive = onlyActive },
             commandType: CommandType.StoredProcedure,
             cancellationToken: ct);
-        var rows = await conn.QueryAsync(cmd);
-        return rows.Select(MapRoom).ToList();
+        using var multi = await conn.QueryMultipleAsync(cmd);
+        var rooms = (await multi.ReadAsync()).Select(MapRoom).ToList();
+        var linkRows = await multi.ReadAsync();
+        var byRoom = linkRows
+            .GroupBy(l => (Guid)l.RoomId)
+            .ToDictionary(
+                g => g.Key,
+                g => (IReadOnlyList<Guid>)g.Select(x => (Guid)x.HealthcareProfessionalId).ToList());
+        foreach (var room in rooms)
+            room.ProfessionalIds = byRoom.TryGetValue(room.RoomId, out var ids) ? ids : [];
+        return rooms;
     }
 
     public async Task<ConsultingRoomDto?> UpsertRoomAsync(
@@ -57,6 +66,9 @@ public sealed class AppointmentRepository(ISqlConnectionFactory connectionFactor
         using var conn = connectionFactory.Create();
         try
         {
+            var csv = request.ProfessionalIds is { Count: > 0 }
+                ? string.Join(',', request.ProfessionalIds.Distinct())
+                : null;
             var cmd = new CommandDefinition(
                 "sp_ConsultingRoom_Upsert",
                 new
@@ -67,14 +79,21 @@ public sealed class AppointmentRepository(ISqlConnectionFactory connectionFactor
                     request.Code,
                     request.Name,
                     request.IsActive,
+                    request.SpecialtyId,
+                    ProfessionalIdsCsv = csv,
                     ActorUserId = actorUserId
                 },
                 commandType: CommandType.StoredProcedure,
                 cancellationToken: ct);
-            var row = await conn.QuerySingleOrDefaultAsync(cmd);
-            return row is null ? null : MapRoom(row);
+            using var multi = await conn.QueryMultipleAsync(cmd);
+            var row = await multi.ReadSingleOrDefaultAsync();
+            if (row is null) return null;
+            var room = MapRoom(row);
+            var linkRows = await multi.ReadAsync();
+            room.ProfessionalIds = linkRows.Select(l => (Guid)l.HealthcareProfessionalId).ToList();
+            return room;
         }
-        catch (SqlException ex) when (ex.Number is 50210 or 50211)
+        catch (SqlException ex) when (ex.Number is 50210 or 50211 or 50212 or 50213)
         {
             throw new ArgumentException(ex.Message, ex);
         }
@@ -197,7 +216,7 @@ public sealed class AppointmentRepository(ISqlConnectionFactory connectionFactor
             await conn.ExecuteAsync(cmd);
             return await GetByIdAsync(tenantId, appointmentId, ct);
         }
-        catch (SqlException ex) when (ex.Number is 50225 or 50226 or 50227 or 50228)
+        catch (SqlException ex) when (ex.Number is 50225 or 50226 or 50227 or 50228 or 50229)
         {
             throw new ArgumentException(ex.Message, ex);
         }
@@ -238,17 +257,35 @@ public sealed class AppointmentRepository(ISqlConnectionFactory connectionFactor
         return rows.Select(MapAppointment).ToList();
     }
 
-    private static ConsultingRoomDto MapRoom(dynamic r) => new()
+    private static ConsultingRoomDto MapRoom(dynamic r)
     {
-        RoomId = r.RoomId,
-        TenantId = r.TenantId,
-        BranchId = r.BranchId,
-        Code = r.Code,
-        Name = r.Name,
-        IsActive = r.IsActive,
-        CreatedAtUtc = ToDto(r.CreatedAtUtc) ?? DateTimeOffset.UtcNow,
-        UpdatedAtUtc = ToDto(r.UpdatedAtUtc) ?? DateTimeOffset.UtcNow
-    };
+        Guid? specialtyId = null;
+        try
+        {
+            object? raw = r.SpecialtyId;
+            if (raw is Guid g) specialtyId = g;
+            else if (raw is not null and not DBNull) specialtyId = (Guid)raw;
+        }
+        catch
+        {
+            specialtyId = null;
+        }
+
+        return new ConsultingRoomDto
+        {
+            RoomId = r.RoomId,
+            TenantId = r.TenantId,
+            BranchId = r.BranchId,
+            Code = r.Code,
+            Name = r.Name,
+            IsActive = r.IsActive,
+            SpecialtyId = specialtyId,
+            SpecialtyName = r.SpecialtyName as string,
+            ProfessionalIds = [],
+            CreatedAtUtc = ToDto(r.CreatedAtUtc) ?? DateTimeOffset.UtcNow,
+            UpdatedAtUtc = ToDto(r.UpdatedAtUtc) ?? DateTimeOffset.UtcNow
+        };
+    }
 
     private static AppointmentDto MapAppointment(dynamic r) => new()
     {

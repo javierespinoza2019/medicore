@@ -1,0 +1,158 @@
+
+> medicore-e2e@0.1.0 test
+> playwright test
+
+
+Running 139 tests using 4 workers
+
+(node:16308) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:3564) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:27300) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:28824) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ok   1 [contrato-api] › specs\00-smoke\api-appointments.spec.ts:20:3 › 00 — Contrato API · appointments › GET /api/consulting-rooms lista consultorios de CENTRAL (936ms)
+  ok   5 [contrato-api] › specs\00-smoke\api-appointments.spec.ts:32:3 › 00 — Contrato API · appointments › crear cita de sujeto sin identidad + 409 por traslape + cancelar con motivo (1.5s)
+  ok   6 [contrato-api] › specs\00-smoke\api-appointments.spec.ts:98:3 › 00 — Contrato API · appointments › mine=true sin profesional falla cerrado (lista vacía) (445ms)
+  ok   7 [contrato-api] › specs\00-smoke\api-appointments.spec.ts:113:3 › 00 — Contrato API · appointments › medico con profesional puede listar mine (516ms)
+  ok   8 [contrato-api] › specs\00-smoke\api-appointments.spec.ts:137:3 › 00 — Contrato API · appointments › sin token responde 401 (24ms)
+  ok   9 [contrato-api] › specs\00-smoke\api-audit.spec.ts:16:3 › 00 — Contrato API · auditoría › admin puede listar por actor (200) (895ms)
+  ok  10 [contrato-api] › specs\00-smoke\api-audit.spec.ts:27:3 › 00 — Contrato API · auditoría › admin puede listar por sujeto inexistente (200 con lista vacía; 404 pendiente de M3) (870ms)
+  ok   3 [chromium] › specs\00-smoke\login.spec.ts:27:3 › 00 — Smoke · Login › muestra la pantalla de inicio de sesión (5.8s)
+  -   12 [chromium] › specs\02-pacientes\registro.spec.ts:5:8 › 02 — Pacientes · registro › [pendiente backend] registra paciente ambulatorio con CURP válida — Requiere backend MediCore (cola, idempotencia, tenant o SC completo). Prototipo mock en docs/frontend.
+  -   13 [chromium] › specs\02-pacientes\registro.spec.ts:9:8 › 02 — Pacientes · registro › [pendiente backend] rechaza CURP mal formada sin inventar identidad — Requiere backend MediCore (cola, idempotencia, tenant o SC completo). Prototipo mock en docs/frontend.
+  ok  11 [contrato-api] › specs\00-smoke\api-audit.spec.ts:41:3 › 00 — Contrato API · auditoría › rol sin permiso (medico) recibe 403 (920ms)
+  ok  15 [contrato-api] › specs\00-smoke\api-audit.spec.ts:59:3 › 00 — Contrato API · auditoría › sin token responde 401 (31ms)
+  ok   2 [chromium] › specs\00-smoke\login.spec.ts:42:3 › 00 — Smoke · Login › inicia sesión con administrador del mock y llega al dashboard (6.2s)
+  -   17 [chromium] › specs\03-triage-urgencias\dos-estaciones-offline.spec.ts:65:8 › 03 — Triage urgencias · dos estaciones offline › cada estación conserva su cola al reconectar sin duplicar (SS-08 / SC-11)
+  -   18 [chromium] › specs\05-caja\cobro-offline.spec.ts:6:8 › 05 — Caja · cobro offline › [pendiente Fase 2] registra cobro offline y sincroniza sin duplicar — sin endpoints de caja/cobro en API (Requiere backend MediCore (cola, idempotencia, tenant o SC completo). Prototipo mock en docs/frontend.)
+  -   19 [chromium] › specs\05-caja\cobro-offline.spec.ts:13:8 › 05 — Caja · cobro offline › [pendiente Fase 2] corte de caja iniciado offline es atómico al reconectar — módulo caja no entregado
+  ok   4 [chromium] › specs\00-smoke\login.spec.ts:33:3 › 00 — Smoke · Login › rechaza credenciales inválidas (6.4s)
+  ok  16 [contrato-api] › specs\00-smoke\api-auth.spec.ts:24:3 › 00 — Contrato API · autenticación › login válido devuelve accessToken con claim tenant_id y cookie mc_refresh httponly (576ms)
+  ok  22 [contrato-api] › specs\00-smoke\api-auth.spec.ts:48:3 › 00 — Contrato API · autenticación › credenciales inválidas fallan sin revelar si el usuario existe (1.1s)
+  ok  23 [contrato-api] › specs\00-smoke\api-auth.spec.ts:73:3 › 00 — Contrato API · autenticación › tenant inexistente no autentica aunque el usuario exista en otro tenant (88ms)
+  ok  24 [contrato-api] › specs\00-smoke\api-auth.spec.ts:78:3 › 00 — Contrato API · autenticación › GET /api/auth/me sin token responde 401 (21ms)
+  ok  14 [chromium] › specs\03-triage-urgencias\dos-estaciones-offline.spec.ts:26:3 › 03 — Triage urgencias · dos estaciones offline › Equipo1 y Equipo2: contextos independientes y setOffline por estación (2.6s)
+  ok  25 [contrato-api] › specs\00-smoke\api-auth.spec.ts:83:3 › 00 — Contrato API · autenticación › GET /api/auth/me con token devuelve los claims del tenant (721ms)
+  ok  27 [contrato-api] › specs\00-smoke\api-auth.spec.ts:95:3 › 00 — Contrato API · autenticación › token con firma alterada es rechazado (892ms)
+  ok  28 [contrato-api] › specs\00-smoke\api-auth.spec.ts:103:3 › 00 — Contrato API · autenticación › refresh rota el token y el refresh anterior deja de servir (2.8s)
+  ok  29 [contrato-api] › specs\00-smoke\api-auth.spec.ts:134:3 › 00 — Contrato API · autenticación › refresh sin cookie responde 401 (401ms)
+  ok  30 [contrato-api] › specs\00-smoke\api-auth.spec.ts:139:3 › 00 — Contrato API · autenticación › logout invalida el refresh de la estación que cierra (1.8s)
+  ok  20 [chromium] › specs\06-seguridad-clinica\sc-ui.spec.ts:95:3 › 06 — Seguridad clínica · UI (Vite + API) › SC-05 parcial: IdentityHeader en detalle y etiqueta visible en cola de urgencias (10.4s)
+  ok  31 [contrato-api] › specs\00-smoke\api-auth.spec.ts:163:3 › 00 — Contrato API · autenticación › una segunda sesión del mismo usuario sobrevive al logout de la primera (2.0s)
+  ok  21 [chromium] › specs\06-seguridad-clinica\sc-ui.spec.ts:112:3 › 06 — Seguridad clínica · UI (Vite + API) › SC-08 UI: signo fuera de rango se destaca; vacío no se marca normal (10.4s)
+  -   34 [chromium] › specs\07-accesibilidad\wcag-basico.spec.ts:24:8 › 07 — Accesibilidad · WCAG básico › axe sin violaciones graves en /login — contraste serio en tipografía del pie (#9199a5 sobre #ffffff ≈2.87:1); deuda UI del prototipo
+  -   35 [chromium] › specs\07-accesibilidad\wcag-basico.spec.ts:31:8 › 07 — Accesibilidad · WCAG básico › axe en triage y cabecera de identidad (SC-05 / SC-10) — requiere IdentityHeader en triage + sesión
+  ok  26 [chromium] › specs\06-seguridad-clinica\sc-ui.spec.ts:132:3 › 06 — Seguridad clínica · UI (Vite + API) › SC-09: contingencia muestra antigüedad de cola (QueueLiveBanner) (9.0s)
+  ok  33 [contrato-api] › specs\00-smoke\api-auth.spec.ts:199:3 › 00 — Contrato API · autenticación › logout sin cookie de refresh responde 400 y no cierra otras sesiones (1.1s)
+  ok  38 [contrato-api] › specs\00-smoke\api-auth.spec.ts:221:3 › 00 — Contrato API · autenticación › login de médico con profesional ligado trae healthcareProfessional en la sesión (1.1s)
+  ok  36 [chromium] › specs\07-accesibilidad\wcag-basico.spec.ts:38:3 › 07 — Accesibilidad · WCAG básico › recorrido teclado: foco llega a usuario y Acceder (2.7s)
+  ok  39 [contrato-api] › specs\00-smoke\api-auth.spec.ts:244:3 › 00 — Contrato API · autenticación › login de usuario sin profesional trae healthcareProfessional explícitamente vacío (795ms)
+  -   40 [contrato-api] › specs\00-smoke\api-auth.spec.ts:265:8 › 00 — Contrato API · autenticación › [pendiente producto] bloqueo por 5 intentos fallidos — no se ejercita contra la base compartida de Dev (demo): dejaría la cuenta sintética bloqueada 15 minutos para todo el equipo. Requiere usuario sintético dedicado al caso.
+  ok  41 [contrato-api] › specs\00-smoke\api-branches.spec.ts:12:3 › 00 — Contrato API · establecimiento / sucursales (M11) › GET /api/tenant/profile devuelve el tenant del token (1.2s)
+  ok  37 [chromium] › specs\09-offline\sc-11-indexeddb.spec.ts:27:3 › 09 — Offline · SC-11 IndexedDB estación › cola medicore-outbox sobrevive cierre de pestaña y reinicio (SC-11 / SS-09) (4.3s)
+  ok  42 [contrato-api] › specs\00-smoke\api-branches.spec.ts:24:3 › 00 — Contrato API · establecimiento / sucursales (M11) › GET /api/branches lista sucursales del tenant autenticado (936ms)
+  ok  43 [contrato-api] › specs\00-smoke\api-branches.spec.ts:39:3 › 00 — Contrato API · establecimiento / sucursales (M11) › GET /api/branches/{id} de la sucursal demo responde 200 (924ms)
+  ok  32 [chromium] › specs\06-seguridad-clinica\sc-ui.spec.ts:153:3 › 06 — Seguridad clínica · UI (Vite + API) › SC-10 UI: niveles de triage con texto + icono (no sólo color) (6.9s)
+  ok  44 [contrato-api] › specs\00-smoke\api-branches.spec.ts:50:3 › 00 — Contrato API · establecimiento / sucursales (M11) › GET /api/branches/{id} inexistente responde 404 (632ms)
+  ok  45 [contrato-api] › specs\00-smoke\api-branches.spec.ts:58:3 › 00 — Contrato API · establecimiento / sucursales (M11) › PUT con BranchId nuevo hace alta en el tenant sin inventar FacilityType (537ms)
+  ok  46 [contrato-api] › specs\00-smoke\api-branches.spec.ts:83:3 › 00 — Contrato API · establecimiento / sucursales (M11) › PUT actualiza domicilio preservando FacilityType/HasEmergencyService en null (491ms)
+  ok  47 [contrato-api] › specs\00-smoke\api-branches.spec.ts:121:3 › 00 — Contrato API · establecimiento / sucursales (M11) › endpoints de branches/tenant rechazan sin token (28ms)
+  ok  48 [contrato-api] › specs\00-smoke\api-branches.spec.ts:142:3 › 08 — Multi-tenant · sucursales (PUT/GET cruzado → 404) › token del tenant B no lee ni actualiza sucursales del tenant A (404, no 403) (960ms)
+  ok  49 [contrato-api] › specs\00-smoke\api-clinical-queue-hub.spec.ts:54:3 › 00 — Contrato hub · clinical-queue › negotiate sin token responde 401 (16ms)
+  ok  50 [contrato-api] › specs\00-smoke\api-clinical-queue-hub.spec.ts:59:3 › 00 — Contrato hub · clinical-queue › negotiate con Bearer responde 200 (403ms)
+  ok  51 [contrato-api] › specs\00-smoke\api-clinical-queue-hub.spec.ts:69:3 › 00 — Contrato hub · clinical-queue › JoinBranch + POST encounter emite queueChanged sin PHI (1.1s)
+  ok  52 [contrato-api] › specs\00-smoke\api-clinical-queue-hub.spec.ts:111:3 › 00 — Contrato hub · clinical-queue › token de otro tenant no recibe el grupo (si hay MEDICORE_TENANT_B) (3.8s)
+  ok  53 [contrato-api] › specs\00-smoke\api-clinical-record.spec.ts:18:3 › 00 — Contrato API · clinical record (expediente) › GET record asegura expediente; alergias no_interrogado; audit record.read (851ms)
+  ok  54 [contrato-api] › specs\00-smoke\api-clinical-record.spec.ts:53:3 › 00 — Contrato API · clinical record (expediente) › PUT allergy-status y POST allergies; DELETE soft (1.0s)
+  ok  55 [contrato-api] › specs\00-smoke\api-clinical-record.spec.ts:92:3 › 00 — Contrato API · clinical record (expediente) › POST history append versión; addendum (879ms)
+  ok  56 [contrato-api] › specs\00-smoke\api-clinical-record.spec.ts:131:3 › 00 — Contrato API · clinical record (expediente) › rol sin permiso clínico responde 403 (1.1s)
+  ok  57 [contrato-api] › specs\00-smoke\api-clinical-record.spec.ts:151:3 › 00 — Contrato API · clinical record (expediente) › sin token responde 401 (14ms)
+  ok  58 [contrato-api] › specs\00-smoke\api-encounters.spec.ts:18:3 › 00 — Contrato API · encounters › POST /api/encounters con subjectId+branchId responde 200; MP null (802ms)
+  ok  59 [contrato-api] › specs\00-smoke\api-encounters.spec.ts:51:3 › 00 — Contrato API · encounters › GET /api/encounters/queue ordena y lista abiertos (432ms)
+  ok  60 [contrato-api] › specs\00-smoke\api-encounters.spec.ts:65:3 › 00 — Contrato API · encounters › POST state cerrado sin triage responde 409 (923ms)
+  ok  61 [contrato-api] › specs\00-smoke\api-encounters.spec.ts:95:3 › 00 — Contrato API · encounters › POST care-without-consent con mismo profesional responde 409 (799ms)
+  ok  62 [contrato-api] › specs\00-smoke\api-encounters.spec.ts:127:3 › 00 — Contrato API · encounters › sin token responde 401 (16ms)
+  ok  63 [contrato-api] › specs\00-smoke\api-health.spec.ts:8:3 › 00 — Contrato API · salud del ambiente › GET /api/health responde success:true y expone el perfil de plataforma (19ms)
+  ok  64 [contrato-api] › specs\00-smoke\api-health.spec.ts:23:3 › 00 — Contrato API · salud del ambiente › el ambiente bajo prueba no admite datos de pacientes reales (11ms)
+  ok  65 [contrato-api] › specs\00-smoke\api-health.spec.ts:31:3 › 00 — Contrato API · salud del ambiente › el ambiente bajo prueba no es Production (9ms)
+  ok  66 [contrato-api] › specs\00-smoke\api-multi-tenant.spec.ts:13:3 › 00 — Contrato API · aislamiento multi-tenant › el tenant del token corresponde al tenant autenticado (383ms)
+  ok  67 [contrato-api] › specs\00-smoke\api-multi-tenant.spec.ts:23:3 › 00 — Contrato API · aislamiento multi-tenant › un dispositivo registrado sólo se lee con el token de su tenant (585ms)
+  ok  68 [contrato-api] › specs\00-smoke\api-multi-tenant.spec.ts:50:3 › 00 — Contrato API · aislamiento multi-tenant › endpoints con TenantId de claims rechazan petición sin token (14ms)
+  ok  69 [contrato-api] › specs\00-smoke\api-multi-tenant.spec.ts:65:3 › 00 — Contrato API · lectura cruzada entre tenants › un token del tenant A no lee datos del tenant B (860ms)
+  ok  70 [contrato-api] › specs\00-smoke\api-notes.spec.ts:41:3 › 00 — Contrato API · clinical notes (consulta/firma) › POST create + GET list; firma con médico (cédula); addendum; PUT 405 (1.7s)
+  ok  71 [contrato-api] › specs\00-smoke\api-notes.spec.ts:112:3 › 00 — Contrato API · clinical notes (consulta/firma) › admin sin profesional: create ok, sign 403 (SC-12 fail closed) (882ms)
+  ok  72 [contrato-api] › specs\00-smoke\api-notes.spec.ts:134:3 › 00 — Contrato API · clinical notes (consulta/firma) › rol caja responde 403 al listar (1.2s)
+  ok  73 [contrato-api] › specs\00-smoke\api-notes.spec.ts:150:3 › 00 — Contrato API · clinical notes (consulta/firma) › GET pending-evolution requiere branchId (514ms)
+  ok  74 [contrato-api] › specs\00-smoke\api-notes.spec.ts:165:3 › 00 — Contrato API · clinical notes (consulta/firma) › sin token responde 401 (12ms)
+  ok  75 [contrato-api] › specs\00-smoke\api-prescriptions.spec.ts:58:3 › 00 — Contrato API · prescriptions (M8) › 409 sin captura alérgica; 200 tras Set (incluso no_interrogado); 422 controlado; firma (2.5s)
+  ok  76 [contrato-api] › specs\00-smoke\api-subjects.spec.ts:20:3 › 00 — Contrato API · subjects › POST /api/subjects con sólo branchId responde 200 (689ms)
+  ok  77 [contrato-api] › specs\00-smoke\api-subjects.spec.ts:38:3 › 00 — Contrato API · subjects › POST con genderIdentity no inventa biologicalSex (opción B) (743ms)
+  ok  78 [contrato-api] › specs\00-smoke\api-subjects.spec.ts:53:3 › 00 — Contrato API · subjects › GET /api/subjects lista padrón (590ms)
+  ok  79 [contrato-api] › specs\00-smoke\api-subjects.spec.ts:64:3 › 00 — Contrato API · subjects › search-by-description admin 200 sin nombres; medico 403 (2.0s)
+  ok  80 [contrato-api] › specs\00-smoke\api-subjects.spec.ts:94:3 › 00 — Contrato API · subjects › sin token responde 401 (14ms)
+  ok  81 [contrato-api] › specs\00-smoke\api-sync-idempotencia.spec.ts:11:3 › 00 — Contrato API · cola e idempotencia › POST /api/sync/commands sin token responde 401 (13ms)
+  ok  82 [contrato-api] › specs\00-smoke\api-sync-idempotencia.spec.ts:23:3 › 00 — Contrato API · cola e idempotencia › el mismo IdempotencyKey repetido no duplica efecto (739ms)
+  ok  83 [contrato-api] › specs\00-smoke\api-sync-idempotencia.spec.ts:59:3 › 00 — Contrato API · cola e idempotencia › claves distintas producen efectos distintos (695ms)
+  ok  84 [contrato-api] › specs\00-smoke\api-sync-idempotencia.spec.ts:83:3 › 00 — Contrato API · cola e idempotencia › IdempotencyKey vacía se rechaza con 400 (376ms)
+  ok  85 [contrato-api] › specs\00-smoke\api-sync-idempotencia.spec.ts:99:3 › 00 — Contrato API · cola e idempotencia › CommandType vacío se rechaza con 400 (397ms)
+  ok  86 [contrato-api] › specs\00-smoke\api-sync-idempotencia.spec.ts:115:3 › 00 — Contrato API · cola e idempotencia › subject.create vía sync acepta y crea sujeto (idempotente) (1.2s)
+  ok  87 [contrato-api] › specs\00-smoke\api-sync-idempotencia.spec.ts:151:3 › 00 — Contrato API · cola e idempotencia › encounter.open vía sync acepta y es idempotente (1.1s)
+  ok  88 [contrato-api] › specs\00-smoke\api-sync-idempotencia.spec.ts:194:3 › 00 — Contrato API · cola e idempotencia › triage.save Full sin encounterId responde 400 (393ms)
+  ok  89 [contrato-api] › specs\00-smoke\api-sync-idempotencia.spec.ts:210:3 › 00 — Contrato API · cola e idempotencia › appointment.state cancelada sin motivo responde 400 (429ms)
+  ok  90 [contrato-api] › specs\00-smoke\api-sync-idempotencia.spec.ts:229:3 › 00 — Contrato API · cola e idempotencia › allergyStatus.set vía sync exige subjectId (Full) (401ms)
+  ok  91 [contrato-api] › specs\00-smoke\api-triage.spec.ts:18:3 › 00 — Contrato API · triage › GET escala efectiva de sucursal responde 200 con niveles (471ms)
+  ok  92 [contrato-api] › specs\00-smoke\api-triage.spec.ts:37:3 › 00 — Contrato API · triage › POST triage sin nivel y sin signos medidos responde 200 (1.1s)
+  ok  93 [contrato-api] › specs\00-smoke\api-triage.spec.ts:78:3 › 00 — Contrato API · triage › POST triage con nivel de escala y cierre posterior deja de ser 409 (1.4s)
+  ok  94 [contrato-api] › specs\01-auth-seguridad\permisos-por-rol.spec.ts:19:3 › 01 — Auth / seguridad · permisos por rol (API) › caja no lee expediente clínico (403) (1.0s)
+  ok  95 [contrato-api] › specs\01-auth-seguridad\permisos-por-rol.spec.ts:40:3 › 01 — Auth / seguridad · permisos por rol (API) › médico no lista auditoría (403) (364ms)
+  ok  96 [contrato-api] › specs\01-auth-seguridad\permisos-por-rol.spec.ts:55:3 › 01 — Auth / seguridad · permisos por rol (API) › enfermería no emite receta (403 o 409 por captura alérgica) (1.3s)
+  -   97 [contrato-api] › specs\01-auth-seguridad\permisos-por-rol.spec.ts:99:8 › 01 — Auth / seguridad · permisos por rol (API) › [pendiente UI PermissionGate] recepción no navega a administración de usuarios
+  -   98 [contrato-api] › specs\01-auth-seguridad\permisos-por-rol.spec.ts:106:8 › 01 — Auth / seguridad · permisos por rol (API) › [pendiente Fase 2] médico no ejecuta corte de caja — sin módulo de caja en API
+  ok  99 [contrato-api] › specs\02-pacientes\no-identificado.spec.ts:19:3 › 02 — Pacientes · no identificado › ingresa paciente inconsciente sin datos de identidad (API / SC-13 parcial) (689ms)
+  ok 100 [contrato-api] › specs\02-pacientes\no-identificado.spec.ts:37:3 › 02 — Pacientes · no identificado › etiqueta provisional distinta por sujeto (SC-17) (908ms)
+  -  101 [contrato-api] › specs\02-pacientes\no-identificado.spec.ts:57:8 › 02 — Pacientes · no identificado › [pendiente vinculación E2E] vinculación equivocada se corrige (SC-22) — POST links/{id}/revert diferido; SC-21 identidad posterior cubierto en sc-mapa
+  ok 102 [contrato-api] › specs\03-triage-urgencias\triage-sin-bloqueo.spec.ts:17:3 › 03 — Triage urgencias · sin bloqueo › clasifica triage sin datos administrativos (SC-14) (980ms)
+  ok 103 [contrato-api] › specs\03-triage-urgencias\triage-sin-bloqueo.spec.ts:45:3 › 03 — Triage urgencias · sin bloqueo › no asigna nivel por omisión; cierre sin triage 409 (SC-03) (861ms)
+  -  104 [contrato-api] › specs\03-triage-urgencias\triage-sin-bloqueo.spec.ts:73:8 › 03 — Triage urgencias · sin bloqueo › [pendiente UI offline] inicio de atención no se bloquea por fallo de red (SC-19) — sync subject.create/encounter.open/triage.* ya Full en API; falta E2E de estación con Core caído
+  -  105 [contrato-api] › specs\04-consulta-receta\flujo-consulta.spec.ts:17:8 › 04 — Consulta / receta › [pendiente UI] abre consulta, captura SOAP y cierra episodio — contrato notas: api-notes.spec.ts / sc-mapa SC-06
+  ok 106 [contrato-api] › specs\04-consulta-receta\flujo-consulta.spec.ts:24:3 › 04 — Consulta / receta › alerta de alergia bloqueante antes de prescribir (SC-01) (958ms)
+  ok 107 [contrato-api] › specs\04-consulta-receta\flujo-consulta.spec.ts:65:3 › 04 — Consulta / receta › confirma alergia con justificación (SC-02) (1.2s)
+  ok 108 [contrato-api] › specs\06-seguridad-clinica\sc-mapa.spec.ts:95:5 › 06 — Seguridad clínica · mapa SC-01…SC-24 › SC-01 … SC-12 — bloqueantes clínicos › SC-01: Las alergias y alertas del paciente se presentan de forma inequívoca antes de emitir una receta (927ms)
+  ok 109 [contrato-api] › specs\06-seguridad-clinica\sc-mapa.spec.ts:115:5 › 06 — Seguridad clínica · mapa SC-01…SC-24 › SC-01 … SC-12 — bloqueantes clínicos › SC-02: Prescribir un medicamento al que el paciente es alérgico exige confirmación explícita con justificación registrada (1.4s)
+  ok 110 [contrato-api] › specs\06-seguridad-clinica\sc-mapa.spec.ts:161:5 › 06 — Seguridad clínica · mapa SC-01…SC-24 › SC-01 … SC-12 — bloqueantes clínicos › SC-03: No se puede cerrar un episodio de urgencias sin clasificación de triage. Y en sentido inverso: el sistema no asigna un nivel por omisión. El .docx fija amarillo automático; se verifica que eso no ocurre y que en su lugar el episodio queda en estado explícito "sin clasificar", ordenado con prioridad alta hasta clasificarse (doc 03 §11.3). Bloquear el cierre es legítimo; bloquear el inicio no lo es (903ms)
+  -  111 [contrato-api] › specs\06-seguridad-clinica\sc-mapa.spec.ts:182:10 › 06 — Seguridad clínica · mapa SC-01…SC-24 › SC-01 … SC-12 — bloqueantes clínicos › SC-04: El alta con recetas pendientes está bloqueada; forzarla exige motivo y genera evento de excepción
+  -  112 [contrato-api] › specs\06-seguridad-clinica\sc-mapa.spec.ts:189:10 › 06 — Seguridad clínica · mapa SC-01…SC-24 › SC-01 … SC-12 — bloqueantes clínicos › SC-05: La cabecera de identidad del paciente es visible en todo momento durante la atención
+  ok 113 [contrato-api] › specs\06-seguridad-clinica\sc-mapa.spec.ts:197:5 › 06 — Seguridad clínica · mapa SC-01…SC-24 › SC-01 … SC-12 — bloqueantes clínicos › SC-06: Un documento firmado no puede modificarse por ninguna vía de la API (1.3s)
+  ok 114 [contrato-api] › specs\06-seguridad-clinica\sc-mapa.spec.ts:242:5 › 06 — Seguridad clínica · mapa SC-01…SC-24 › SC-01 … SC-12 — bloqueantes clínicos › SC-07: La cola de urgencias ordena por nivel, luego estado, luego hora de llegada, incluso offline (1.3s)
+  ok 115 [contrato-api] › specs\06-seguridad-clinica\sc-mapa.spec.ts:264:5 › 06 — Seguridad clínica · mapa SC-01…SC-24 › SC-01 … SC-12 — bloqueantes clínicos › SC-08: Los signos vitales fuera de rango crítico se destacan y nunca se guardan silenciosamente como normales (980ms)
+  -  116 [contrato-api] › specs\06-seguridad-clinica\sc-mapa.spec.ts:300:10 › 06 — Seguridad clínica · mapa SC-01…SC-24 › SC-01 … SC-12 — bloqueantes clínicos › SC-09: En modo contingencia, ninguna pantalla presenta datos obsoletos sin indicar su antigüedad
+  ok 117 [contrato-api] › specs\06-seguridad-clinica\sc-mapa.spec.ts:307:5 › 06 — Seguridad clínica · mapa SC-01…SC-24 › SC-01 … SC-12 — bloqueantes clínicos › SC-10: El nivel de triage es distinguible sin percepción de color (texto + icono) (441ms)
+  -  118 [contrato-api] › specs\06-seguridad-clinica\sc-mapa.spec.ts:329:10 › 06 — Seguridad clínica · mapa SC-01…SC-24 › SC-01 … SC-12 — bloqueantes clínicos › SC-11: Los datos capturados offline nunca se pierden al cerrar el navegador o reiniciar la estación
+  ok 119 [contrato-api] › specs\06-seguridad-clinica\sc-mapa.spec.ts:336:5 › 06 — Seguridad clínica · mapa SC-01…SC-24 › SC-01 … SC-12 — bloqueantes clínicos › SC-12: El sistema no permite atribuir una nota a un profesional distinto del autor autenticado (832ms)
+  ok 120 [contrato-api] › specs\06-seguridad-clinica\sc-mapa.spec.ts:366:5 › 06 — Seguridad clínica · mapa SC-01…SC-24 › SC-13 … SC-24 — nada bloquea el inicio de la atención (doc 08) › SC-13: Registrar y atender a un paciente inconsciente sin ningún dato de identidad y con el Core caído (1.1s)
+  ok 121 [contrato-api] › specs\06-seguridad-clinica\sc-mapa.spec.ts:407:5 › 06 — Seguridad clínica · mapa SC-01…SC-24 › SC-13 … SC-24 — nada bloquea el inicio de la atención (doc 08) › SC-14: Clasificar triage sin ningún dato administrativo (1.0s)
+  ok 122 [contrato-api] › specs\06-seguridad-clinica\sc-mapa.spec.ts:423:5 › 06 — Seguridad clínica · mapa SC-01…SC-24 › SC-13 … SC-24 — nada bloquea el inicio de la atención (doc 08) › SC-15: El sexo no tiene valor por omisión en la ruta de ingreso (657ms)
+  ok 123 [contrato-api] › specs\06-seguridad-clinica\sc-mapa.spec.ts:429:5 › 06 — Seguridad clínica · mapa SC-01…SC-24 › SC-13 … SC-24 — nada bloquea el inicio de la atención (doc 08) › SC-16: La edad desconocida no obliga a inventar un número (982ms)
+  ok 124 [contrato-api] › specs\06-seguridad-clinica\sc-mapa.spec.ts:457:5 › 06 — Seguridad clínica · mapa SC-01…SC-24 › SC-13 … SC-24 — nada bloquea el inicio de la atención (doc 08) › SC-17: Dos o más pacientes no identificados simultáneos nunca se confunden (976ms)
+  ok 125 [contrato-api] › specs\06-seguridad-clinica\sc-mapa.spec.ts:470:5 › 06 — Seguridad clínica · mapa SC-01…SC-24 › SC-13 … SC-24 — nada bloquea el inicio de la atención (doc 08) › SC-18: Nunca hay fusión automática de identidades (1.1s)
+  ok 126 [contrato-api] › specs\06-seguridad-clinica\sc-mapa.spec.ts:498:5 › 06 — Seguridad clínica · mapa SC-01…SC-24 › SC-13 … SC-24 — nada bloquea el inicio de la atención (doc 08) › SC-19: Ningún fallo de red, de Core, de validación diferida o de sincronización produce un bloqueo en la ruta de ingreso (1.3s)
+  ok 127 [contrato-api] › specs\06-seguridad-clinica\sc-mapa.spec.ts:538:5 › 06 — Seguridad clínica · mapa SC-01…SC-24 › SC-13 … SC-24 — nada bloquea el inicio de la atención (doc 08) › SC-20: Un catálogo faltante no impide avanzar (986ms)
+  ok 128 [contrato-api] › specs\06-seguridad-clinica\sc-mapa.spec.ts:563:5 › 06 — Seguridad clínica · mapa SC-01…SC-24 › SC-13 … SC-24 — nada bloquea el inicio de la atención (doc 08) › SC-21: La identidad asignada después no altera ni contradice lo ya registrado (1.1s)
+  -  129 [contrato-api] › specs\06-seguridad-clinica\sc-mapa.spec.ts:615:10 › 06 — Seguridad clínica · mapa SC-01…SC-24 › SC-13 … SC-24 — nada bloquea el inicio de la atención (doc 08) › SC-22: Una vinculación equivocada se corrige sin destruir el expediente
+  ok 130 [contrato-api] › specs\06-seguridad-clinica\sc-mapa.spec.ts:622:5 › 06 — Seguridad clínica · mapa SC-01…SC-24 › SC-13 … SC-24 — nada bloquea el inicio de la atención (doc 08) › SC-23: La búsqueda por descripción no divulga a quien no acredita interés legítimo (1.4s)
+  ok 131 [contrato-api] › specs\06-seguridad-clinica\sc-mapa.spec.ts:650:5 › 06 — Seguridad clínica · mapa SC-01…SC-24 › SC-13 … SC-24 — nada bloquea el inicio de la atención (doc 08) › SC-24: La hoja de notificación al Ministerio Público se genera fuera de línea y no bloquea (1.1s)
+  ok 132 [contrato-api] › specs\06-seguridad-clinica\sc-mapa.spec.ts:719:5 › 06 — Seguridad clínica · mapa SC-01…SC-24 › Multi-tenant (mapa auxiliar M12) › token de otro tenant no lee sujetos del tenant A (1.2s)
+  ok 133 [contrato-api] › specs\08-multi-tenant\aislamiento.spec.ts:17:5 › 08 — Multi-tenant · aislamiento › lectura cruzada entre tenants › tenant A no lee pacientes de tenant B (1.2s)
+  ok 134 [contrato-api] › specs\08-multi-tenant\aislamiento.spec.ts:43:3 › 08 — Multi-tenant · aislamiento › manipular recurso ajeno por id inexistente responde 404 (tenant del token) (423ms)
+  -  135 [contrato-api] › specs\08-multi-tenant\aislamiento.spec.ts:53:8 › 08 — Multi-tenant · aislamiento › [pendiente exportaciones] listados y exportaciones no filtran por conteo cruzado — requiere segundo tenant + export
+  ok 136 [contrato-api] › specs\09-offline\cola-idempotencia.spec.ts:20:3 › 09 — Offline · cola e idempotencia › reintento del mismo ULID no duplica escritura (1.1s)
+  ok 137 [contrato-api] › specs\09-offline\cola-idempotencia.spec.ts:47:3 › 09 — Offline · cola e idempotencia › subject.create + encounter.open vía cola sync (idempotente) (1.1s)
+  -  138 [contrato-api] › specs\09-offline\cola-idempotencia.spec.ts:98:8 › 09 — Offline · cola e idempotencia › cola sobrevive cierre de pestaña y reinicio (SC-11 / SS-09) — activo en sc-11-indexeddb.spec.ts (chromium + Vite); API=http://localhost:5080
+  -  139 [contrato-api] › specs\09-offline\cola-idempotencia.spec.ts:105:8 › 09 — Offline · cola e idempotencia › [pendiente Sync por lotes] drenado por lotes sin duplicar al interrumpir (SS-10)
+
+  21 skipped
+  118 passed (1.6m)
+E2E_SUITE_EXIT:0 

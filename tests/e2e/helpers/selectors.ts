@@ -46,5 +46,7 @@ export const sel = {
   admin: {
     medicosPath: '/app/administracion/medicos',
     especialidadesPath: '/app/administracion/especialidades',
+    sucursalesPath: '/app/administracion/sucursales',
+    usuariosPath: '/app/administracion/usuarios',
   },
 } as const;

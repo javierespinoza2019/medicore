@@ -31,8 +31,8 @@ Aplicados por `tools/apply-database.ps1`.
 - `frontend/src/api/professionals.ts` — sin mocks.
 - `frontend/src/pages/administracion/medicos/page.tsx` y `especialidades/page.tsx` consumen API real.
 - Agenda (página + impresos/config auxiliares) también consume este API; ver [`agenda.md`](agenda.md).
-  Deuda residual de `@/mocks/doctors` fuera de agenda: FHIR, estudios, vigilancia, referencias,
-  egresos, usuarios/servicios admin, `FirmaDigital`, `mocks/reportes.ts`.
+  `frontend/src/mocks/` y componentes huérfanos de placeholders se eliminaron (2026-09-03);
+  rutas sin API siguen en `ModulePlaceholder`.
 
 ## Pruebas
 

@@ -1,28 +1,30 @@
 import { useEffect, useState } from 'react';
-import type { Consultorio } from '@/mocks/consultorios';
-import type { ReglaBloqueo } from '@/mocks/agendaRules';
+import type { AgendaConsultorio } from '@/pages/agenda/consultorioTypes';
 import Tabs from '@/components/base/Tabs';
 import ConsultoriosTab from '@/pages/agenda/components/ConsultoriosTab';
-import ReglasBloqueoTab from '@/pages/agenda/components/ReglasBloqueoTab';
+import Card from '@/components/base/Card';
 
 interface AgendaConfigModalProps {
   open: boolean;
   onClose: () => void;
-  consultorios: Consultorio[];
-  setConsultorios: (updater: (prev: Consultorio[]) => Consultorio[]) => void;
-  reglasBloqueo: ReglaBloqueo[];
-  setReglasBloqueo: (updater: (prev: ReglaBloqueo[]) => ReglaBloqueo[]) => void;
-  defaultFecha: string;
+  consultorios: AgendaConsultorio[];
+  branchId: string | null;
+  onUpsertRoom: (input: {
+    roomId?: string;
+    code: string;
+    name: string;
+    isActive: boolean;
+    specialtyId?: string | null;
+    professionalIds?: string[];
+  }) => Promise<boolean>;
 }
 
 export default function AgendaConfigModal({
   open,
   onClose,
   consultorios,
-  setConsultorios,
-  reglasBloqueo,
-  setReglasBloqueo,
-  defaultFecha,
+  branchId,
+  onUpsertRoom,
 }: AgendaConfigModalProps) {
   const [tab, setTab] = useState('consultorios');
 
@@ -87,9 +89,22 @@ export default function AgendaConfigModal({
 
         <div className="px-6 py-5 overflow-y-auto scrollbar-thin flex-1">
           {tab === 'consultorios' ? (
-            <ConsultoriosTab consultorios={consultorios} onChange={setConsultorios} />
+            <ConsultoriosTab
+              consultorios={consultorios}
+              branchId={branchId}
+              onUpsert={onUpsertRoom}
+            />
           ) : (
-            <ReglasBloqueoTab reglasBloqueo={reglasBloqueo} onChange={setReglasBloqueo} defaultFecha={defaultFecha} />
+            <Card padding="md" className="border-dashed border-secondary-300 bg-secondary-50/50">
+              <p className="text-sm font-semibold text-foreground-900">Reglas de bloqueo</p>
+              <p className="text-xs text-foreground-500 mt-2 leading-relaxed">
+                Los bloqueos de horario por médico, especialidad o consultorio requieren contrato API.
+                No se guardan en el navegador para no simular persistencia.
+              </p>
+              <p className="text-xs text-amber-800 mt-3 bg-amber-50 border border-amber-200 rounded-lg px-3 py-2 inline-block">
+                Pendiente de API — sin reglas inventadas.
+              </p>
+            </Card>
           )}
         </div>
       </div>

@@ -137,6 +137,8 @@ public sealed class SubjectDto
     public string? Curp { get; set; }
     public DateTimeOffset? CurpValidatedAtUtc { get; set; }
     public DateTimeOffset? DeceasedAtUtc { get; set; }
+    /// <summary>Ruta relativa bajo files/ (foto identificación #44). Null = sin foto.</summary>
+    public string? PhotoRelativePath { get; set; }
     public DateTimeOffset CreatedAtUtc { get; set; }
     public DateTimeOffset UpdatedAtUtc { get; set; }
     public Guid? RequestedSubjectId { get; set; }
@@ -395,6 +397,7 @@ public sealed class SubjectRow
     public string? Curp { get; set; }
     public DateTime? CurpValidatedAtUtc { get; set; }
     public DateTime? DeceasedAtUtc { get; set; }
+    public string? PhotoRelativePath { get; set; }
     public DateTime CreatedAtUtc { get; set; }
     public DateTime UpdatedAtUtc { get; set; }
     public Guid? RequestedSubjectId { get; set; }

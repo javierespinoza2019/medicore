@@ -1,4 +1,4 @@
-import type { UserRole } from '@/mocks/users';
+import type { UserRole } from '@/types/session';
 
 export type RoutePath = string;
 

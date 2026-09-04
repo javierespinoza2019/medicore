@@ -11,6 +11,8 @@ public sealed class TenantProfileDto
     public string? Rfc { get; set; }
     /// <summary>Token white-label. null = sin personalizar.</summary>
     public string? PrimaryColorToken { get; set; }
+    /// <summary>Ruta relativa bajo files/. null = sin logo de organización.</summary>
+    public string? LogoRelativePath { get; set; }
     public bool IsActive { get; set; }
 }
 
@@ -48,6 +50,8 @@ public sealed class BranchDto
     /// null = pendiente de la pregunta abierta L. No se asume false ni true.
     /// </summary>
     public bool? HasEmergencyService { get; set; }
+    /// <summary>Ruta relativa bajo files/. null = hereda logo del tenant.</summary>
+    public string? LogoRelativePath { get; set; }
     public bool IsActive { get; set; }
 }
 

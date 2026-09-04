@@ -291,6 +291,7 @@ BEGIN
         s.GivenName, s.FirstSurname, s.SecondSurname, s.PreferredName,
         s.BirthDate, s.EstimatedAgeJson, s.BiologicalSex, s.SexSource, s.GenderIdentity,
         s.Curp, s.CurpValidatedAtUtc, s.BloodTypeJson, s.DeceasedAtUtc,
+        s.PhotoRelativePath,
         s.IsDeleted, s.CreatedAtUtc, s.UpdatedAtUtc,
         CASE WHEN @ResolvedId <> @SubjectId THEN @SubjectId ELSE NULL END AS RequestedSubjectId,
         @ResolvedId AS ResolvedSubjectId
@@ -1038,6 +1039,46 @@ BEGIN
     COMMIT;
 
     SELECT 1 AS SoftDeleted;
+END
+GO
+
+-- Foto de identificación (#44). Solo ruta relativa; bytes en files/.
+CREATE OR ALTER PROCEDURE dbo.sp_Subject_SetPhotoPath
+    @TenantId               UNIQUEIDENTIFIER,
+    @SubjectId              UNIQUEIDENTIFIER,
+    @PhotoRelativePath      NVARCHAR(512) = NULL,
+    @ActorUserId            UNIQUEIDENTIFIER
+AS
+BEGIN
+    SET NOCOUNT ON;
+
+    IF NOT EXISTS (
+        SELECT 1 FROM dbo.Subject
+        WHERE TenantId = @TenantId AND SubjectId = @SubjectId AND IsDeleted = 0
+    )
+        RETURN;
+
+    UPDATE dbo.Subject
+    SET PhotoRelativePath = @PhotoRelativePath,
+        UpdatedAtUtc = SYSUTCDATETIME()
+    WHERE TenantId = @TenantId
+      AND SubjectId = @SubjectId
+      AND IsDeleted = 0;
+
+    -- @ActorUserId reservado para auditoría futura; no inventar rastro aquí.
+    SELECT
+        s.SubjectId, s.TenantId, s.OriginBranchId, s.RecordNumber, s.IdentificationState,
+        s.GivenName, s.FirstSurname, s.SecondSurname, s.PreferredName,
+        s.BirthDate, s.EstimatedAgeJson, s.BiologicalSex, s.SexSource, s.GenderIdentity,
+        s.Curp, s.CurpValidatedAtUtc, s.BloodTypeJson, s.DeceasedAtUtc,
+        s.PhotoRelativePath,
+        s.IsDeleted, s.CreatedAtUtc, s.UpdatedAtUtc,
+        CAST(NULL AS UNIQUEIDENTIFIER) AS RequestedSubjectId,
+        s.SubjectId AS ResolvedSubjectId
+    FROM dbo.Subject s
+    WHERE s.TenantId = @TenantId
+      AND s.SubjectId = @SubjectId
+      AND s.IsDeleted = 0;
 END
 GO
 

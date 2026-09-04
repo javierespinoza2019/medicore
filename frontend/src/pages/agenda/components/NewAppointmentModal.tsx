@@ -4,23 +4,39 @@ import Button from '@/components/base/Button';
 import Input from '@/components/base/Input';
 import Select from '@/components/base/Select';
 import Avatar from '@/components/base/Avatar';
-import { patients } from '@/mocks/patients';
-import type { Appointment } from '@/mocks/appointments';
-import type { Consultorio } from '@/mocks/consultorios';
+import type { SubjectListItemDto } from '@/api/subjects';
+import type { AgendaAppointment, Appointment } from '@/pages/agenda/types';
+import type { AgendaConsultorio } from '@/pages/agenda/consultorioTypes';
 import TicketPrintModal from '@/pages/agenda/components/TicketPrintModal';
 import { useAgendaProfessionalsCatalog } from '@/pages/agenda/hooks/useAgendaProfessionalsCatalog';
+
+function subjectDisplayName(s: SubjectListItemDto): string {
+  const parts = [s.givenName, s.firstSurname, s.secondSurname].filter(Boolean);
+  if (parts.length) return parts.join(' ');
+  return s.preferredName ?? s.operationalLabel ?? s.subjectId.slice(0, 8);
+}
 
 interface NewAppointmentModalProps {
   open: boolean;
   onClose: () => void;
   defaultDate: string;
-  onCreateAppointment: (appointment: Appointment) => void;
+  onCreateAppointment: (input: {
+    subjectId: string;
+    professionalId: string;
+    roomId: string | null;
+    fecha: string;
+    horaInicio: string;
+    horaFin: string;
+    motivo: string;
+  }) => Promise<AgendaAppointment | null>;
   allAppointments: Appointment[];
   defaultPatientId?: string;
   defaultTime?: string;
   lockDateTime?: boolean;
-  consultorios: Consultorio[];
+  consultorios: AgendaConsultorio[];
   defaultConsultorioId?: string;
+  subjects: SubjectListItemDto[];
+  branchId: string | null;
 }
 
 function toMinutes(time: string): number {
@@ -78,7 +94,7 @@ function getOccupiedSlots(date: string, doctorId: string, allApps: Appointment[]
     .map(a => ({ start: a.horaInicio, end: a.horaFin, patientName: a.patientName }));
 }
 
-export default function NewAppointmentModal({ open, onClose, defaultDate, onCreateAppointment, allAppointments, defaultPatientId, defaultTime, lockDateTime = false, consultorios, defaultConsultorioId }: NewAppointmentModalProps) {
+export default function NewAppointmentModal({ open, onClose, defaultDate, onCreateAppointment, allAppointments, defaultPatientId, defaultTime, lockDateTime = false, consultorios, defaultConsultorioId, subjects, branchId }: NewAppointmentModalProps) {
   const { professionals, specialties } = useAgendaProfessionalsCatalog(true);
   const [step, setStep] = useState(defaultPatientId ? 2 : 1);
   const [patientSearch, setPatientSearch] = useState('');
@@ -93,6 +109,7 @@ export default function NewAppointmentModal({ open, onClose, defaultDate, onCrea
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [createdAppointment, setCreatedAppointment] = useState<Appointment | null>(null);
   const [printTicketOpen, setPrintTicketOpen] = useState(false);
+  const [creating, setCreating] = useState(false);
 
   // Reset all fields every time the modal opens
   useEffect(() => {
@@ -122,22 +139,27 @@ export default function NewAppointmentModal({ open, onClose, defaultDate, onCrea
   }, [open, defaultPatientId]);
 
   const filteredPatients = useMemo(() => {
-    if (!patientSearch.trim()) return patients.filter(p => p.estado === 'activo');
+    const active = subjects;
+    if (!patientSearch.trim()) return active;
     const q = patientSearch.toLowerCase();
-    return patients.filter(p =>
-      p.estado === 'activo' &&
-      (`${p.nombre} ${p.apellidos}`.toLowerCase().includes(q) ||
-       p.expediente.toLowerCase().includes(q) ||
-       p.curp.toLowerCase().includes(q))
-    );
-  }, [patientSearch]);
+    return active.filter((s) => {
+      const name = [s.givenName, s.firstSurname, s.secondSurname, s.preferredName, s.operationalLabel]
+        .filter(Boolean)
+        .join(' ')
+        .toLowerCase();
+      return name.includes(q) || s.subjectId.toLowerCase().includes(q);
+    });
+  }, [patientSearch, subjects]);
 
   const filteredDoctors = useMemo(() => {
     let list = professionals.filter((d) => d.isActive);
     if (consultorioId) {
       const cons = consultorios.find((c) => c.id === consultorioId);
-      if (cons) {
+      // Sin médicos asignados: no filtrar (todos los activos). Con lista: restringir.
+      if (cons && cons.medicosIds.length > 0) {
         list = list.filter((d) => cons.medicosIds.includes(d.healthcareProfessionalId));
+      } else if (cons?.especialidadId) {
+        list = list.filter((d) => d.specialtyId === cons.especialidadId);
       }
     } else if (specialtyFilter) {
       list = list.filter((d) => (d.specialtyName ?? '') === specialtyFilter);
@@ -155,7 +177,7 @@ export default function NewAppointmentModal({ open, onClose, defaultDate, onCrea
     }
   }, [consultorioId, consultorios]);
 
-  const selectedPatient = patients.find(p => p.id === selectedPatientId);
+  const selectedPatient = subjects.find((p) => p.subjectId === selectedPatientId);
   const selectedDoctor = professionals.find((d) => d.healthcareProfessionalId === doctorId);
   const selectedConsultorio = consultorios.find((c) => c.id === consultorioId);
 
@@ -198,8 +220,8 @@ export default function NewAppointmentModal({ open, onClose, defaultDate, onCrea
     if (Object.keys(errs).length === 0) setStep(step + 1);
   };
 
-  const handleCreate = () => {
-    if (!selectedPatient || !selectedDoctor) return;
+  const handleCreate = async () => {
+    if (!selectedPatient || !selectedDoctor || !branchId) return;
     if (conflictAppointment) return;
     if (pastDateError) return;
     if (motivo.trim().length > 0 && motivo.trim().length < 5) {
@@ -210,23 +232,20 @@ export default function NewAppointmentModal({ open, onClose, defaultDate, onCrea
       setErrors((prev) => ({ ...prev, motivo: 'El motivo no puede ser solo números' }));
       return;
     }
-    const newAppointment: Appointment = {
-      id: `app-${Date.now()}`,
-      sucursalId: selectedPatient.sucursalId,
-      patientId: selectedPatient.id,
-      patientName: `${selectedPatient.nombre} ${selectedPatient.apellidos}`,
-      doctorId: selectedDoctor.healthcareProfessionalId,
-      doctorName: selectedDoctor.fullName,
-      especialidad: selectedDoctor.specialtyName ?? '',
+    setCreating(true);
+    const created = await onCreateAppointment({
+      subjectId: selectedPatient.subjectId,
+      professionalId: selectedDoctor.healthcareProfessionalId,
+      roomId: consultorioId || null,
       fecha,
       horaInicio,
       horaFin: calculateHoraFin(),
-      estado: 'reservada',
       motivo,
-      consultorio: selectedConsultorio?.nombre || '',
-    };
-    onCreateAppointment(newAppointment);
-    setCreatedAppointment(newAppointment);
+    });
+    setCreating(false);
+    if (created) {
+      setCreatedAppointment(created);
+    }
   };
 
   const handleReset = () => {
@@ -283,10 +302,10 @@ export default function NewAppointmentModal({ open, onClose, defaultDate, onCrea
               <div className="p-4 bg-primary-50 border border-primary-200/60 rounded-xl space-y-2">
                 <p className="text-[11px] font-medium text-primary-600 uppercase tracking-wide">Paciente seleccionado</p>
                 <div className="flex items-center gap-3">
-                  <Avatar name={`${selectedPatient.nombre} ${selectedPatient.apellidos}`} size="md" />
+                  <Avatar name={subjectDisplayName(selectedPatient)} size="md" />
                   <div className="flex-1 min-w-0">
-                    <p className="text-sm font-bold text-foreground-900">{selectedPatient.nombre} {selectedPatient.apellidos}</p>
-                    <p className="text-xs text-foreground-500">{selectedPatient.expediente} · {selectedPatient.edad} años · {selectedPatient.sexo === 'M' ? 'Masculino' : 'Femenino'}</p>
+                    <p className="text-sm font-bold text-foreground-900">{subjectDisplayName(selectedPatient)}</p>
+                    <p className="text-xs text-foreground-500">{selectedPatient.identificationState}</p>
                   </div>
                   <span className="w-6 h-6 flex items-center justify-center text-emerald-500 shrink-0" aria-hidden="true">
                     <i className="ri-checkbox-circle-fill text-lg"></i>
@@ -298,8 +317,8 @@ export default function NewAppointmentModal({ open, onClose, defaultDate, onCrea
                 <Input
                   type="search"
                   label="Buscar paciente"
-                  placeholder="Nombre, expediente o CURP..."
-                  aria-label="Buscar paciente por nombre, expediente o CURP"
+                  placeholder="Nombre o identificador..."
+                  aria-label="Buscar paciente por nombre o identificador"
                   maxLength={100}
                   value={patientSearch}
                   onChange={(e) => setPatientSearch(e.target.value)}
@@ -313,20 +332,20 @@ export default function NewAppointmentModal({ open, onClose, defaultDate, onCrea
                   ) : (
                     filteredPatients.map((p) => (
                       <div
-                        key={p.id}
+                        key={p.subjectId}
                         role="option"
-                        aria-selected={selectedPatientId === p.id}
-                        onClick={() => { setSelectedPatientId(p.id); setErrors({}); }}
+                        aria-selected={selectedPatientId === p.subjectId}
+                        onClick={() => { setSelectedPatientId(p.subjectId); setErrors({}); }}
                         className={`flex items-center gap-3 px-3 py-2 cursor-pointer transition-base hover:bg-secondary-50 ${
-                          selectedPatientId === p.id ? 'bg-primary-50 border-l-2 border-l-primary-500' : ''
+                          selectedPatientId === p.subjectId ? 'bg-primary-50 border-l-2 border-l-primary-500' : ''
                         }`}
                       >
-                        <Avatar name={`${p.nombre} ${p.apellidos}`} size="sm" />
+                        <Avatar name={subjectDisplayName(p)} size="sm" />
                         <div className="flex-1 min-w-0">
-                          <p className="text-sm font-medium text-foreground-900 truncate">{p.nombre} {p.apellidos}</p>
-                          <p className="text-xs text-foreground-500">{p.expediente} · {p.edad} años · {p.sexo === 'M' ? 'Masculino' : 'Femenino'}</p>
+                          <p className="text-sm font-medium text-foreground-900 truncate">{subjectDisplayName(p)}</p>
+                          <p className="text-xs text-foreground-500">{p.identificationState}</p>
                         </div>
-                        {selectedPatientId === p.id && (
+                        {selectedPatientId === p.subjectId && (
                           <span className="w-5 h-5 flex items-center justify-center text-primary-500" aria-hidden="true">
                             <i className="ri-checkbox-circle-fill"></i>
                           </span>
@@ -343,10 +362,10 @@ export default function NewAppointmentModal({ open, onClose, defaultDate, onCrea
         {step === 2 && selectedPatient && (
           <div className="space-y-4">
             <div className="flex items-center gap-3 p-3 bg-secondary-50 rounded-lg">
-              <Avatar name={`${selectedPatient.nombre} ${selectedPatient.apellidos}`} size="sm" />
+              <Avatar name={subjectDisplayName(selectedPatient)} size="sm" />
               <div>
-                <p className="text-sm font-semibold text-foreground-900">{selectedPatient.nombre} {selectedPatient.apellidos}</p>
-                <p className="text-xs text-foreground-500">{selectedPatient.expediente}</p>
+                <p className="text-sm font-semibold text-foreground-900">{subjectDisplayName(selectedPatient)}</p>
+                <p className="text-xs text-foreground-500">{selectedPatient.identificationState}</p>
               </div>
             </div>
 
@@ -391,6 +410,7 @@ export default function NewAppointmentModal({ open, onClose, defaultDate, onCrea
               label="Médico"
               aria-label="Seleccionar médico"
               placeholder="Seleccionar médico"
+              data-testid="agenda-professional-select"
               options={filteredDoctors.map((d) => ({
                 value: d.healthcareProfessionalId,
                 label: d.specialtyName ? `${d.fullName} — ${d.specialtyName}` : d.fullName,
@@ -499,10 +519,10 @@ export default function NewAppointmentModal({ open, onClose, defaultDate, onCrea
           <div className="space-y-4">
             <div className="p-4 bg-secondary-50 rounded-xl space-y-3">
               <div className="flex items-center gap-3">
-                <Avatar name={`${selectedPatient.nombre} ${selectedPatient.apellidos}`} size="lg" />
+                <Avatar name={subjectDisplayName(selectedPatient)} size="lg" />
                 <div>
-                  <p className="text-sm font-bold text-foreground-900">{selectedPatient.nombre} {selectedPatient.apellidos}</p>
-                  <p className="text-xs text-foreground-500">{selectedPatient.expediente} · {selectedPatient.edad} años</p>
+                  <p className="text-sm font-bold text-foreground-900">{subjectDisplayName(selectedPatient)}</p>
+                  <p className="text-xs text-foreground-500">{selectedPatient.identificationState}</p>
                 </div>
               </div>
 
@@ -615,7 +635,7 @@ export default function NewAppointmentModal({ open, onClose, defaultDate, onCrea
         appointment={createdAppointment || {
           id: '', sucursalId: '', patientId: '', patientName: '', doctorId: '', doctorName: '',
           especialidad: '', fecha: '', horaInicio: '', horaFin: '', estado: 'reservada',
-          motivo: '', consultorio: '',
+          motivo: '', consultorio: '', roomId: null,
         }}
         isOpen={printTicketOpen}
         onClose={() => setPrintTicketOpen(false)}

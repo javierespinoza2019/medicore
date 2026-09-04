@@ -11,15 +11,12 @@ import {
   searchMedications,
   createPrescription,
   signPrescription,
-  frequencyLabel,
-  doseLabel,
   CONTROLLED_BLOCKED_MESSAGE,
   type MedicationDto,
   type PrescriptionDto,
   type FrequencyKind,
 } from '@/api/prescriptions';
 import { mensajeDeFalla } from '@/api/errors';
-import type { Receta } from '@/mocks/recetas';
 
 function failMsg(res: { message?: string; failure?: import('@/api/errors').ApiFailure }): string {
   if (res.failure?.apiMessage?.trim()) return res.failure.apiMessage;
@@ -55,65 +52,21 @@ type DraftItem = {
 };
 
 interface Props {
-  urgenciaId: string;
+  encounterId: string;
   patientId: string;
   patientName: string;
-  patientExpediente: string;
-  doctorId: string;
   doctorName: string;
-  doctorCedula: string;
-  diagnosticoRelacionado: string;
-  onRecetaCreada: (receta: Receta) => void;
+  onCreated: (rx: PrescriptionDto) => void;
   onCancel: () => void;
 }
 
-function toLegacyReceta(
-  rx: PrescriptionDto,
-  meta: {
-    patientName: string;
-    patientExpediente: string;
-    doctorId: string;
-    doctorName: string;
-    doctorCedula: string;
-    diagnosticoRelacionado: string;
-  },
-): Receta {
-  const issued = rx.issuedAtUtc ?? rx.occurredAtUtc;
-  const d = new Date(issued);
-  return {
-    id: rx.prescriptionId,
-    patientId: rx.subjectId,
-    patientName: meta.patientName,
-    patientExpediente: meta.patientExpediente,
-    doctorId: rx.professionalId ?? meta.doctorId,
-    doctorName: meta.doctorName,
-    doctorCedula: meta.doctorCedula,
-    consultaId: rx.encounterId,
-    urgenciaId: rx.encounterId,
-    fecha: d.toISOString().slice(0, 10),
-    hora: `${String(d.getHours()).padStart(2, '0')}:${String(d.getMinutes()).padStart(2, '0')}`,
-    medicamentos: rx.items.map((it) => ({
-      id: it.prescriptionItemId,
-      medicamentoId: it.medicationId,
-      nombre: it.genericNameSnapshot,
-      presentacion: '',
-      concentracion: doseLabel(it.dose),
-      dosis: doseLabel(it.dose),
-      frecuencia: frequencyLabel(it.frequency),
-      via: it.route,
-      duracion: it.durationDays != null ? `${it.durationDays} días` : 'Dosis única',
-      indicaciones: it.instructions ?? '',
-    })),
-    indicacionesGenerales: rx.generalInstructions ?? '',
-    estado: rx.cancelledAtUtc ? 'cancelada' : 'activa',
-    diagnosticoRelacionado: meta.diagnosticoRelacionado,
-  };
-}
-
 export default function UrgenciaRecetaCreator({
-  urgenciaId, patientId, patientName, patientExpediente,
-  doctorId, doctorName, doctorCedula, diagnosticoRelacionado,
-  onRecetaCreada, onCancel,
+  encounterId,
+  patientId,
+  patientName,
+  doctorName,
+  onCreated,
+  onCancel,
 }: Props) {
   const [record, setRecord] = useState<ClinicalRecordDto | null>(null);
   const [allergyChoice, setAllergyChoice] = useState<AllergyStatusCode>('niega');
@@ -137,7 +90,7 @@ export default function UrgenciaRecetaCreator({
 
   useEffect(() => {
     let cancelled = false;
-    (async () => {
+    void (async () => {
       const res = await getClinicalRecord(patientId);
       if (cancelled) return;
       if (!res.success || !res.data) {
@@ -147,7 +100,9 @@ export default function UrgenciaRecetaCreator({
       setRecord(res.data);
       setAllergyChoice((res.data.allergyStatus.status || 'no_interrogado') as AllergyStatusCode);
     })();
-    return () => { cancelled = true; };
+    return () => {
+      cancelled = true;
+    };
   }, [patientId]);
 
   const allergyTone = useMemo(() => {
@@ -231,7 +186,7 @@ export default function UrgenciaRecetaCreator({
     setError(null);
     const prioridadNota = `Prioridad urgencias: ${prioridad}.`;
     const generales = [prioridadNota, generalInstructions.trim()].filter(Boolean).join(' ');
-    const created = await createPrescription(urgenciaId, {
+    const created = await createPrescription(encounterId, {
       allergyStatusCaptureEventId: captureEventId,
       allergyOverrideJustification: overrideJustification.trim() || null,
       generalInstructions: generales || null,
@@ -256,20 +211,24 @@ export default function UrgenciaRecetaCreator({
     if (!signed.success && !signed.data) {
       setError(failMsg(signed));
     }
-    onRecetaCreada(toLegacyReceta(finalRx, {
-      patientName, patientExpediente, doctorId, doctorName, doctorCedula, diagnosticoRelacionado,
-    }));
+    onCreated(finalRx);
     setSaving(false);
   };
 
   return (
-    <div className="space-y-3 rounded-lg border border-red-200 bg-white p-4">
+    <div
+      className="space-y-3 rounded-lg border border-red-200 bg-white p-4"
+      data-testid="urgencia-receta-creator"
+    >
       <div className="flex items-start justify-between">
         <div>
           <h3 className="font-semibold text-red-900">Receta de urgencias</h3>
           <p className="text-sm text-foreground-600">{patientName}</p>
+          <p className="text-xs text-foreground-500">Médico: {doctorName}</p>
         </div>
-        <button type="button" className="text-sm text-foreground-500" onClick={onCancel}>Cerrar</button>
+        <button type="button" className="text-sm text-foreground-500" onClick={onCancel}>
+          Cerrar
+        </button>
       </div>
 
       <section className={`space-y-2 rounded border p-3 ${allergyTone}`}>
@@ -302,12 +261,17 @@ export default function UrgenciaRecetaCreator({
                 </button>
               ))}
             </div>
-            <button type="button" onClick={handleConfirmAllergy} className="rounded bg-red-800 px-3 py-1.5 text-sm text-white">
+            <button
+              type="button"
+              onClick={() => void handleConfirmAllergy()}
+              className="rounded bg-red-800 px-3 py-1.5 text-sm text-white"
+              data-testid="receta-confirmar-alergia"
+            >
               Registrar estado alérgico
             </button>
           </>
         ) : (
-          <p className="text-xs text-emerald-700">Estado capturado. Continúe con la receta.</p>
+          <p className="text-xs text-emerald-700">Estado alérgico capturado. Continúe con la receta.</p>
         )}
       </section>
 
@@ -330,14 +294,20 @@ export default function UrgenciaRecetaCreator({
             className="w-full rounded border px-3 py-2 text-sm"
             placeholder="Buscar medicamento…"
             value={medSearch}
-            onChange={(e) => handleMedSearch(e.target.value)}
+            onChange={(e) => void handleMedSearch(e.target.value)}
+            data-testid="receta-buscar-med"
           />
           {medResults.length > 0 && (
             <ul className="max-h-36 overflow-auto rounded border text-sm">
               {medResults.map((m) => (
                 <li key={m.medicationId}>
-                  <button type="button" className="w-full px-3 py-2 text-left hover:bg-secondary-50" onClick={() => handleSelectMed(m)}>
-                    {m.genericName}{m.concentration ? ` · ${m.concentration}` : ''}
+                  <button
+                    type="button"
+                    className="w-full px-3 py-2 text-left hover:bg-secondary-50"
+                    onClick={() => handleSelectMed(m)}
+                  >
+                    {m.genericName}
+                    {m.concentration ? ` · ${m.concentration}` : ''}
                   </button>
                 </li>
               ))}
@@ -350,28 +320,56 @@ export default function UrgenciaRecetaCreator({
               <label className="text-xs">
                 Dosis
                 <div className="mt-1 flex gap-2">
-                  <input type="number" className="w-24 rounded border px-2 py-1" value={doseValor} onChange={(e) => setDoseValor(Number(e.target.value))} />
-                  <input className="w-20 rounded border px-2 py-1" value={doseUnidad} onChange={(e) => setDoseUnidad(e.target.value)} />
+                  <input
+                    type="number"
+                    className="w-24 rounded border px-2 py-1"
+                    value={doseValor}
+                    onChange={(e) => setDoseValor(Number(e.target.value))}
+                  />
+                  <input
+                    className="w-20 rounded border px-2 py-1"
+                    value={doseUnidad}
+                    onChange={(e) => setDoseUnidad(e.target.value)}
+                  />
                 </div>
               </label>
               <label className="text-xs">
                 Vía
-                <input className="mt-1 w-full rounded border px-2 py-1" value={route} onChange={(e) => setRoute(e.target.value)} />
+                <input
+                  className="mt-1 w-full rounded border px-2 py-1"
+                  value={route}
+                  onChange={(e) => setRoute(e.target.value)}
+                />
               </label>
               <label className="text-xs">
                 Frecuencia
-                <select className="mt-1 w-full rounded border px-2 py-1" value={freqIdx} onChange={(e) => setFreqIdx(Number(e.target.value))}>
+                <select
+                  className="mt-1 w-full rounded border px-2 py-1"
+                  value={freqIdx}
+                  onChange={(e) => setFreqIdx(Number(e.target.value))}
+                >
                   {FREQ_OPTIONS.map((f, i) => (
-                    <option key={f.label} value={i}>{f.label}</option>
+                    <option key={f.label} value={i}>
+                      {f.label}
+                    </option>
                   ))}
                 </select>
               </label>
               <label className="text-xs">
                 Días
-                <input type="number" className="mt-1 w-full rounded border px-2 py-1" value={durationDays} onChange={(e) => setDurationDays(Number(e.target.value))} />
+                <input
+                  type="number"
+                  className="mt-1 w-full rounded border px-2 py-1"
+                  value={durationDays}
+                  onChange={(e) => setDurationDays(Number(e.target.value))}
+                />
               </label>
-              <button type="button" onClick={handleAddMed} className="sm:col-span-2 rounded bg-emerald-700 px-3 py-1.5 text-sm text-white">
-                Agregar
+              <button
+                type="button"
+                onClick={handleAddMed}
+                className="sm:col-span-2 rounded bg-emerald-700 px-3 py-1.5 text-sm text-white"
+              >
+                Agregar a la receta
               </button>
             </div>
           )}
@@ -380,8 +378,16 @@ export default function UrgenciaRecetaCreator({
             <ul className="space-y-1 text-sm">
               {draftItems.map((d) => (
                 <li key={d.key} className="flex justify-between rounded border px-2 py-1">
-                  <span>{d.medication.genericName} · {d.doseValor} {d.doseUnidad}</span>
-                  <button type="button" className="text-xs text-red-600" onClick={() => setDraftItems((p) => p.filter((x) => x.key !== d.key))}>Quitar</button>
+                  <span>
+                    {d.medication.genericName} · {d.doseValor} {d.doseUnidad}
+                  </span>
+                  <button
+                    type="button"
+                    className="text-xs text-red-600"
+                    onClick={() => setDraftItems((p) => p.filter((x) => x.key !== d.key))}
+                  >
+                    Quitar
+                  </button>
                 </li>
               ))}
             </ul>
@@ -394,6 +400,7 @@ export default function UrgenciaRecetaCreator({
               placeholder="Justificación SC-02 si aplica alergia conocida"
               value={overrideJustification}
               onChange={(e) => setOverrideJustification(e.target.value)}
+              data-testid="receta-justificacion-sc02"
             />
           )}
 
@@ -408,8 +415,9 @@ export default function UrgenciaRecetaCreator({
           <button
             type="button"
             disabled={saving || draftItems.length === 0}
-            onClick={handleSave}
+            onClick={() => void handleSave()}
             className="rounded bg-red-800 px-4 py-2 text-sm text-white disabled:opacity-50"
+            data-testid="receta-crear-firmar"
           >
             {saving ? 'Emitiendo…' : 'Crear y firmar receta'}
           </button>
@@ -417,7 +425,9 @@ export default function UrgenciaRecetaCreator({
       )}
 
       {error && (
-        <p className="rounded border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-800" role="alert">{error}</p>
+        <p className="rounded border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-800" role="alert">
+          {error}
+        </p>
       )}
     </div>
   );

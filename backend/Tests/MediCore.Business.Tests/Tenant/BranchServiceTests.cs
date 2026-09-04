@@ -118,5 +118,13 @@ public sealed class BranchServiceTests
                 IsActive = request.IsActive
             });
         }
+
+        public Task<BranchDto?> SetLogoPathAsync(
+            Guid tenantId,
+            Guid branchId,
+            Guid actorUserId,
+            string? logoRelativePath,
+            CancellationToken ct) =>
+            Task.FromResult<BranchDto?>(null);
     }
 }

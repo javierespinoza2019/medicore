@@ -1,7 +1,7 @@
 import { useMemo, useRef, useCallback, useState, useEffect } from 'react';
-import { type Appointment, statusConfig } from '@/mocks/appointments';
-import type { Consultorio } from '@/mocks/consultorios';
-import type { ReglaBloqueo } from '@/mocks/agendaRules';
+import { type AgendaAppointment, statusConfig } from '@/pages/agenda/types';
+import type { AgendaConsultorio } from '@/pages/agenda/consultorioTypes';
+import type { ReglaBloqueo } from '@/pages/agenda/agendaRulesTypes';
 import Avatar from '@/components/base/Avatar';
 import useDragToScroll from '@/hooks/useDragToScroll';
 import { useAgendaProfessionalsCatalog } from '@/pages/agenda/hooks/useAgendaProfessionalsCatalog';
@@ -38,10 +38,10 @@ function getCurrentTimeIndicator(config: { HOUR_HEIGHT: number }): { top: number
 
 interface ConsultoriosDayViewProps {
   date: string;
-  appointments: Appointment[];
-  consultorios: Consultorio[];
+  appointments: AgendaAppointment[];
+  consultorios: AgendaConsultorio[];
   reglasBloqueo: ReglaBloqueo[];
-  onSelectAppointment: (appointment: Appointment) => void;
+  onSelectAppointment: (appointment: AgendaAppointment) => void;
   onScheduleAtTime: (time: string, consultorioId?: string) => void;
   timeGranularity: TimeGranularity;
 }
@@ -53,7 +53,7 @@ interface ColumnDef {
   consultorioId?: string;
   doctorIds: string[];
   especialidadId?: string;
-  appointments: Appointment[];
+  appointments: AgendaAppointment[];
 }
 
 function ConsultorioColumn({
@@ -70,7 +70,7 @@ function ConsultorioColumn({
   date: string;
   reglasBloqueo: ReglaBloqueo[];
   config: GranularityConfig;
-  onSelectAppointment: (appointment: Appointment) => void;
+  onSelectAppointment: (appointment: AgendaAppointment) => void;
   onScheduleAtTime: (time: string, consultorioId?: string) => void;
   timeGranularity: TimeGranularity;
   dragState: React.MutableRefObject<{ moved: boolean }>;

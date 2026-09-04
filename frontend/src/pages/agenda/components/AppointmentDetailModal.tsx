@@ -4,8 +4,7 @@ import Modal from '@/components/base/Modal';
 import Button from '@/components/base/Button';
 import Badge from '@/components/base/Badge';
 import Avatar from '@/components/base/Avatar';
-import { statusConfig, type Appointment } from '@/mocks/appointments';
-import { patients } from '@/mocks/patients';
+import { statusConfig, type AgendaAppointment, type Appointment } from '@/pages/agenda/types';
 import TicketPrintModal from '@/pages/agenda/components/TicketPrintModal';
 
 interface AppointmentDetailModalProps {
@@ -47,9 +46,7 @@ function getNextStatus(current: Appointment['estado']): { status: Appointment['e
       return [];
     case 'cancelada':
     case 'no_acudio':
-      return [
-        { status: 'reservada', label: 'Reactivar cita', variant: 'primary', icon: 'ri-refresh-line' },
-      ];
+      return [];
     case 'atendida':
       return [];
     default:
@@ -66,7 +63,6 @@ export default function AppointmentDetailModal({ open, onClose, appointment, onS
 
   const cfg = statusConfig[appointment.estado];
   const nextActions = getNextStatus(appointment.estado);
-  const patient = patients.find(p => p.id === appointment.patientId);
   const isDisponible = appointment.estado === 'disponible';
   const isFinished = appointment.estado === 'atendida' || appointment.estado === 'cancelada' || appointment.estado === 'no_acudio';
 
@@ -138,9 +134,7 @@ export default function AppointmentDetailModal({ open, onClose, appointment, onS
                 <Avatar name={appointment.patientName} size="lg" />
                 <div className="flex-1 min-w-0">
                   <p className="text-base font-bold text-foreground-900">{appointment.patientName}</p>
-                  {patient && (
-                    <p className="text-xs text-foreground-500">{patient.expediente} · {patient.edad} años · {patient.sexo === 'M' ? 'Masculino' : 'Femenino'}</p>
-                  )}
+                  <p className="text-xs text-foreground-500 font-mono">{appointment.patientId.slice(0, 8)}…</p>
                 </div>
                 <Badge variant={cfg.variant} size="md" dot>{cfg.label}</Badge>
                 <button
@@ -179,26 +173,6 @@ export default function AppointmentDetailModal({ open, onClose, appointment, onS
                   <div>
                     <p className="text-2xs text-foreground-400 uppercase tracking-wide mb-0.5">Motivo</p>
                     <p className="text-sm font-semibold text-foreground-900">{appointment.motivo}</p>
-                  </div>
-                )}
-                {patient && patient.alergias.length > 0 && (
-                  <div className="col-span-2">
-                    <p className="text-2xs text-foreground-400 uppercase tracking-wide mb-0.5">Alergias</p>
-                    <div className="flex items-center gap-1.5 flex-wrap">
-                      {patient.alergias.map(a => (
-                        <Badge key={a} variant="danger" size="sm">{a}</Badge>
-                      ))}
-                    </div>
-                  </div>
-                )}
-                {patient && patient.alertas.length > 0 && (
-                  <div className="col-span-2">
-                    <p className="text-2xs text-foreground-400 uppercase tracking-wide mb-0.5">Alertas clínicas</p>
-                    <div className="flex items-center gap-1.5 flex-wrap">
-                      {patient.alertas.map(a => (
-                        <Badge key={a} variant="warning" size="sm">{a}</Badge>
-                      ))}
-                    </div>
                   </div>
                 )}
               </div>

@@ -21,15 +21,14 @@ Lo que hoy existe (medido el **2026-08-29**, puerta **M12 parcial**):
 
 - `backend/Tests/MediCore.Common.Tests`: pruebas unitarias del perfil `Platform` y **grupos SignalR
   de cola (M10)**.
-- `backend/Tests/MediCore.Business.Tests`: unitarias de logout (decisión 73), revocación global (#75),
-  break-glass (#23), plantillas de permisos por rol (§19), **AuthZ API por permisos efectivos**
-  (`EffectivePermissionAccessTests`), sesión con/sin
+- `backend/Tests/MediCore.Business.Tests`: unitarias de logout (decisión 73), sesión con/sin
   profesional sanitario, validaciones de sucursal (M11), **CRUD profesional/especialidad (M1)**,
   **tipos base + acceso a auditoría (M2)**
   y **sujeto/identidad (M3)**: CURP estructural, máquina de estados, emisor de etiqueta (cascada /
+  fonético sintético), foto identificación (#44) en `api-subjects`,
   sin colores), AuthZ provisional de búsqueda por descripción; **episodio/urgencias (M4)**: orden
   de cola, máquina de estados, care-without-consent, sugerencia MP; **agenda (M9)**: traslape de
-  intervalos, fail closed `mine` sin profesional, cancelar exige motivo; **triage/signos (M5)**:
+  intervalos, fail closed `mine` sin profesional, cancelar exige motivo, flujo `llego`/`en_espera`/`en_consulta`; **triage/signos (M5)**:
   normalización «no tomado», cascada de nivel, orden de cola con prioridad de escala;
   **expediente/historia (M7)**: fábrica `no_interrogado`, etiqueta alérgica sin colapsar lista
   vacía, AuthZ clínica provisional; **notas clínicas (M6)**: hash canónico estable, AuthZ
@@ -56,36 +55,48 @@ Lo que hoy existe (medido el **2026-08-29**, puerta **M12 parcial**):
   multi-tenant: activa con seed `008_dev_tenant_bravo.sql` y `MEDICORE_TENANT_B=bravo`; `skip` si
   `TENANT_B` vacío. Bloqueo por intentos fallidos: `skip` (cuenta sintética compartida).
 - Specs de carpeta: `01-auth-seguridad/permisos-por-rol` (API: caja/médico/enfermería; caja Fase 2
-  en skip) + **`api-break-glass`** (login/`me` con `permissions`, break-glass 403→200 en expediente,
-  rechazo `canAdminUsers`; usuario recepción para no contaminar UI enfermería) + **`permisos-por-rol-ui`** (chromium: PermissionGate/menú por rol — recepción/admin/
-  médico/enfermería/caja; ítems filtrados + deep-links denegados → dashboard; enfermería UI usa
-  `rocio.bautista@medicore.mx` / sucursal NORTE para aislar break-glass API de `carmen.vargas`) +
+  en skip) + **`permisos-por-rol-ui`** (chromium: PermissionGate/menú por rol — recepción/admin/
+  médico/enfermería/caja; ítems filtrados + deep-links denegados → dashboard; sin mocks de sesión),
   `02-pacientes/no-identificado` (API),
   `02-pacientes/registro-ui` (chromium: CURP válida/inválida + vinculación UI SC-22),
+  `02-pacientes/expediente-ui` (chromium: tab expediente API, tabs consultas/recetas API,
+  estudios placeholder),
   `03-triage-urgencias/triage-sin-bloqueo`, `03-triage-urgencias/sc-19-estacion-offline` (SC-19
-  chromium), `04-consulta-receta` (SC-01/02 API + **UI SOAP/receta**
-  en `flujo-consulta-ui.spec.ts` chromium/Vite+API; `consultas/` sin mocks),
-  `05-agenda/agenda-ui` (profesionales desde API; sin `@/mocks/doctors`),
+  chromium), `03-triage-urgencias/urgencias-receta-ui` (chromium: receta M8 en panel urgencias +
+  SC-04 override UI), `03-triage-urgencias/triage-print-ui` (chromium: hoja triage API + escala
+  configurable, sin mocks), `04-consulta-receta` (SC-01/02 API + **UI SOAP/receta/firma/cancelación**
+  en `flujo-consulta-ui.spec.ts` chromium/Vite+API: borrador SOAP, receta con captura alérgica,
+  firma de nota M6, SC-02 justificación overlap, cancelación M8; `consultas/` sin mocks),
+  `05-agenda/agenda-ui` (calendario rico + wizard nueva cita + upsert consultorios con especialidad/médicos API; sin carpeta `src/mocks`; sin overlay `en_triage`/`llamando`),
+  `05-farmacia/farmacia-ui` (chromium: placeholder honesto sin mocks de surtido/inventario),
+  rutas caja/facturación/FHIR/reportes/usuarios/catálogos/normatividad vía `ModulePlaceholder`
+  (deep-links de `permisos-por-rol-ui` OK; no inventan datos),
   `10-admin/profesionales-especialidades-ui` (chromium: listar/alta/edición/baja lógica
   médicos y especialidades contra API; sin mocks),
+  `10-admin/white-label-ui` (logo tenant/API + `primaryColorToken` → CSS),
   `08-multi-tenant` (bravo), `09-offline` (ULID + sync + SC-11 IndexedDB), `07-accesibilidad`
-  (teclado login + axe login WCAG AA). Caja offline: skip Fase 2.
+  (teclado login + axe login WCAG AA), `00-smoke/dashboard-ui` (panel operativo API, sin KPIs mock).
+  Caja offline: skip Fase 2.
 - `tests/e2e`, proyecto `chromium`: login, dos estaciones, SC-19 estación offline, `sc-ui`,
-  SC-11 IndexedDB, teclado login, **flujo-consulta-ui**, **registro-ui**, **agenda-ui**,
-  **permisos-por-rol-ui**, **admin profesionales/especialidades**
-  (`10-admin/profesionales-especialidades-ui`) cuando hay Vite.
+  SC-11 IndexedDB, teclado login, **dashboard-ui**, **flujo-consulta-ui**, **registro-ui**, **expediente-ui**,
+  **farmacia-ui** (placeholder), **urgencias-receta-ui** (receta M8 + SC-04), **triage-print-ui**,
+  **agenda-ui**,
+  **permisos-por-rol-ui**, **admin profesionales/especialidades**, **white-label**
+  (`10-admin/white-label-ui`) cuando hay Vite.
 - Integración con SPs: pendiente como proyecto aparte; el aislamiento de sucursales se cubre en
   contrato (404 cruzado cuando hay segundo tenant).
 - Frontend: `type-check` y `lint` pueden seguir con deuda del prototipo; ver pendiente 76 en
   [`06-decisiones-abiertas.md`](../analisis/06-decisiones-abiertas.md).
-- Contratos HTTP: [`auth-sesiones.md`](auth-sesiones.md), [`roles-permisos.md`](roles-permisos.md), [`establecimiento.md`](establecimiento.md), [`encuentros.md`](encuentros.md),
+- Contratos HTTP: [`auth-sesiones.md`](auth-sesiones.md), [`establecimiento.md`](establecimiento.md), [`encuentros.md`](encuentros.md),
   [`agenda.md`](agenda.md), [`triage.md`](triage.md), [`expediente.md`](expediente.md),
   [`notas.md`](notas.md), [`recetas.md`](recetas.md), [`profesionales.md`](profesionales.md),
   [`live-cola.md`](live-cola.md).
-- Pantallas clínicas (`pacientes`, `urgencias`, `triage`, `agenda`, `consultas`/notas/receta,
-  historia/`recetas`, auditoría) consumen API real en los flujos cableados. Admin `medicos`/
-  `especialidades` cableados a API (M1). Agenda sin `@/mocks/doctors` (catálogo
-  `/api/professionals`).
+- Pantallas clínicas (`pacientes`, `urgencias`, `triage`, `agenda`, `dashboard` operativo API,
+  `consultas`/notas/receta con listado y cancelación en episodio, `recetas` con cancelación en detalle,
+  expediente unificado en detalle paciente, `estudios` y `farmacia` placeholder honesto, auditoría)
+  consumen API real en los flujos cableados. Admin `medicos`/
+  `especialidades` cableados a API (M1). Agenda: calendario rico + API (M9); sin carpeta
+  `frontend/src/mocks` (catálogo `/api/professionals`).
 
 ## Reglas duras
 

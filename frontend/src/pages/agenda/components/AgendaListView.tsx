@@ -1,15 +1,14 @@
 import { useMemo, useState } from 'react';
-import { type Appointment, statusConfig } from '@/mocks/appointments';
+import { statusConfig, type Appointment } from '@/pages/agenda/types';
 import Badge from '@/components/base/Badge';
 
 interface AgendaListViewProps {
   appointments: Appointment[];
   onReprint: (appointment: Appointment) => void;
   onMarkAttendance: (appointment: Appointment) => void;
-  onLinkTriage: (appointment: Appointment) => void;
 }
 
-export default function AgendaListView({ appointments, onReprint, onMarkAttendance, onLinkTriage }: AgendaListViewProps) {
+export default function AgendaListView({ appointments, onReprint, onMarkAttendance }: AgendaListViewProps) {
   const [filterEstado, setFilterEstado] = useState('');
 
   const sorted = useMemo(() => {
@@ -24,6 +23,10 @@ export default function AgendaListView({ appointments, onReprint, onMarkAttendan
     return sorted.filter((a) => a.estado === filterEstado);
   }, [sorted, filterEstado]);
 
+  const filterOptions = Object.entries(statusConfig).filter(
+    ([k]) => k !== 'disponible' && k !== 'en_triage' && k !== 'llamando',
+  );
+
   return (
     <div className="h-full flex flex-col">
       <div className="flex items-center justify-between mb-2 shrink-0">
@@ -35,8 +38,10 @@ export default function AgendaListView({ appointments, onReprint, onMarkAttendan
           className="px-2.5 py-1.5 text-xs bg-background-50 border border-secondary-200 rounded-lg text-foreground-700 outline-none focus:border-primary-400 cursor-pointer"
         >
           <option value="">Todos los estados</option>
-          {Object.entries(statusConfig).filter(([k]) => k !== 'disponible').map(([key, cfg]) => (
-            <option key={key} value={key}>{cfg.label}</option>
+          {filterOptions.map(([key, cfg]) => (
+            <option key={key} value={key}>
+              {cfg.label}
+            </option>
           ))}
         </select>
       </div>
@@ -57,8 +62,9 @@ export default function AgendaListView({ appointments, onReprint, onMarkAttendan
           <tbody>
             {visible.map((a) => {
               const cfg = statusConfig[a.estado];
-              const canAttend = a.estado !== 'llego' && a.estado !== 'en_espera' && a.estado !== 'en_triage' && a.estado !== 'en_consulta' && a.estado !== 'atendida' && a.estado !== 'cancelada' && a.estado !== 'no_acudio';
-              const canTriage = a.estado !== 'en_triage' && a.estado !== 'atendida' && a.estado !== 'cancelada' && a.estado !== 'no_acudio';
+              const canAttend =
+                a.estado === 'reservada' ||
+                a.estado === 'confirmada';
               return (
                 <tr key={a.id} className="border-t border-secondary-100 hover:bg-secondary-50/60 transition-base">
                   <td className="px-4 py-2.5 whitespace-nowrap">
@@ -73,7 +79,9 @@ export default function AgendaListView({ appointments, onReprint, onMarkAttendan
                   <td className="px-4 py-2.5 text-xs text-foreground-500 whitespace-nowrap">{a.especialidad}</td>
                   <td className="px-4 py-2.5 text-xs text-foreground-500 whitespace-nowrap">{a.consultorio}</td>
                   <td className="px-4 py-2.5">
-                    <Badge variant={cfg.variant} size="sm">{cfg.label}</Badge>
+                    <Badge variant={cfg.variant} size="sm">
+                      {cfg.label}
+                    </Badge>
                   </td>
                   <td className="px-4 py-2.5">
                     <div className="flex items-center justify-end gap-1">
@@ -95,17 +103,6 @@ export default function AgendaListView({ appointments, onReprint, onMarkAttendan
                           className="w-7 h-7 flex items-center justify-center rounded-md text-emerald-600 hover:bg-emerald-500/10 transition-base cursor-pointer"
                         >
                           <i className="ri-check-double-line text-sm"></i>
-                        </button>
-                      )}
-                      {canTriage && (
-                        <button
-                          type="button"
-                          onClick={() => onLinkTriage(a)}
-                          title="Ligar a triage"
-                          aria-label={`Ligar a triage a ${a.patientName}`}
-                          className="w-7 h-7 flex items-center justify-center rounded-md text-sky-600 hover:bg-sky-500/10 transition-base cursor-pointer"
-                        >
-                          <i className="ri-heart-pulse-line text-sm"></i>
                         </button>
                       )}
                     </div>

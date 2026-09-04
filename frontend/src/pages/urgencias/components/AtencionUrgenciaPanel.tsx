@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import {
   circumstanceOptions,
   dispositionOptions,
@@ -10,15 +10,25 @@ import {
   createCareWithoutConsent,
   type EncounterDto,
 } from '@/api/encounters';
-import { getSubject, type SubjectDto } from '@/api/subjects';
+import { getSubject, displayNameOf, type SubjectDto } from '@/api/subjects';
+import { listPrescriptionsBySubject, type PrescriptionDto } from '@/api/prescriptions';
 import type { TriageScaleConfigDto } from '@/api/triage';
 import { mensajeDeFalla } from '@/api/errors';
 import { triageLevelLabel } from '@/utils/triageScalePresentation';
+import {
+  filterPrescriptions,
+  hasPendingPrescriptions,
+  isPrescriptionPending,
+  prescriptionStatusLabel,
+  prescriptionUiStatus,
+} from '@/utils/prescriptionPresentation';
 import Button from '@/components/base/Button';
 import Input from '@/components/base/Input';
 import Select from '@/components/base/Select';
 import Textarea from '@/components/base/Textarea';
 import IdentityHeader from '@/components/feature/IdentityHeader';
+import EncounterPrescriptionList from '@/pages/consultas/components/EncounterPrescriptionList';
+import UrgenciaRecetaCreator from '@/pages/urgencias/components/UrgenciaRecetaCreator';
 import { useAuth } from '@/hooks/useAuth';
 
 interface Props {
@@ -28,6 +38,11 @@ interface Props {
   onUpdated: (e: EncounterDto) => void;
 }
 
+function isPendingPrescriptionsConflict(message: string | undefined): boolean {
+  if (!message) return false;
+  return /receta|firmar|pendiente/i.test(message);
+}
+
 export default function AtencionUrgenciaPanel({
   encounter,
   triageScale = null,
@@ -35,6 +50,12 @@ export default function AtencionUrgenciaPanel({
 }: Props) {
   const { user, isLoading: authLoading, isAuthenticated } = useAuth();
   const [subject, setSubject] = useState<SubjectDto | null>(null);
+  const [prescriptions, setPrescriptions] = useState<PrescriptionDto[]>([]);
+  const [rxLoading, setRxLoading] = useState(false);
+  const [showRecetaCreator, setShowRecetaCreator] = useState(false);
+  const [sc04OverrideReason, setSc04OverrideReason] = useState('');
+  const [sc04PromptOpen, setSc04PromptOpen] = useState(false);
+
   const [accessRoute, setAccessRoute] = useState(encounter.accessRoute ?? '');
   const [circumstance, setCircumstance] = useState(encounter.admissionCircumstance ?? '');
   const [circumstanceText, setCircumstanceText] = useState(
@@ -63,6 +84,31 @@ export default function AtencionUrgenciaPanel({
   const [wocRationale, setWocRationale] = useState('');
   const [wocProf2, setWocProf2] = useState('');
 
+  const encounterPrescriptions = useMemo(
+    () => filterPrescriptions(prescriptions, { encounterId: encounter.encounterId }),
+    [prescriptions, encounter.encounterId],
+  );
+
+  const pendingRx = useMemo(
+    () => encounterPrescriptions.filter(isPrescriptionPending),
+    [encounterPrescriptions],
+  );
+
+  const doctorId = user?.doctorId?.trim() || '';
+  const doctorName = `${user?.nombre ?? ''} ${user?.apellidos ?? ''}`.trim() || 'Médico';
+  const canPrescribe = Boolean(doctorId) && encounter.state !== 'cerrado';
+
+  const loadPrescriptions = useCallback(async () => {
+    if (authLoading || !isAuthenticated) {
+      setPrescriptions([]);
+      return;
+    }
+    setRxLoading(true);
+    const res = await listPrescriptionsBySubject(encounter.subjectId);
+    setRxLoading(false);
+    if (res.success && res.data) setPrescriptions(res.data);
+  }, [encounter.subjectId, authLoading, isAuthenticated]);
+
   useEffect(() => {
     if (authLoading || !isAuthenticated) {
       setSubject(null);
@@ -78,6 +124,30 @@ export default function AtencionUrgenciaPanel({
       cancelled = true;
     };
   }, [encounter.subjectId, authLoading, isAuthenticated]);
+
+  useEffect(() => {
+    void loadPrescriptions();
+  }, [loadPrescriptions]);
+
+  useEffect(() => {
+    setShowRecetaCreator(false);
+    setSc04PromptOpen(false);
+    setSc04OverrideReason('');
+  }, [encounter.encounterId]);
+
+  const handlePrescriptionChange = (rx: PrescriptionDto) => {
+    setPrescriptions((prev) => {
+      const idx = prev.findIndex((p) => p.prescriptionId === rx.prescriptionId);
+      if (idx >= 0) {
+        const next = [...prev];
+        next[idx] = rx;
+        return next;
+      }
+      return [rx, ...prev];
+    });
+    setShowRecetaCreator(false);
+    setMsg('Receta registrada en el episodio.');
+  };
 
   async function saveAdmission() {
     setBusy(true);
@@ -101,7 +171,10 @@ export default function AtencionUrgenciaPanel({
     setMsg('Datos de ingreso actualizados.');
   }
 
-  async function changeState(toState: string) {
+  async function changeState(
+    toState: string,
+    opts?: { pendingPrescriptionsOverrideReason?: string },
+  ) {
     setBusy(true);
     setErr(null);
     setMsg(null);
@@ -109,21 +182,56 @@ export default function AtencionUrgenciaPanel({
       toState,
       disposition: toState === 'cerrado' ? disposition || null : null,
       justification: toState === 'cerrado' ? justification || null : null,
+      pendingPrescriptionsOverrideReason: opts?.pendingPrescriptionsOverrideReason ?? null,
     });
     setBusy(false);
     if (!res.success || !res.data) {
       const status = res.failure?.status;
+      const apiMsg = res.message ?? res.failure?.apiMessage ?? '';
+      if (status === 409 && isPendingPrescriptionsConflict(apiMsg)) {
+        setSc04PromptOpen(true);
+        setErr(apiMsg || 'Hay recetas sin firmar. Indique motivo para forzar el cierre (SC-04).');
+        return;
+      }
       if (status === 409) {
-        setErr(res.message ?? 'No se puede cerrar sin clasificación de triage (SC-03).');
+        setErr(apiMsg || 'No se puede cerrar sin clasificación de triage (SC-03).');
       } else if (status === 422) {
-        setErr(res.message ?? 'El cierre exige justificación.');
+        setErr(apiMsg || 'El cierre exige justificación.');
       } else {
-        setErr(mensajeDeFalla(res.failure).titulo || res.message || 'No se pudo cambiar el estado.');
+        setErr(mensajeDeFalla(res.failure).titulo || apiMsg || 'No se pudo cambiar el estado.');
       }
       return;
     }
+    setSc04PromptOpen(false);
+    setSc04OverrideReason('');
     onUpdated(res.data);
     setMsg(`Estado: ${res.data.state}`);
+  }
+
+  async function attemptClose() {
+    if (!disposition) {
+      setErr('Seleccione desenlace antes de cerrar.');
+      return;
+    }
+    if (!justification.trim()) {
+      setErr('Indique justificación del cierre.');
+      return;
+    }
+    if (hasPendingPrescriptions(encounterPrescriptions)) {
+      setSc04PromptOpen(true);
+      setErr('Hay recetas sin firmar. Firme, cancele o indique motivo de excepción (SC-04).');
+      return;
+    }
+    await changeState('cerrado');
+  }
+
+  async function forceCloseWithOverride() {
+    const reason = sc04OverrideReason.trim();
+    if (!reason) {
+      setErr('SC-04: el motivo de excepción es obligatorio.');
+      return;
+    }
+    await changeState('cerrado', { pendingPrescriptionsOverrideReason: reason });
   }
 
   async function submitMpNotice() {
@@ -185,6 +293,12 @@ export default function AtencionUrgenciaPanel({
   }
 
   const estado = estadoConfig[encounter.state] ?? estadoConfig.abierto;
+  const patientName = subject ? displayNameOf(subject) : encounterDisplayName(encounter);
+  const patientExpediente =
+    subject?.recordNumber ||
+    subject?.activeLabel?.operationalLabel ||
+    encounter.operationalLabel ||
+    '';
 
   return (
     <div className="space-y-4 rounded-xl border border-slate-200 bg-white p-4" data-testid="panel-atencion-urgencia">
@@ -204,7 +318,10 @@ export default function AtencionUrgenciaPanel({
               : 'Sin clasificar (triage pendiente)'}
           </p>
         </div>
-        <span className={`rounded px-2 py-1 text-xs font-medium ${estado.className}`}>
+        <span
+          className={`rounded px-2 py-1 text-xs font-medium ${estado.className}`}
+          data-testid={`encounter-state-${encounter.state}`}
+        >
           {estado.label}
         </span>
       </div>
@@ -215,6 +332,50 @@ export default function AtencionUrgenciaPanel({
           determina ni bloquea.
         </p>
       )}
+
+      <div className="space-y-3 border-t border-slate-100 pt-3" data-testid="urgencia-recetas-section">
+        <div className="flex flex-wrap items-center justify-between gap-2">
+          <p className="text-sm font-medium text-slate-700">Recetas del episodio (M8)</p>
+          {canPrescribe && !showRecetaCreator && (
+            <Button
+              type="button"
+              size="sm"
+              onClick={() => {
+                setShowRecetaCreator(true);
+                setErr(null);
+              }}
+              data-testid="btn-nueva-receta-urgencia"
+            >
+              Nueva receta
+            </Button>
+          )}
+        </div>
+        {!doctorId && encounter.state !== 'cerrado' && (
+          <p className="text-xs text-amber-800">
+            Sesión sin profesional sanitario: no puede emitir recetas (fail closed).
+          </p>
+        )}
+        {showRecetaCreator && canPrescribe && (
+          <UrgenciaRecetaCreator
+            encounterId={encounter.encounterId}
+            patientId={encounter.subjectId}
+            patientName={patientName}
+            doctorName={doctorName}
+            onCreated={handlePrescriptionChange}
+            onCancel={() => setShowRecetaCreator(false)}
+          />
+        )}
+        {rxLoading && encounterPrescriptions.length === 0 ? (
+          <p className="text-sm text-slate-500">Cargando recetas…</p>
+        ) : (
+          <EncounterPrescriptionList
+            prescriptions={encounterPrescriptions}
+            patientName={patientName}
+            patientExpediente={patientExpediente}
+            onUpdated={handlePrescriptionChange}
+          />
+        )}
+      </div>
 
       <div className="grid gap-3 md:grid-cols-2">
         <Input
@@ -288,18 +449,56 @@ export default function AtencionUrgenciaPanel({
             onChange={(e) => setJustification(e.target.value)}
             rows={2}
           />
-          <Button
-            type="button"
-            size="sm"
-            variant="ghost"
-            disabled={busy}
-            onClick={() => void changeState('cerrado')}
-            data-testid="btn-cerrar-episodio"
-          >
-            Cerrar episodio
-          </Button>
+          {pendingRx.length > 0 && (
+            <div
+              className="rounded border border-amber-200 bg-amber-50 px-3 py-2 text-xs text-amber-900"
+              data-testid="sc04-pending-warning"
+            >
+              <p className="font-medium">SC-04: {pendingRx.length} receta(s) sin firmar.</p>
+              <ul className="mt-1 list-inside list-disc">
+                {pendingRx.map((rx) => (
+                  <li key={rx.prescriptionId}>
+                    {rx.items.length} medicamento(s) ·{' '}
+                    {prescriptionStatusLabel(prescriptionUiStatus(rx))}
+                  </li>
+                ))}
+              </ul>
+            </div>
+          )}
+          {(sc04PromptOpen || pendingRx.length > 0) && (
+            <Textarea
+              label="Motivo de excepción SC-04 (obligatorio para forzar cierre con Rx pendientes)"
+              value={sc04OverrideReason}
+              onChange={(e) => setSc04OverrideReason(e.target.value)}
+              rows={2}
+              data-testid="sc04-override-reason"
+            />
+          )}
+          <div className="flex flex-wrap gap-2">
+            <Button
+              type="button"
+              size="sm"
+              variant="ghost"
+              disabled={busy}
+              onClick={() => void attemptClose()}
+              data-testid="btn-cerrar-episodio"
+            >
+              Cerrar episodio
+            </Button>
+            {(sc04PromptOpen || pendingRx.length > 0) && (
+              <Button
+                type="button"
+                size="sm"
+                disabled={busy}
+                onClick={() => void forceCloseWithOverride()}
+                data-testid="btn-forzar-cierre-sc04"
+              >
+                Forzar cierre (SC-04)
+              </Button>
+            )}
+          </div>
           <p className="text-xs text-slate-500">
-            El cierre sin triage responde 409 (legítimo). El inicio nunca se bloquea.
+            Cierre sin triage → 409 (SC-03). Con recetas sin firmar → 409 hasta override (SC-04).
           </p>
         </div>
       )}
@@ -351,7 +550,7 @@ export default function AtencionUrgenciaPanel({
 
       {msg && <p className="text-sm text-emerald-700">{msg}</p>}
       {err && (
-        <p className="text-sm text-red-600" role="alert">
+        <p className="text-sm text-red-600" role="alert" data-testid="urgencia-panel-error">
           {err}
         </p>
       )}

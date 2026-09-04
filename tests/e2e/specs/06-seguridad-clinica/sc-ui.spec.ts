@@ -160,9 +160,10 @@ test.describe('06 — Seguridad clínica · UI (Vite + API)', () => {
 
     await page.goto(sel.urgencias.path);
     await expect(page.getByTestId('page-urgencias')).toBeVisible({ timeout: 15_000 });
+    await page.getByTestId('urgencias-buscar-cola').fill(label);
     // Reintentar carga si el banner de contingencia aparece al montar.
     for (let i = 0; i < 3; i++) {
-      await page.getByRole('button', { name: /Actualizar/i }).click();
+      await page.getByRole('button', { name: /^Actualizar$/i }).click();
       const row = page.getByTestId(/^fila-encuentro-/).filter({ hasText: label }).first();
       if (await row.isVisible().catch(() => false)) break;
       await page.waitForTimeout(1_500);
@@ -176,6 +177,7 @@ test.describe('06 — Seguridad clínica · UI (Vite + API)', () => {
 
     await page.goto(sel.triage.path);
     await expect(page.getByTestId('page-triage')).toBeVisible({ timeout: 15_000 });
+    await page.getByTestId('triage-buscar-cola').fill(label);
     for (let i = 0; i < 3; i++) {
       await page.getByRole('button', { name: /Actualizar cola/i }).click();
       const row = page.locator('section ul li button').filter({ hasText: label }).first();
@@ -203,6 +205,7 @@ test.describe('06 — Seguridad clínica · UI (Vite + API)', () => {
     await loginAdminUi(page);
     await page.goto(sel.triage.path);
     await expect(page.getByTestId('page-triage')).toBeVisible({ timeout: 15_000 });
+    await page.getByTestId('triage-buscar-cola').fill(label);
 
     const firstRow = page.locator('section ul li button').filter({ hasText: label }).first();
     await expect(firstRow).toBeVisible({ timeout: 20_000 });
@@ -229,7 +232,7 @@ test.describe('06 — Seguridad clínica · UI (Vite + API)', () => {
 
     await goOffline(context);
     await abortApi(page);
-    await page.getByRole('button', { name: /Actualizar/i }).click();
+    await page.getByRole('button', { name: /^Actualizar$/i }).click();
     await expect(page.getByTestId('queue-live-banner')).toBeVisible({ timeout: 10_000 });
     await expect(page.getByTestId('queue-live-banner')).toContainText(
       /Sin enlace|caché|conocida|consulta periódica|empuje/i,
@@ -244,6 +247,7 @@ test.describe('06 — Seguridad clínica · UI (Vite + API)', () => {
     await loginAdminUi(page);
     await page.goto(sel.triage.path);
     await expect(page.getByTestId('page-triage')).toBeVisible({ timeout: 15_000 });
+    await page.getByTestId('triage-buscar-cola').fill(label);
     // Espera fila del episodio recién creado (cola puede tardar un refresh).
     const row = page.locator('section ul li button').filter({ hasText: label }).first();
     await expect(row).toBeVisible({ timeout: 20_000 });

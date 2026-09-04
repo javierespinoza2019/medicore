@@ -164,4 +164,106 @@ test.describe('04 — Consulta / receta · UI (Vite + API)', () => {
     await expect(page.getByTestId('receta-inline-creator')).toHaveCount(0, { timeout: 25_000 });
     await expect(page.getByText(/medicamento\(s\)/i).first()).toBeVisible({ timeout: 10_000 });
   });
+
+  test('firma nota clínica desde UI', async ({ page }) => {
+    const { encounterId } = await crearConsultaExterna();
+    await loginMedicoUi(page);
+    await page.goto(`/app/consultas?encuentro=${encounterId}`);
+    await expect(page.getByTestId('clinical-notes-panel')).toBeVisible({ timeout: 15_000 });
+
+    const marker = `FIRMA-E2E-${Date.now()}`;
+    await page.getByTestId('note-subjetivo').fill(`Control. ${marker}`);
+    await page.getByTestId('note-guardar-borrador').click();
+    await expect(page.getByText(marker)).toBeVisible({ timeout: 15_000 });
+
+    await page.getByRole('button', { name: /^Firmar$/i }).first().click();
+    await expect(page.getByText(/Firmada · sello|sellado/i).first()).toBeVisible({
+      timeout: 15_000,
+    });
+  });
+
+  test('SC-02 UI exige justificación al prescribir con alergia conocida', async ({ page }) => {
+    test.setTimeout(90_000);
+    const ctx = await contextoLimpio();
+    let encounterId = '';
+    try {
+      const login = await ctx.post('/api/auth/login', {
+        data: {
+          tenantCode: 'demo',
+          userName: users.medico.email,
+          password: users.medico.password,
+        },
+      });
+      expect(login.status()).toBe(200);
+      const token = (await login.json()).data.accessToken as string;
+      const headers = { Authorization: `Bearer ${token}` };
+
+      const created = await ctx.post('/api/subjects', {
+        headers,
+        data: { branchId: BRANCH_DEMO },
+      });
+      const subjectId = (await created.json()).data.subjectId as string;
+
+      await ctx.put(`/api/subjects/${subjectId}/allergy-status`, {
+        headers,
+        data: { status: 'refiere' },
+      });
+      await ctx.post(`/api/subjects/${subjectId}/allergies`, {
+        headers,
+        data: { substance: 'Paracetamol', reactionType: 'alergia', severity: 'moderada' },
+      });
+
+      const enc = await ctx.post('/api/encounters', {
+        headers,
+        data: { branchId: BRANCH_DEMO, subjectId, encounterType: 'consulta_externa' },
+      });
+      encounterId = (await enc.json()).data.encounterId as string;
+    } finally {
+      await ctx.dispose();
+    }
+
+    await loginMedicoUi(page);
+    await page.goto(`/app/consultas?encuentro=${encounterId}`);
+    await page.getByRole('button', { name: /Nueva receta/i }).click();
+
+    await page.getByRole('button', { name: /Refiere alergias/i }).click();
+    await page.getByTestId('receta-confirmar-alergia').click();
+    await expect(page.getByText(/Estado alérgico capturado/i)).toBeVisible({ timeout: 15_000 });
+
+    await page.getByTestId('receta-buscar-med').fill('Paracetamol');
+    await page.getByRole('button', { name: /Paracetamol/i }).first().click();
+    await page.getByRole('button', { name: /Agregar a la receta/i }).click();
+
+    await page.getByTestId('receta-crear-firmar').click();
+    await expect(page.getByText(/justificaci|409|solap|alergia/i).first()).toBeVisible({
+      timeout: 15_000,
+    });
+
+    await page.getByTestId('receta-justificacion-sc02').fill('Justificación sintética E2E SC-02 UI');
+    await page.getByTestId('receta-crear-firmar').click();
+
+    await expect(page.getByTestId('receta-inline-creator')).toHaveCount(0, { timeout: 25_000 });
+    await expect(page.getByTestId('encounter-prescription-list')).toBeVisible();
+  });
+
+  test('cancela receta firmada desde consultorio', async ({ page }) => {
+    test.setTimeout(90_000);
+    const { encounterId } = await crearConsultaExterna();
+    await loginMedicoUi(page);
+    await page.goto(`/app/consultas?encuentro=${encounterId}`);
+
+    await page.getByRole('button', { name: /Nueva receta/i }).click();
+    await page.getByRole('button', { name: /Niega alergias conocidas/i }).click();
+    await page.getByTestId('receta-confirmar-alergia').click();
+    await page.getByTestId('receta-buscar-med').fill('Paracetamol');
+    await page.getByRole('button', { name: /Paracetamol/i }).first().click();
+    await page.getByRole('button', { name: /Agregar a la receta/i }).click();
+    await page.getByTestId('receta-crear-firmar').click();
+    await expect(page.getByTestId('encounter-prescription-list')).toBeVisible({ timeout: 25_000 });
+
+    await page.getByRole('button', { name: /Cancelar receta/i }).first().click();
+    await page.getByTestId('receta-motivo-cancelacion').fill('Cancelación sintética E2E');
+    await page.getByTestId('receta-confirmar-cancelacion').click();
+    await expect(page.getByText(/Cancelada/i).first()).toBeVisible({ timeout: 15_000 });
+  });
 });

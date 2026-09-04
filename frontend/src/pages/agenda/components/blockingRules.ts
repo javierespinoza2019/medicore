@@ -1,4 +1,4 @@
-import type { ReglaBloqueo } from '@/mocks/agendaRules';
+import type { ReglaBloqueo } from '@/pages/agenda/agendaRulesTypes';
 import { toMinutes } from '@/pages/agenda/components/timeGridConfig';
 
 export interface BlockedSlot {

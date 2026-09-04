@@ -35,6 +35,7 @@ builder.Host.UseSerilog((_, cfg) =>
 });
 
 builder.Services.Configure<JwtOptions>(builder.Configuration.GetSection(JwtOptions.SectionName));
+builder.Services.Configure<FileStorageOptions>(builder.Configuration.GetSection(FileStorageOptions.SectionName));
 builder.Services.AddMediCoreCore();
 builder.Services.AddControllers();
 builder.Services.AddSignalR().AddJsonProtocol(options =>

@@ -1,4 +1,4 @@
-import { defaultAgendaConfig } from '@/mocks/agendaConfig';
+import { defaultAgendaConfig } from '@/pages/agenda/agendaConfig';
 
 export const START_HOUR = defaultAgendaConfig.startHour;
 export const END_HOUR = defaultAgendaConfig.endHour;

@@ -15,6 +15,12 @@ public interface IBranchRepository
         Guid actorUserId,
         UpsertBranchRequest request,
         CancellationToken ct);
+    Task<BranchDto?> SetLogoPathAsync(
+        Guid tenantId,
+        Guid branchId,
+        Guid actorUserId,
+        string? logoRelativePath,
+        CancellationToken ct);
 }
 
 public sealed class BranchRepository(ISqlConnectionFactory connectionFactory) : IBranchRepository
@@ -84,5 +90,27 @@ public sealed class BranchRepository(ISqlConnectionFactory connectionFactory) : 
         {
             throw new InvalidOperationException(ex.Message, ex);
         }
+    }
+
+    public async Task<BranchDto?> SetLogoPathAsync(
+        Guid tenantId,
+        Guid branchId,
+        Guid actorUserId,
+        string? logoRelativePath,
+        CancellationToken ct)
+    {
+        using var conn = connectionFactory.Create();
+        var cmd = new CommandDefinition(
+            "sp_Branch_SetLogoPath",
+            new
+            {
+                TenantId = tenantId,
+                BranchId = branchId,
+                LogoRelativePath = logoRelativePath,
+                ActorUserId = actorUserId
+            },
+            commandType: CommandType.StoredProcedure,
+            cancellationToken: ct);
+        return await conn.QuerySingleOrDefaultAsync<BranchDto>(cmd);
     }
 }

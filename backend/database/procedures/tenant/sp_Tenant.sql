@@ -22,6 +22,7 @@ BEGIN
         LegalName,
         Rfc,
         PrimaryColorToken,
+        LogoRelativePath,
         IsActive
     FROM dbo.Tenant
     WHERE IsDeleted = 0
@@ -66,6 +67,41 @@ BEGIN
         LegalName,
         Rfc,
         PrimaryColorToken,
+        LogoRelativePath,
+        IsActive
+    FROM dbo.Tenant
+    WHERE TenantId = @TenantId
+      AND IsDeleted = 0;
+END
+GO
+
+CREATE OR ALTER PROCEDURE dbo.sp_Tenant_SetLogoPath
+    @TenantId           UNIQUEIDENTIFIER,
+    @LogoRelativePath   NVARCHAR(512) = NULL,
+    @ActorUserId        UNIQUEIDENTIFIER
+AS
+BEGIN
+    SET NOCOUNT ON;
+
+    IF NOT EXISTS (
+        SELECT 1 FROM dbo.Tenant
+        WHERE TenantId = @TenantId AND IsDeleted = 0
+    )
+        RETURN;
+
+    UPDATE dbo.Tenant
+    SET LogoRelativePath = @LogoRelativePath
+    WHERE TenantId = @TenantId
+      AND IsDeleted = 0;
+
+    SELECT
+        TenantId,
+        Code,
+        Name,
+        LegalName,
+        Rfc,
+        PrimaryColorToken,
+        LogoRelativePath,
         IsActive
     FROM dbo.Tenant
     WHERE TenantId = @TenantId

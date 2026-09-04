@@ -1,429 +1,866 @@
-/**
- * Agenda (M9 / WS-J) — vertical día/lista contra API real.
- * Fail closed: médico sin profesional en sesión → lista vacía + mensaje.
- * Profesionales vía `/api/professionals` (sin `@/mocks/doctors`).
- */
-
-import { useCallback, useEffect, useMemo, useState } from 'react';
-import { useAuth } from '@/hooks/useAuth';
-import { listBranches, type BranchDto } from '@/api/branches';
-import { searchSubjects, type SubjectListItemDto } from '@/api/subjects';
-import {
-  appointmentStateLabels,
-  changeAppointmentState,
-  createAppointment,
-  listAppointments,
-  listConsultingRooms,
-  type AppointmentDto,
-  type AppointmentState,
-  type ConsultingRoomDto,
-} from '@/api/appointments';
-import { listProfessionals, type ProfessionalDto } from '@/api/professionals';
+import { useState, useMemo, useCallback, useEffect } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import Button from '@/components/base/Button';
+import Select from '@/components/base/Select';
+import Badge from '@/components/base/Badge';
 import Input from '@/components/base/Input';
+import Tabs from '@/components/base/Tabs';
+import { displayNameOf } from '@/api/subjects';
+import DayView from '@/pages/agenda/components/DayView';
+import WeekView from '@/pages/agenda/components/WeekView';
+import MonthView, { MESES } from '@/pages/agenda/components/MonthView';
+import NewAppointmentModal from '@/pages/agenda/components/NewAppointmentModal';
+import AppointmentDetailModal from '@/pages/agenda/components/AppointmentDetailModal';
+import ConsultoriosDayView from '@/pages/agenda/components/ConsultoriosDayView';
+import AgendaConfigModal from '@/pages/agenda/components/AgendaConfigModal';
+import AgendaListView from '@/pages/agenda/components/AgendaListView';
+import TicketPrintModal from '@/pages/agenda/components/TicketPrintModal';
+import { type TimeGranularity } from '@/pages/agenda/components/timeGridConfig';
+import { exportToExcel } from '@/utils/exportUtils';
+import {
+  addDays,
+  formatDateSpanish,
+  getMonday,
+  getTodayLocal,
+  getWeekDays,
+} from '@/pages/agenda/agendaDateUtils';
+import { uiStateToApi } from '@/pages/agenda/agendaPresentation';
+import {
+  statusConfig,
+  type AgendaAppointment,
+  type AgendaAppointmentEstado,
+} from '@/pages/agenda/types';
+import { useAgendaApi } from '@/pages/agenda/hooks/useAgendaApi';
+import { useAgendaProfessionalsCatalog } from '@/pages/agenda/hooks/useAgendaProfessionalsCatalog';
 
-function getTodayLocal(): string {
-  const d = new Date();
-  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
-}
+type ViewMode = 'day' | 'week' | 'month' | 'list';
 
-function dayRangeUtc(dateStr: string): { from: string; to: string } {
-  const start = new Date(`${dateStr}T00:00:00`);
-  const end = new Date(start);
-  end.setDate(end.getDate() + 1);
-  return { from: start.toISOString(), to: end.toISOString() };
-}
-
-function resolveBranchId(
-  sucursalActualId: string | null,
-  branches: BranchDto[],
-): string | null {
-  if (!branches.length) return null;
-  if (sucursalActualId && /^[0-9a-f-]{36}$/i.test(sucursalActualId)) {
-    const hit = branches.find((b) => b.branchId.toLowerCase() === sucursalActualId.toLowerCase());
-    if (hit) return hit.branchId;
-  }
-  const central = branches.find((b) => b.code.toUpperCase() === 'CENTRAL');
-  return central?.branchId ?? branches[0].branchId;
-}
-
-function formatTime(iso: string): string {
-  const d = new Date(iso);
-  return d.toLocaleTimeString('es-MX', { hour: '2-digit', minute: '2-digit', hour12: false });
-}
-
-function subjectLabel(s: SubjectListItemDto): string {
-  const parts = [s.givenName, s.firstSurname, s.secondSurname].filter(Boolean);
-  if (parts.length) return parts.join(' ');
-  if (s.preferredName) return s.preferredName;
-  if (s.operationalLabel) return s.operationalLabel;
-  return s.subjectId.slice(0, 8);
+function getAppsByDate(appointments: AgendaAppointment[], date: string) {
+  return appointments.filter((a) => a.fecha === date);
 }
 
 export default function Agenda() {
-  const { user, sucursalActualId } = useAuth();
-  const isDoctor = user?.rol === 'medico';
-  const myDoctorId = user?.doctorId?.trim() || null;
-  const failClosed = isDoctor && !myDoctorId;
+  const [searchParams, setSearchParams] = useSearchParams();
+  const today = getTodayLocal();
+  const todayDate = new Date(`${today}T00:00:00`);
+  const [view, setView] = useState<ViewMode>('day');
+  const [selectedDate, setSelectedDate] = useState(today);
+  const [currentYear, setCurrentYear] = useState(todayDate.getFullYear());
+  const [currentMonth, setCurrentMonth] = useState(todayDate.getMonth());
+  const [defaultScheduleTime, setDefaultScheduleTime] = useState<string | undefined>(undefined);
+  const [lockDateTime, setLockDateTime] = useState(false);
+  const [defaultConsultorioId, setDefaultConsultorioId] = useState<string | undefined>(undefined);
+  const [configOpen, setConfigOpen] = useState(false);
+  const [printAppointment, setPrintAppointment] = useState<AgendaAppointment | null>(null);
+  const [newModalOpen, setNewModalOpen] = useState(false);
+  const [detailAppointment, setDetailAppointment] = useState<AgendaAppointment | null>(null);
+  const [duplicateAppointment, setDuplicateAppointment] = useState<AgendaAppointment | null>(null);
+  const [showDragHint, setShowDragHint] = useState(false);
 
-  const [selectedDate, setSelectedDate] = useState(getTodayLocal);
-  const [view, setView] = useState<'day' | 'list'>('day');
-  const [branches, setBranches] = useState<BranchDto[]>([]);
-  const [rooms, setRooms] = useState<ConsultingRoomDto[]>([]);
-  const [professionals, setProfessionals] = useState<ProfessionalDto[]>([]);
-  const [appointments, setAppointments] = useState<AppointmentDto[]>([]);
-  const [subjects, setSubjects] = useState<SubjectListItemDto[]>([]);
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-  const [message, setMessage] = useState<string | null>(null);
+  const urlPatientId = searchParams.get('paciente') || '';
 
-  const [formOpen, setFormOpen] = useState(false);
-  const [subjectId, setSubjectId] = useState('');
-  const [professionalId, setProfessionalId] = useState('');
-  const [roomId, setRoomId] = useState('');
-  const [startTime, setStartTime] = useState('09:00');
-  const [endTime, setEndTime] = useState('09:30');
-  const [notes, setNotes] = useState('');
-  const [cancelReason, setCancelReason] = useState<Record<string, string>>({});
+  const {
+    isDoctor,
+    myDoctorId,
+    failClosed,
+    branchId,
+    appointments,
+    consultorios,
+    subjects,
+    loading,
+    error,
+    reload,
+    createFromForm,
+    changeStatus,
+    moveAppointment,
+    upsertRoom,
+  } = useAgendaApi(view, selectedDate, currentYear, currentMonth);
 
-  const branchId = useMemo(
-    () => resolveBranchId(sucursalActualId, branches),
-    [sucursalActualId, branches],
+  const { professionals: catalogProfessionals, specialties: catalogSpecialties } =
+    useAgendaProfessionalsCatalog(true);
+
+  const filteredPatient = useMemo(
+    () => subjects.find((s) => s.subjectId === urlPatientId),
+    [subjects, urlPatientId],
   );
 
-  const loadMeta = useCallback(async () => {
-    const [bRes, sRes, pRes] = await Promise.all([
-      listBranches(true),
-      searchSubjects(undefined, true),
-      listProfessionals(true),
-    ]);
-    if (bRes.success && bRes.data) setBranches(bRes.data);
-    if (sRes.success && sRes.data) setSubjects(sRes.data);
-    if (pRes.success && pRes.data) {
-      setProfessionals(pRes.data);
-      setProfessionalId((prev) => {
-        if (prev && pRes.data!.some((p) => p.healthcareProfessionalId === prev)) return prev;
-        return pRes.data![0]?.healthcareProfessionalId ?? '';
-      });
+  const displayAppointments = appointments;
+
+  useEffect(() => {
+    if (urlPatientId) {
+      setNewModalOpen(true);
+    }
+  }, [urlPatientId]);
+
+  useEffect(() => {
+    const dismissed = localStorage.getItem('agenda_drag_hint_dismissed');
+    if (!dismissed) {
+      setShowDragHint(true);
+      const timer = setTimeout(() => setShowDragHint(false), 8000);
+      return () => clearTimeout(timer);
     }
   }, []);
 
-  const loadAgenda = useCallback(async () => {
-    if (!branchId) return;
-    if (failClosed) {
-      setAppointments([]);
-      setError(null);
-      return;
-    }
-    setLoading(true);
-    setError(null);
-    const range = dayRangeUtc(selectedDate);
-    const [aRes, rRes] = await Promise.all([
-      listAppointments({
-        branchId,
-        from: range.from,
-        to: range.to,
-        mine: isDoctor,
-        professionalId: !isDoctor && myDoctorId ? undefined : undefined,
-      }),
-      listConsultingRooms(branchId, true),
-    ]);
-    setLoading(false);
-    if (!aRes.success) {
-      setError(aRes.message ?? 'No se pudo cargar la agenda.');
-      setAppointments([]);
-      return;
-    }
-    setAppointments(aRes.data ?? []);
-    if (rRes.success && rRes.data) {
-      setRooms(rRes.data);
-      if (!roomId && rRes.data[0]) setRoomId(rRes.data[0].roomId);
-    }
-  }, [branchId, selectedDate, failClosed, isDoctor, myDoctorId, roomId]);
+  const dismissDragHint = useCallback(() => {
+    setShowDragHint(false);
+    localStorage.setItem('agenda_drag_hint_dismissed', 'true');
+  }, []);
 
-  useEffect(() => {
-    void loadMeta();
-  }, [loadMeta]);
+  const [filterDoctor, setFilterDoctor] = useState('');
+  const [filterSpecialty, setFilterSpecialty] = useState('');
+  const [filterStatus, setFilterStatus] = useState('');
+  const [filterSearch, setFilterSearch] = useState('');
+  const [showFilters, setShowFilters] = useState(false);
+  const [timeGranularity, setTimeGranularity] = useState<TimeGranularity>('15');
 
-  useEffect(() => {
-    void loadAgenda();
-  }, [loadAgenda]);
+  const mondayOfWeek = useMemo(() => getMonday(selectedDate), [selectedDate]);
+  const weekDays = useMemo(() => getWeekDays(mondayOfWeek), [mondayOfWeek]);
+  const activeConsultorios = useMemo(() => consultorios.filter((c) => c.activo), [consultorios]);
 
-  useEffect(() => {
-    if (isDoctor && myDoctorId) setProfessionalId(myDoctorId);
-  }, [isDoctor, myDoctorId]);
+  const filteredAppointments = useMemo(() => {
+    let apps =
+      view === 'day'
+        ? getAppsByDate(displayAppointments, selectedDate)
+        : view === 'week'
+          ? displayAppointments.filter(
+              (a) => a.fecha >= weekDays[0].date && a.fecha <= weekDays[6].date,
+            )
+          : displayAppointments;
 
-  const handleCreate = async () => {
-    if (!branchId || !subjectId) {
-      setError('Seleccione sujeto y sucursal.');
-      return;
+    if (isDoctor && myDoctorId) apps = apps.filter((a) => a.doctorId === myDoctorId);
+    if (urlPatientId) apps = apps.filter((a) => a.patientId === urlPatientId);
+    if (filterDoctor) apps = apps.filter((a) => a.doctorId === filterDoctor);
+    if (filterSpecialty) apps = apps.filter((a) => a.especialidad === filterSpecialty);
+    if (filterStatus) apps = apps.filter((a) => a.estado === filterStatus);
+    if (filterSearch.trim()) {
+      const q = filterSearch.toLowerCase();
+      apps = apps.filter(
+        (a) =>
+          a.patientName.toLowerCase().includes(q) ||
+          a.doctorName.toLowerCase().includes(q) ||
+          a.motivo.toLowerCase().includes(q),
+      );
     }
-    const start = new Date(`${selectedDate}T${startTime}:00`);
-    const end = new Date(`${selectedDate}T${endTime}:00`);
-    setLoading(true);
-    setError(null);
-    setMessage(null);
-    const res = await createAppointment({
-      branchId,
-      subjectId,
-      professionalId,
-      roomId: roomId || null,
-      scheduledStartUtc: start.toISOString(),
-      scheduledEndUtc: end.toISOString(),
-      notes: notes.trim() || null,
-    });
-    setLoading(false);
-    if (!res.success) {
-      setError(res.message ?? 'No se pudo agendar.');
-      return;
-    }
-    setFormOpen(false);
-    setNotes('');
-    setMessage('Cita agendada.');
-    await loadAgenda();
-  };
+    return apps;
+  }, [
+    displayAppointments,
+    view,
+    selectedDate,
+    filterDoctor,
+    filterSpecialty,
+    filterStatus,
+    filterSearch,
+    weekDays,
+    urlPatientId,
+    isDoctor,
+    myDoctorId,
+  ]);
 
-  const handleState = async (id: string, toState: AppointmentState) => {
-    const reason = toState === 'cancelada' ? (cancelReason[id] ?? '').trim() : null;
-    if (toState === 'cancelada' && !reason) {
-      setError('Cancelar exige motivo.');
-      return;
+  const stats = useMemo(() => {
+    const dayApps = getAppsByDate(displayAppointments, selectedDate);
+    return {
+      total: dayApps.length,
+      atendidas: dayApps.filter((a) => a.estado === 'atendida').length,
+      enCurso: dayApps.filter(
+        (a) =>
+          a.estado === 'en_consulta' ||
+          a.estado === 'en_espera' ||
+          a.estado === 'llego',
+      ).length,
+      confirmadas: dayApps.filter(
+        (a) => a.estado === 'confirmada' || a.estado === 'reservada',
+      ).length,
+      canceladas: dayApps.filter(
+        (a) => a.estado === 'cancelada' || a.estado === 'no_acudio',
+      ).length,
+    };
+  }, [displayAppointments, selectedDate]);
+
+  const activeFiltersCount = [filterDoctor, filterSpecialty, filterStatus].filter(Boolean).length;
+  const isToday = selectedDate === today;
+
+  const handleStatusChange = useCallback(
+    async (appointmentId: string, newStatus: AgendaAppointmentEstado) => {
+      if (!uiStateToApi(newStatus)) {
+        // en_triage / llamando: sin contrato API — no simular overlay.
+        return;
+      }
+      const ok = await changeStatus(appointmentId, newStatus);
+      if (ok) {
+        setDetailAppointment((prev) =>
+          prev && prev.id === appointmentId ? { ...prev, estado: newStatus } : prev,
+        );
+      }
+    },
+    [changeStatus],
+  );
+
+  const handleCreateAppointment = useCallback(
+    (input: {
+      subjectId: string;
+      professionalId: string;
+      roomId: string | null;
+      fecha: string;
+      horaInicio: string;
+      horaFin: string;
+      motivo: string;
+    }) => createFromForm(input),
+    [createFromForm],
+  );
+
+  const handleMoveAppointment = useCallback(
+    async (
+      appointmentId: string,
+      newDate: string,
+      newHoraInicio: string,
+      newHoraFin: string,
+    ) => {
+      await moveAppointment(appointmentId, newDate, newHoraInicio, newHoraFin);
+    },
+    [moveAppointment],
+  );
+
+  const handleDuplicate = useCallback(() => {
+    if (!detailAppointment) return;
+    setDuplicateAppointment(detailAppointment);
+    setDetailAppointment(null);
+    setNewModalOpen(true);
+  }, [detailAppointment]);
+
+  const handleExportExcel = useCallback(() => {
+    const rows = filteredAppointments.map((a) => ({
+      ID: a.id,
+      Paciente: a.patientName,
+      Médico: a.doctorName,
+      Especialidad: a.especialidad,
+      Fecha: a.fecha,
+      'Hora Inicio': a.horaInicio,
+      'Hora Fin': a.horaFin,
+      Estado: statusConfig[a.estado].label,
+      Motivo: a.motivo,
+      Consultorio: a.consultorio,
+      'Hora Llegada': a.horaLlegada || '—',
+    }));
+    const dateStr = new Date().toISOString().split('T')[0];
+    exportToExcel(rows, `Agenda_MediCore_${dateStr}`, 'Citas');
+  }, [filteredAppointments]);
+
+  const handleScheduleAtTime = useCallback((time: string, consultorioId?: string) => {
+    setDefaultScheduleTime(time);
+    setDefaultConsultorioId(consultorioId);
+    setLockDateTime(true);
+    setNewModalOpen(true);
+  }, []);
+
+  const handleScheduleAtDate = useCallback((date: string, time?: string) => {
+    setSelectedDate(date);
+    setDefaultScheduleTime(time);
+    setDefaultConsultorioId(undefined);
+    setLockDateTime(true);
+    setNewModalOpen(true);
+  }, []);
+
+  const handleMonthDayClick = useCallback((date: string) => {
+    setSelectedDate(date);
+    setView('day');
+  }, []);
+
+  const handlePrevMonth = useCallback(() => {
+    if (currentMonth === 0) {
+      setCurrentMonth(11);
+      setCurrentYear((y) => y - 1);
+    } else {
+      setCurrentMonth((m) => m - 1);
     }
-    setLoading(true);
-    setError(null);
-    const res = await changeAppointmentState(id, { toState, reason });
-    setLoading(false);
-    if (!res.success) {
-      setError(res.message ?? 'No se pudo cambiar el estado.');
-      return;
+  }, [currentMonth]);
+
+  const handleNextMonth = useCallback(() => {
+    if (currentMonth === 11) {
+      setCurrentMonth(0);
+      setCurrentYear((y) => y + 1);
+    } else {
+      setCurrentMonth((m) => m + 1);
     }
-    setMessage(`Estado actualizado a ${appointmentStateLabels[toState] ?? toState}.`);
-    await loadAgenda();
-  };
+  }, [currentMonth]);
+
+  const handleGoToToday = useCallback(() => {
+    setSelectedDate(today);
+    setCurrentYear(todayDate.getFullYear());
+    setCurrentMonth(todayDate.getMonth());
+  }, [today, todayDate]);
+
+  const closeNewModal = useCallback(() => {
+    setNewModalOpen(false);
+    setDuplicateAppointment(null);
+    setDefaultScheduleTime(undefined);
+    setLockDateTime(false);
+    setDefaultConsultorioId(undefined);
+    if (searchParams.has('paciente')) {
+      searchParams.delete('paciente');
+      setSearchParams(searchParams, { replace: true });
+    }
+  }, [searchParams, setSearchParams]);
+
+  const getAppsForWeekDate = useCallback(
+    (date: string) => {
+      let apps = getAppsByDate(displayAppointments, date);
+      if (urlPatientId) apps = apps.filter((a) => a.patientId === urlPatientId);
+      if (filterDoctor) apps = apps.filter((a) => a.doctorId === filterDoctor);
+      if (filterSpecialty) apps = apps.filter((a) => a.especialidad === filterSpecialty);
+      if (filterStatus) apps = apps.filter((a) => a.estado === filterStatus);
+      if (filterSearch.trim()) {
+        const q = filterSearch.toLowerCase();
+        apps = apps.filter(
+          (a) =>
+            a.patientName.toLowerCase().includes(q) ||
+            a.doctorName.toLowerCase().includes(q),
+        );
+      }
+      return apps;
+    },
+    [displayAppointments, filterDoctor, filterSpecialty, filterStatus, filterSearch, urlPatientId],
+  );
+
+  const headerDateText =
+    view === 'month'
+      ? `${MESES[currentMonth]} ${currentYear}`
+      : view === 'week'
+        ? `${formatDateSpanish(weekDays[0].date)} – ${formatDateSpanish(weekDays[6].date)}`
+        : formatDateSpanish(selectedDate);
 
   return (
-    <div className="p-6 max-w-5xl mx-auto space-y-4" data-testid="page-agenda">
-      <div className="flex flex-wrap items-center justify-between gap-3">
+    <div className="flex flex-col min-h-0 p-4 md:p-6" data-testid="page-agenda">
+      <div className="flex flex-wrap items-center justify-between gap-3 mb-2 shrink-0">
         <div>
-          <h1 className="text-2xl font-semibold text-slate-900">Agenda</h1>
-          <p className="text-sm text-slate-600">
-            Citas del día contra API (M9). Escritura online; offline se cableará después.
+          <h1 className="font-heading text-2xl font-bold text-foreground-900">Agenda</h1>
+          <p className="text-sm text-foreground-500 hidden sm:block">
+            Calendario de citas · datos desde API
           </p>
         </div>
-        <div className="flex gap-2">
-          <Button
-            variant={view === 'day' ? 'primary' : 'secondary'}
-            onClick={() => setView('day')}
-          >
-            Día
-          </Button>
-          <Button
-            variant={view === 'list' ? 'primary' : 'secondary'}
-            onClick={() => setView('list')}
-          >
-            Lista
-          </Button>
-          <Button
-            variant="primary"
-            disabled={failClosed || !branchId}
-            onClick={() => setFormOpen((v) => !v)}
-          >
-            Nueva cita
-          </Button>
-        </div>
-      </div>
-
-      <div className="flex flex-wrap items-end gap-3">
-        <label className="text-sm">
-          <span className="block text-slate-600 mb-1">Fecha</span>
-          <Input
-            type="date"
-            value={selectedDate}
-            onChange={(e) => setSelectedDate(e.target.value)}
-          />
-        </label>
-        <Button variant="secondary" onClick={() => void loadAgenda()} disabled={loading}>
+        <Button variant="secondary" size="sm" onClick={() => void reload()} disabled={loading}>
           Actualizar
         </Button>
       </div>
 
-      {failClosed && (
-        <div className="rounded border border-amber-300 bg-amber-50 px-4 py-3 text-sm text-amber-950">
-          Su usuario no tiene profesional sanitario asociado. El filtro «mi agenda» falla
-          cerrado: no se muestran citas.
-        </div>
-      )}
-
       {error && (
-        <div className="rounded border border-red-300 bg-red-50 px-4 py-3 text-sm text-red-900">
+        <div className="mb-2 px-3 py-2 text-sm text-red-700 bg-red-50 border border-red-200 rounded-lg shrink-0">
           {error}
         </div>
       )}
-      {message && (
-        <div className="rounded border border-emerald-300 bg-emerald-50 px-4 py-3 text-sm text-emerald-900">
-          {message}
+
+      {failClosed && (
+        <div className="mb-2 px-3 py-2 text-sm text-amber-800 bg-amber-50 border border-amber-200 rounded-lg shrink-0">
+          Tu sesión de médico no tiene identificador clínico; la agenda no muestra citas hasta
+          corregir el perfil.
         </div>
       )}
 
-      {formOpen && !failClosed && (
-        <div className="rounded border border-slate-200 bg-white p-4 space-y-3 shadow-sm">
-          <h2 className="font-medium text-slate-900">Agendar cita</h2>
-          <p className="text-xs text-slate-500">
-            Se puede agendar sujeto sin identidad completa (basta SubjectId).
-          </p>
-          <label className="block text-sm">
-            <span className="text-slate-600">Sujeto</span>
-            <select
-              className="mt-1 w-full border border-slate-300 rounded px-2 py-2"
-              value={subjectId}
-              onChange={(e) => setSubjectId(e.target.value)}
-            >
-              <option value="">Seleccione…</option>
-              {subjects.map((s) => (
-                <option key={s.subjectId} value={s.subjectId}>
-                  {subjectLabel(s)} ({s.identificationState})
-                </option>
-              ))}
-            </select>
-          </label>
-          {!isDoctor && (
-            <label className="block text-sm">
-              <span className="text-slate-600">Profesional</span>
-              <select
-                className="mt-1 w-full border border-slate-300 rounded px-2 py-2"
-                data-testid="agenda-professional-select"
-                value={professionalId}
-                onChange={(e) => setProfessionalId(e.target.value)}
-              >
-                {professionals.length === 0 && (
-                  <option value="">Sin profesionales activos</option>
-                )}
-                {professionals.map((p) => (
-                  <option key={p.healthcareProfessionalId} value={p.healthcareProfessionalId}>
-                    {p.fullName}
-                    {p.specialtyName ? ` — ${p.specialtyName}` : ''}
-                  </option>
-                ))}
-              </select>
-            </label>
-          )}
-          <label className="block text-sm">
-            <span className="text-slate-600">Consultorio</span>
-            <select
-              className="mt-1 w-full border border-slate-300 rounded px-2 py-2"
-              value={roomId}
-              onChange={(e) => setRoomId(e.target.value)}
-            >
-              <option value="">Sin consultorio</option>
-              {rooms.map((r) => (
-                <option key={r.roomId} value={r.roomId}>
-                  {r.code} — {r.name}
-                </option>
-              ))}
-            </select>
-          </label>
-          <div className="flex gap-3">
-            <label className="text-sm">
-              <span className="text-slate-600">Inicio</span>
-              <Input
-                type="time"
-                value={startTime}
-                onChange={(e) => setStartTime(e.target.value)}
-              />
-            </label>
-            <label className="text-sm">
-              <span className="text-slate-600">Fin</span>
-              <Input type="time" value={endTime} onChange={(e) => setEndTime(e.target.value)} />
-            </label>
-          </div>
-          <label className="block text-sm">
-            <span className="text-slate-600">Notas</span>
-            <Input value={notes} onChange={(e) => setNotes(e.target.value)} />
-          </label>
-          <Button variant="primary" onClick={() => void handleCreate()} disabled={loading}>
-            Guardar cita
-          </Button>
-        </div>
-      )}
-
-      {loading && <p className="text-sm text-slate-500">Cargando…</p>}
-
-      {!loading && !failClosed && appointments.length === 0 && (
-        <p className="text-sm text-slate-500">No hay citas en este día.</p>
-      )}
-
-      <ul className="space-y-2">
-        {appointments.map((a) => (
-          <li
-            key={a.appointmentId}
-            className="rounded border border-slate-200 bg-white px-4 py-3 flex flex-wrap gap-3 justify-between items-start"
-          >
-            <div>
-              <div className="font-medium text-slate-900">
-                {formatTime(a.scheduledStartUtc)}–{formatTime(a.scheduledEndUtc)} ·{' '}
-                {a.subjectDisplayLabel}
-              </div>
-              <div className="text-sm text-slate-600">
-                {a.professionalFullName ?? a.professionalId}
-                {a.roomName ? ` · ${a.roomName}` : ''}
-                {' · '}
-                {appointmentStateLabels[a.state] ?? a.state}
-              </div>
-              {a.notes && <div className="text-xs text-slate-500 mt-1">{a.notes}</div>}
+      <div className="flex-1 flex flex-col min-h-0">
+        {/* ── Compact Header ── */}
+        <div className="flex items-center justify-between mb-2 shrink-0">
+          <div className="flex items-center gap-3 min-w-0">
+            <div className="shrink-0">
+              <p className="text-[11px] text-foreground-400 leading-tight">{headerDateText}</p>
             </div>
-            {a.state !== 'cancelada' && a.state !== 'atendida' && (
-              <div className="flex flex-col gap-2 min-w-[200px]">
-                <div className="flex flex-wrap gap-1">
-                  {a.state === 'agendada' && (
-                    <Button
-                      variant="secondary"
-                      onClick={() => void handleState(a.appointmentId, 'confirmada')}
-                    >
-                      Confirmar
-                    </Button>
-                  )}
-                  <Button
-                    variant="secondary"
-                    onClick={() => void handleState(a.appointmentId, 'atendida')}
-                  >
-                    Atendida
-                  </Button>
-                  <Button
-                    variant="secondary"
-                    onClick={() => void handleState(a.appointmentId, 'no_asistio')}
-                  >
-                    No asistió
-                  </Button>
-                </div>
-                <div className="flex gap-1 items-center">
-                  <Input
-                    placeholder="Motivo cancelación"
-                    value={cancelReason[a.appointmentId] ?? ''}
-                    onChange={(e) =>
-                      setCancelReason((prev) => ({
-                        ...prev,
-                        [a.appointmentId]: e.target.value,
-                      }))
-                    }
-                  />
-                  <Button
-                    variant="secondary"
-                    onClick={() => void handleState(a.appointmentId, 'cancelada')}
-                  >
-                    Cancelar
-                  </Button>
-                </div>
-              </div>
-            )}
-          </li>
-        ))}
-      </ul>
 
-      {view === 'list' && appointments.length > 0 && (
-        <p className="text-xs text-slate-400">
-          Vista lista: mismas citas del día ordenadas por hora ({appointments.length}).
-        </p>
-      )}
+            <div className="hidden md:flex items-center gap-1 pl-3 border-l border-secondary-200/70">
+              {[
+                {
+                  label: 'Total',
+                  value: stats.total,
+                  icon: 'ri-calendar-line',
+                  color: 'text-foreground-500',
+                  bg: 'bg-foreground-50',
+                },
+                {
+                  label: 'Atendidas',
+                  value: stats.atendidas,
+                  icon: 'ri-check-double-line',
+                  color: 'text-emerald-500',
+                  bg: 'bg-emerald-50',
+                },
+                {
+                  label: 'En curso',
+                  value: stats.enCurso,
+                  icon: 'ri-time-line',
+                  color: 'text-accent-500',
+                  bg: 'bg-accent-50',
+                },
+                {
+                  label: 'Pend.',
+                  value: stats.confirmadas,
+                  icon: 'ri-hourglass-line',
+                  color: 'text-primary-500',
+                  bg: 'bg-primary-50',
+                },
+                {
+                  label: 'Cancel.',
+                  value: stats.canceladas,
+                  icon: 'ri-close-circle-line',
+                  color: 'text-red-500',
+                  bg: 'bg-red-500/10',
+                },
+              ].map((stat) => (
+                <div key={stat.label} className="flex items-center gap-1 px-1.5 py-1 rounded-md shrink-0">
+                  <span
+                    className={`w-5 h-5 flex items-center justify-center rounded ${stat.bg} ${stat.color}`}
+                  >
+                    <i className={`${stat.icon} text-xs`}></i>
+                  </span>
+                  <span className="text-xs font-bold text-foreground-800">{stat.value}</span>
+                  <span className="text-[10px] text-foreground-400 hidden lg:inline">{stat.label}</span>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          <div className="flex items-center gap-2 shrink-0">
+            <div className="hidden sm:flex items-center gap-1">
+              <button
+                type="button"
+                onClick={handleExportExcel}
+                className="flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium text-foreground-600 bg-background-50 border border-secondary-200 rounded-lg hover:bg-secondary-100 transition-base cursor-pointer whitespace-nowrap"
+              >
+                <i className="ri-file-excel-line text-sm"></i>
+                <span className="hidden lg:inline">Exportar Excel</span>
+              </button>
+            </div>
+            <Button variant="secondary" size="sm" onClick={() => setConfigOpen(true)}>
+              <i className="ri-settings-3-line"></i>{' '}
+              <span className="hidden sm:inline">Configuración</span>
+            </Button>
+            <Button
+              variant="primary"
+              size="sm"
+              onClick={() => {
+                setDefaultScheduleTime(undefined);
+                setLockDateTime(false);
+                setDefaultConsultorioId(undefined);
+                setNewModalOpen(true);
+              }}
+            >
+              <i className="ri-add-line"></i> <span className="hidden sm:inline">Nueva Cita</span>
+            </Button>
+          </div>
+        </div>
+
+        {/* ── Mobile Stats ── */}
+        <div className="flex md:hidden items-center gap-2 mb-2 overflow-x-auto pb-1 shrink-0">
+          {[
+            { label: 'Total', value: stats.total, color: 'bg-foreground-100 text-foreground-700' },
+            { label: 'Atend.', value: stats.atendidas, color: 'bg-emerald-50 text-emerald-600' },
+            { label: 'Curso', value: stats.enCurso, color: 'bg-accent-50 text-accent-600' },
+            { label: 'Pend.', value: stats.confirmadas, color: 'bg-primary-50 text-primary-600' },
+            { label: 'Cancel.', value: stats.canceladas, color: 'bg-red-500/10 text-red-500' },
+          ].map((stat) => (
+            <Badge key={stat.label} variant="secondary" size="sm" className={`${stat.color} shrink-0`}>
+              {stat.value} {stat.label}
+            </Badge>
+          ))}
+        </div>
+
+        {/* ── Patient Filter Banner ── */}
+        {urlPatientId && filteredPatient && (
+          <div className="flex items-center justify-between px-3 py-2 mb-2 bg-primary-50 border border-primary-200/50 rounded-lg shrink-0">
+            <div className="flex items-center gap-2.5 min-w-0">
+              <div className="w-7 h-7 flex items-center justify-center rounded-full bg-primary-100 text-primary-600 shrink-0">
+                <i className="ri-user-search-line text-sm"></i>
+              </div>
+              <div className="min-w-0">
+                <p className="text-xs font-semibold text-primary-800 truncate">
+                  Viendo solo citas de {displayNameOf(filteredPatient)}
+                </p>
+                <p className="text-[10px] text-primary-500">
+                  Exp. {filteredPatient.recordNumber ?? '—'} — Los demás pacientes están ocultos
+                </p>
+              </div>
+            </div>
+            <button
+              onClick={() => {
+                searchParams.delete('paciente');
+                setSearchParams(searchParams, { replace: true });
+                setNewModalOpen(false);
+              }}
+              className="flex items-center gap-1 px-2.5 py-1 text-[11px] font-medium text-primary-600 hover:text-primary-700 hover:bg-primary-100 rounded-md transition-base cursor-pointer whitespace-nowrap shrink-0"
+            >
+              <i className="ri-close-line"></i> Quitar filtro
+            </button>
+          </div>
+        )}
+
+        {/* ── Controls & Filters Row ── */}
+        <div className="flex items-center gap-2 mb-2 flex-wrap shrink-0">
+          <div
+            className="flex items-center gap-0.5 bg-secondary-100 rounded-lg p-0.5 shrink-0"
+            role="group"
+            aria-label="Navegación de fecha"
+          >
+            <button
+              type="button"
+              aria-label={
+                view === 'month'
+                  ? 'Mes anterior'
+                  : view === 'day'
+                    ? 'Día anterior'
+                    : 'Semana anterior'
+              }
+              onClick={() => {
+                if (view === 'month') handlePrevMonth();
+                else
+                  setSelectedDate(
+                    view === 'day' ? addDays(selectedDate, -1) : addDays(selectedDate, -7),
+                  );
+              }}
+              className="w-7 h-7 flex items-center justify-center rounded-md text-foreground-600 hover:text-foreground-900 hover:bg-secondary-200 transition-base cursor-pointer"
+            >
+              <i className="ri-arrow-left-s-line text-lg" aria-hidden="true"></i>
+            </button>
+            <button
+              type="button"
+              aria-label="Ir a hoy"
+              onClick={handleGoToToday}
+              className={`px-2 py-1 text-[11px] font-medium rounded-md transition-base cursor-pointer whitespace-nowrap ${
+                isToday && view !== 'month'
+                  ? 'bg-primary-500 text-white'
+                  : view === 'month' &&
+                      currentMonth === todayDate.getMonth() &&
+                      currentYear === todayDate.getFullYear()
+                    ? 'bg-primary-500 text-white'
+                    : 'text-foreground-600 hover:text-foreground-900 hover:bg-secondary-200'
+              }`}
+            >
+              Hoy
+            </button>
+            <button
+              type="button"
+              aria-label={
+                view === 'month'
+                  ? 'Mes siguiente'
+                  : view === 'day'
+                    ? 'Día siguiente'
+                    : 'Semana siguiente'
+              }
+              onClick={() => {
+                if (view === 'month') handleNextMonth();
+                else
+                  setSelectedDate(
+                    view === 'day' ? addDays(selectedDate, 1) : addDays(selectedDate, 7),
+                  );
+              }}
+              className="w-7 h-7 flex items-center justify-center rounded-md text-foreground-600 hover:text-foreground-900 hover:bg-secondary-200 transition-base cursor-pointer"
+            >
+              <i className="ri-arrow-right-s-line text-lg" aria-hidden="true"></i>
+            </button>
+          </div>
+
+          <Tabs
+            tabs={[
+              { key: 'day', label: 'Día', icon: 'ri-sun-line' },
+              { key: 'week', label: 'Semana', icon: 'ri-calendar-2-line' },
+              { key: 'month', label: 'Mes', icon: 'ri-calendar-line' },
+              { key: 'list', label: 'Lista', icon: 'ri-file-list-3-line' },
+            ]}
+            activeTab={view}
+            onChange={(v) => {
+              setView(v as ViewMode);
+              if (v === 'month') {
+                const d = new Date(`${selectedDate}T00:00:00`);
+                setCurrentYear(d.getFullYear());
+                setCurrentMonth(d.getMonth());
+              }
+            }}
+            variant="pills"
+          />
+
+          <div className="w-px h-5 bg-secondary-200 hidden sm:block shrink-0"></div>
+
+          <div
+            className="flex items-center gap-0.5 bg-secondary-100 rounded-lg p-0.5 shrink-0"
+            role="group"
+            aria-label="Intervalo de tiempo"
+          >
+            {[
+              { value: '15' as TimeGranularity, label: '15m' },
+              { value: '30' as TimeGranularity, label: '30m' },
+              { value: '60' as TimeGranularity, label: '1h' },
+            ].map((g) => (
+              <button
+                key={g.value}
+                type="button"
+                aria-pressed={timeGranularity === g.value}
+                aria-label={`Intervalo de ${g.label}`}
+                onClick={() => setTimeGranularity(g.value)}
+                className={`px-2 py-1 text-[11px] font-medium rounded-md transition-base cursor-pointer whitespace-nowrap ${
+                  timeGranularity === g.value
+                    ? 'bg-primary-500 text-white'
+                    : 'text-foreground-600 hover:text-foreground-900 hover:bg-secondary-200'
+                }`}
+              >
+                {g.label}
+              </button>
+            ))}
+          </div>
+
+          <button
+            type="button"
+            aria-expanded={showFilters}
+            aria-controls="filtros-citas"
+            onClick={() => setShowFilters((v) => !v)}
+            className={`flex items-center gap-1 px-2 py-1.5 rounded-lg text-[11px] font-medium transition-base cursor-pointer shrink-0 ${showFilters ? 'bg-primary-100 text-primary-700' : 'bg-secondary-100 text-foreground-600 hover:bg-secondary-200'}`}
+          >
+            <i className="ri-filter-3-line" aria-hidden="true"></i>
+            <span className="hidden sm:inline">Filtros</span>
+            {activeFiltersCount > 0 && (
+              <span
+                className="ml-0.5 w-4 h-4 flex items-center justify-center rounded-full bg-primary-500 text-white text-[10px] font-bold"
+                aria-label={`${activeFiltersCount} filtros activos`}
+              >
+                {activeFiltersCount}
+              </span>
+            )}
+          </button>
+
+          <div className="relative w-[160px] shrink-0">
+            <Input
+              type="search"
+              placeholder="Buscar..."
+              aria-label="Buscar citas por paciente, médico o motivo"
+              value={filterSearch}
+              onChange={(e) => setFilterSearch(e.target.value)}
+              leftIcon="ri-search-line"
+              className="text-xs py-1.5"
+            />
+            {filterSearch && (
+              <button
+                type="button"
+                aria-label="Limpiar búsqueda"
+                onClick={() => setFilterSearch('')}
+                className="absolute right-2 top-1/2 -translate-y-1/2 w-5 h-5 flex items-center justify-center text-foreground-400 hover:text-foreground-600 cursor-pointer"
+              >
+                <i className="ri-close-circle-fill text-xs" aria-hidden="true"></i>
+              </button>
+            )}
+          </div>
+
+          {activeFiltersCount > 0 && (
+            <button
+              type="button"
+              aria-label="Limpiar todos los filtros"
+              onClick={() => {
+                setFilterDoctor('');
+                setFilterSpecialty('');
+                setFilterStatus('');
+                setFilterSearch('');
+              }}
+              className="flex items-center gap-1 text-[11px] text-red-500 hover:text-red-600 font-medium whitespace-nowrap cursor-pointer transition-base shrink-0"
+            >
+              <i className="ri-filter-off-line" aria-hidden="true"></i> Limpiar
+            </button>
+          )}
+        </div>
+
+        {showFilters && (
+          <div
+            id="filtros-citas"
+            role="region"
+            aria-label="Filtros de citas"
+            className="flex items-center gap-2 mb-2 flex-wrap shrink-0"
+          >
+            <Select
+              placeholder="Médico"
+              aria-label="Filtrar por médico"
+              options={[
+                { value: '', label: 'Todos los médicos' },
+                ...catalogProfessionals.map((d) => ({
+                  value: d.healthcareProfessionalId,
+                  label: d.fullName,
+                })),
+              ]}
+              value={filterDoctor}
+              onChange={(e) => setFilterDoctor(e.target.value)}
+              className="w-[150px] text-xs"
+            />
+            <Select
+              placeholder="Especialidad"
+              aria-label="Filtrar por especialidad"
+              options={[
+                { value: '', label: 'Todas' },
+                ...catalogSpecialties.map((s) => ({ value: s.name, label: s.name })),
+              ]}
+              value={filterSpecialty}
+              onChange={(e) => setFilterSpecialty(e.target.value)}
+              className="w-[140px] text-xs"
+            />
+            <Select
+              placeholder="Estado"
+              aria-label="Filtrar por estado de cita"
+              options={[
+                { value: '', label: 'Todos los estados' },
+                { value: 'reservada', label: 'Reservada' },
+                { value: 'confirmada', label: 'Confirmada' },
+                { value: 'llego', label: 'Llegó' },
+                { value: 'en_espera', label: 'En espera' },
+                { value: 'en_consulta', label: 'En consulta' },
+                { value: 'atendida', label: 'Atendida' },
+                { value: 'cancelada', label: 'Cancelada' },
+                { value: 'no_acudio', label: 'No acudió' },
+              ]}
+              value={filterStatus}
+              onChange={(e) => setFilterStatus(e.target.value)}
+              className="w-[140px] text-xs"
+            />
+          </div>
+        )}
+
+        {view !== 'month' && (
+          <div
+            className="flex items-center gap-1.5 mb-2 flex-wrap shrink-0 overflow-x-auto"
+            role="list"
+            aria-label="Leyenda de estados de cita"
+          >
+            {Object.entries(statusConfig)
+              .filter(([k]) => k !== 'disponible' && k !== 'en_triage' && k !== 'llamando')
+              .map(([key, cfg]) => (
+                <div key={key} className="flex items-center gap-1 shrink-0" role="listitem">
+                  <span
+                    className={`w-2 h-2 rounded-full ${cfg.borderColor.replace('border-l-', 'bg-').replace('-400', '-500').replace('-300', '-400')}`}
+                    aria-hidden="true"
+                  ></span>
+                  <span className="text-[10px] text-foreground-400 whitespace-nowrap">{cfg.label}</span>
+                </div>
+              ))}
+          </div>
+        )}
+
+        {showDragHint && (
+          <div className="flex items-center justify-between px-3 py-2 mb-2 bg-accent-50 border border-accent-200/60 rounded-lg shrink-0 animate-fade-in">
+            <div className="flex items-center gap-2.5 min-w-0">
+              <div className="w-7 h-7 flex items-center justify-center rounded-full bg-accent-100 text-accent-600 shrink-0">
+                <i className="ri-drag-move-line text-sm"></i>
+              </div>
+              <div className="min-w-0">
+                <p className="text-xs font-semibold text-accent-800">Arrastra para desplazar el calendario</p>
+                <p className="text-[10px] text-accent-600">
+                  Mantén clic sostenido y mueve el ratón en cualquier dirección. También puedes usar la
+                  rueda del ratón.
+                </p>
+              </div>
+            </div>
+            <button
+              type="button"
+              onClick={dismissDragHint}
+              className="flex items-center gap-1 px-2 py-1 text-[11px] font-medium text-accent-600 hover:text-accent-700 hover:bg-accent-100 rounded-md transition-base cursor-pointer whitespace-nowrap shrink-0"
+              aria-label="Ocultar consejo"
+            >
+              <i className="ri-close-line"></i> Entendido
+            </button>
+          </div>
+        )}
+
+        <div className="flex-1 min-h-0 overflow-hidden">
+          {loading && filteredAppointments.length === 0 ? (
+            <div className="flex items-center justify-center h-full text-sm text-foreground-500">
+              Cargando citas…
+            </div>
+          ) : view === 'day' ? (
+            activeConsultorios.length > 0 ? (
+              <ConsultoriosDayView
+                date={selectedDate}
+                appointments={filteredAppointments}
+                consultorios={consultorios}
+                reglasBloqueo={[]}
+                onSelectAppointment={setDetailAppointment}
+                onScheduleAtTime={handleScheduleAtTime}
+                timeGranularity={timeGranularity}
+              />
+            ) : (
+              <DayView
+                date={selectedDate}
+                appointments={filteredAppointments}
+                onSelectAppointment={setDetailAppointment}
+                onScheduleAtTime={(time: string) => handleScheduleAtTime(time)}
+                onMoveAppointment={handleMoveAppointment}
+                timeGranularity={timeGranularity}
+              />
+            )
+          ) : view === 'week' ? (
+            <WeekView
+              weekDays={weekDays}
+              getAppointmentsForDate={getAppsForWeekDate}
+              onSelectAppointment={setDetailAppointment}
+              onSelectDate={setSelectedDate}
+              onScheduleAtDate={handleScheduleAtDate}
+              onMoveAppointment={handleMoveAppointment}
+              timeGranularity={timeGranularity}
+            />
+          ) : view === 'list' ? (
+            <AgendaListView
+              appointments={filteredAppointments}
+              onReprint={setPrintAppointment}
+              onMarkAttendance={(a) => void handleStatusChange(a.id, 'llego')}
+            />
+          ) : (
+            <MonthView
+              year={currentYear}
+              month={currentMonth}
+              appointments={filteredAppointments}
+              onSelectDate={handleMonthDayClick}
+              onSelectAppointment={setDetailAppointment}
+            />
+          )}
+        </div>
+
+        <NewAppointmentModal
+          open={newModalOpen}
+          onClose={closeNewModal}
+          defaultDate={selectedDate}
+          defaultTime={defaultScheduleTime}
+          lockDateTime={lockDateTime}
+          onCreateAppointment={handleCreateAppointment}
+          allAppointments={displayAppointments}
+          defaultPatientId={duplicateAppointment?.patientId || urlPatientId}
+          consultorios={consultorios}
+          defaultConsultorioId={defaultConsultorioId}
+          subjects={subjects}
+          branchId={branchId}
+        />
+        <AppointmentDetailModal
+          open={!!detailAppointment}
+          onClose={() => setDetailAppointment(null)}
+          appointment={detailAppointment}
+          onStatusChange={(id, status) => void handleStatusChange(id, status)}
+          onDuplicate={handleDuplicate}
+        />
+        <AgendaConfigModal
+          open={configOpen}
+          onClose={() => setConfigOpen(false)}
+          consultorios={consultorios}
+          branchId={branchId}
+          onUpsertRoom={upsertRoom}
+        />
+        <TicketPrintModal
+          appointment={
+            printAppointment || {
+              id: '',
+              sucursalId: '',
+              patientId: '',
+              patientName: '',
+              doctorId: '',
+              doctorName: '',
+              especialidad: '',
+              fecha: '',
+              horaInicio: '',
+              horaFin: '',
+              estado: 'reservada',
+              motivo: '',
+              consultorio: '',
+              roomId: null,
+            }
+          }
+          isOpen={!!printAppointment}
+          onClose={() => setPrintAppointment(null)}
+        />
+      </div>
     </div>
   );
 }

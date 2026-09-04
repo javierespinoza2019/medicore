@@ -29,6 +29,48 @@ test.describe('00 — Contrato API · appointments', () => {
     expect(body.data.length).toBeGreaterThanOrEqual(1);
   });
 
+  test('PUT consulting-room vincula especialidad y médicos', async ({ apiCtx }) => {
+    const sesion = await sesionValida(apiCtx);
+    const specialtyMg = '55555555-5555-5555-5555-555555550001';
+    const roomId = crypto.randomUUID();
+    const code = `LNK-${Date.now().toString(36).slice(-6).toUpperCase()}`;
+
+    const put = await apiCtx.put(`/api/consulting-rooms/${roomId}`, {
+      headers: autorizacion(sesion),
+      data: {
+        branchId: BRANCH_DEMO,
+        code,
+        name: `Consultorio vínculo ${code}`,
+        isActive: true,
+        specialtyId: specialtyMg,
+        professionalIds: [PROFESSIONAL_D1],
+      },
+    });
+    expect(put.status(), await put.text()).toBe(200);
+    const body = await put.json();
+    expect(body.success).toBe(true);
+    expect(body.data.specialtyId.toLowerCase()).toBe(specialtyMg);
+    expect(body.data.specialtyName).toMatch(/medicina general/i);
+    expect(body.data.professionalIds.map((x: string) => x.toLowerCase())).toContain(
+      PROFESSIONAL_D1.toLowerCase(),
+    );
+
+    // Desactivar conservando vínculos
+    const deactivate = await apiCtx.put(`/api/consulting-rooms/${roomId}`, {
+      headers: autorizacion(sesion),
+      data: {
+        branchId: BRANCH_DEMO,
+        code,
+        name: body.data.name,
+        isActive: false,
+        specialtyId: specialtyMg,
+        professionalIds: [PROFESSIONAL_D1],
+      },
+    });
+    expect(deactivate.status(), await deactivate.text()).toBe(200);
+    expect((await deactivate.json()).data.isActive).toBe(false);
+  });
+
   test('crear cita de sujeto sin identidad + 409 por traslape + cancelar con motivo', async ({
     apiCtx,
   }) => {
@@ -93,6 +135,55 @@ test.describe('00 — Contrato API · appointments', () => {
     expect(cancel.status(), await cancel.text()).toBe(200);
     const cancelled = await cancel.json();
     expect(cancelled.data.state).toBe('cancelada');
+  });
+
+  test('flujo intermedio llego → en_espera → en_consulta → atendida', async ({ apiCtx }) => {
+    const sesion = await sesionValida(apiCtx);
+    const subject = await apiCtx.post('/api/subjects', {
+      headers: autorizacion(sesion),
+      data: { branchId: BRANCH_DEMO },
+    });
+    expect(subject.status()).toBe(200);
+    const subjectId = (await subject.json()).data.subjectId as string;
+
+    const start = new Date(Date.now() + 4 * 3600_000);
+    start.setMinutes(0, 0, 0);
+    const end = new Date(start.getTime() + 30 * 60_000);
+
+    const create = await apiCtx.post('/api/appointments', {
+      headers: autorizacion(sesion),
+      data: {
+        branchId: BRANCH_DEMO,
+        subjectId,
+        professionalId: PROFESSIONAL_D1,
+        scheduledStartUtc: start.toISOString(),
+        scheduledEndUtc: end.toISOString(),
+        notes: 'flujo intermedio agenda',
+      },
+    });
+    expect(create.status(), await create.text()).toBe(200);
+    const appointmentId = (await create.json()).data.appointmentId as string;
+
+    const bad = await apiCtx.post(`/api/appointments/${appointmentId}/state`, {
+      headers: autorizacion(sesion),
+      data: { toState: 'en_consulta' },
+    });
+    expect(bad.status(), await bad.text()).toBe(400);
+
+    for (const toState of ['llego', 'en_espera', 'en_consulta', 'atendida'] as const) {
+      const res = await apiCtx.post(`/api/appointments/${appointmentId}/state`, {
+        headers: autorizacion(sesion),
+        data: { toState },
+      });
+      expect(res.status(), await res.text()).toBe(200);
+      expect((await res.json()).data.state).toBe(toState);
+    }
+
+    const terminal = await apiCtx.post(`/api/appointments/${appointmentId}/state`, {
+      headers: autorizacion(sesion),
+      data: { toState: 'llego' },
+    });
+    expect(terminal.status(), await terminal.text()).toBe(400);
   });
 
   test('mine=true sin profesional falla cerrado (lista vacía)', async ({ apiCtx }) => {

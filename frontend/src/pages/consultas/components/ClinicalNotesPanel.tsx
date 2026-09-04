@@ -262,6 +262,11 @@ export default function ClinicalNotesPanel({
                   <Badge variant={n.signedAtUtc ? 'success' : 'warning'}>
                     {sealStateLabel(n.sealState, n.signedAtUtc)}
                   </Badge>
+                  {n.signedAtUtc && (
+                    <span className="sr-only" data-testid={`note-firmada-${n.noteId}`}>
+                      Firmada
+                    </span>
+                  )}
                 </div>
                 <span className="text-2xs text-foreground-400">
                   {new Date(n.occurredAtUtc).toLocaleString('es-MX')}
@@ -291,6 +296,7 @@ export default function ClinicalNotesPanel({
                     size="sm"
                     disabled={busy}
                     onClick={() => void handleSign(n.noteId)}
+                    data-testid={`note-firmar-${n.noteId}`}
                   >
                     Firmar
                   </Button>

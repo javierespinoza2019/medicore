@@ -152,6 +152,14 @@ export async function listEncounterQueue(
   return apiFetch<EncounterQueueDto>(`/api/encounters/queue?${q}`);
 }
 
+export async function listEncountersBySubject(
+  subjectId: string,
+): Promise<ApiResponse<EncounterDto[]>> {
+  return apiFetch<EncounterDto[]>(
+    `/api/subjects/${encodeURIComponent(subjectId)}/encounters`,
+  );
+}
+
 export async function updateAdmission(
   id: string,
   body: Record<string, unknown>,
@@ -162,9 +170,17 @@ export async function updateAdmission(
   });
 }
 
+export type TransitionEncounterStateRequest = {
+  toState: string;
+  disposition?: string | null;
+  justification?: string | null;
+  /** SC-04: motivo obligatorio para cerrar con recetas sin firmar. */
+  pendingPrescriptionsOverrideReason?: string | null;
+};
+
 export async function transitionEncounterState(
   id: string,
-  body: { toState: string; disposition?: string | null; justification?: string | null },
+  body: TransitionEncounterStateRequest,
 ): Promise<ApiResponse<EncounterDto>> {
   return apiFetch<EncounterDto>(`/api/encounters/${encodeURIComponent(id)}/state`, {
     method: 'POST',

@@ -1,565 +1,486 @@
-import { useState, useMemo } from 'react';
+/**
+ * Usuarios del tenant — CRUD contra /api/users (canAdminUsers).
+ * Matriz de permisos: Seguridad → Roles. Liga a profesional: Administración → Médicos.
+ */
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useSort } from '@/hooks/useSort';
 import SortableTh from '@/components/feature/SortableTh';
-import { usuarios, roleLabels, type User, type UserRole, type UserStatus } from '@/mocks/users';
-import { specialties } from '@/mocks/doctors';
-import { sucursales } from '@/mocks/branches';
+import {
+  createUser,
+  listUsers,
+  setUserPassword,
+  softDeleteUser,
+  updateUser,
+  type TenantUserDto,
+} from '@/api/users';
+import { listBranches, type BranchDto } from '@/api/branches';
+import { getPermissionMatrix } from '@/api/roles';
+import { mensajeDeFalla } from '@/api/errors';
 import Button from '@/components/base/Button';
 import Card from '@/components/base/Card';
 import Modal from '@/components/base/Modal';
 import Input from '@/components/base/Input';
 import Select from '@/components/base/Select';
 import Badge from '@/components/base/Badge';
-
-const statusMap: Record<UserStatus, { label: string; variant: 'success' | 'danger' | 'warning' }> = {
-  activo: { label: 'Activo', variant: 'success' },
-  inactivo: { label: 'Inactivo', variant: 'danger' },
-  bloqueado: { label: 'Bloqueado', variant: 'warning' },
-};
-
-const roleVariant: Record<UserRole, 'primary' | 'accent' | 'info' | 'warning' | 'secondary' | 'success'> = {
-  admin: 'primary',
-  medico: 'accent',
-  recepcion: 'info',
-  enfermeria: 'success',
-  caja: 'warning',
-  farmacia: 'secondary',
-  laboratorio: 'info',
-  directivo: 'primary',
-  trabajo_social: 'secondary',
-};
-
-/**
- * Roles that are restricted to a single branch.
- * When a user has one of these roles, they can only be assigned ONE branch.
- */
-const SINGLE_BRANCH_ROLES: UserRole[] = [
-  'recepcion',
-  'enfermeria',
-  'farmacia',
-  'laboratorio',
-  'caja',
-  'trabajo_social',
-];
+import CargandoPantalla from '@/components/feature/CargandoPantalla';
 
 interface FormData {
-  nombre: string;
-  apellidos: string;
-  email: string;
-  telefono: string;
-  rol: UserRole;
-  sucursalIds: string[];
-  cedulaProfesional?: string;
-  especialidadId?: string;
-  status: UserStatus;
+  userName: string;
+  displayName: string;
+  password: string;
+  isActive: boolean;
+  roleCodes: string[];
+  branchIds: string[];
 }
 
 const emptyForm: FormData = {
-  nombre: '',
-  apellidos: '',
-  email: '',
-  telefono: '',
-  rol: 'recepcion',
-  sucursalIds: [],
-  status: 'activo',
+  userName: '',
+  displayName: '',
+  password: '',
+  isActive: true,
+  roleCodes: [],
+  branchIds: [],
 };
 
-export default function Usuarios() {
-  const [items, setItems] = useState<User[]>(usuarios);
+export default function AdminUsuarios() {
+  const [items, setItems] = useState<TenantUserDto[]>([]);
+  const [branches, setBranches] = useState<BranchDto[]>([]);
+  const [roleOptions, setRoleOptions] = useState<{ code: string; name: string }[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const [search, setSearch] = useState('');
-  const [filterRol, setFilterRol] = useState<string>('todos');
-  const [filterStatus, setFilterStatus] = useState<string>('todos');
+  const [filterStatus, setFilterStatus] = useState<'todos' | 'activo' | 'inactivo'>('todos');
   const [modalOpen, setModalOpen] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [form, setForm] = useState<FormData>(emptyForm);
-  const [deleteTarget, setDeleteTarget] = useState<User | null>(null);
-  const [formErrors, setFormErrors] = useState<Partial<Record<keyof FormData, string>>>({});
+  const [formError, setFormError] = useState<string | null>(null);
+  const [saving, setSaving] = useState(false);
+  const [deleteTarget, setDeleteTarget] = useState<TenantUserDto | null>(null);
+  const [passwordTarget, setPasswordTarget] = useState<TenantUserDto | null>(null);
+  const [newPassword, setNewPassword] = useState('');
 
-  const isSingleBranchRole = SINGLE_BRANCH_ROLES.includes(form.rol);
+  const cargar = useCallback(async () => {
+    setLoading(true);
+    setError(null);
+    const [usersRes, branchesRes, matrixRes] = await Promise.all([
+      listUsers(false),
+      listBranches(true),
+      getPermissionMatrix(),
+    ]);
+    if (!usersRes.success || !usersRes.data) {
+      setError(usersRes.message ?? mensajeDeFalla(usersRes.failure).titulo);
+      setLoading(false);
+      return;
+    }
+    if (!branchesRes.success || !branchesRes.data) {
+      setError(branchesRes.message ?? mensajeDeFalla(branchesRes.failure).titulo);
+      setLoading(false);
+      return;
+    }
+    if (!matrixRes.success || !matrixRes.data) {
+      setError(matrixRes.message ?? mensajeDeFalla(matrixRes.failure).titulo);
+      setLoading(false);
+      return;
+    }
+    setItems(usersRes.data);
+    setBranches(branchesRes.data);
+    setRoleOptions(
+      matrixRes.data.templates
+        .filter((t) => t.roleCode.toLowerCase() !== 'superadmin')
+        .map((t) => ({ code: t.roleCode, name: t.name })),
+    );
+    setLoading(false);
+  }, []);
+
+  useEffect(() => {
+    void cargar();
+  }, [cargar]);
 
   const filtered = items.filter((u) => {
+    const q = search.toLowerCase();
     const matchSearch =
-      `${u.nombre} ${u.apellidos}`.toLowerCase().includes(search.toLowerCase()) ||
-      u.email.toLowerCase().includes(search.toLowerCase()) ||
-      u.rolLabel.toLowerCase().includes(search.toLowerCase());
-    const matchRol = filterRol === 'todos' || u.rol === filterRol;
-    const matchStatus = filterStatus === 'todos' || u.status === filterStatus;
-    return matchSearch && matchRol && matchStatus;
+      !q ||
+      u.userName.toLowerCase().includes(q) ||
+      u.displayName.toLowerCase().includes(q) ||
+      u.roleCodes.some((r) => r.toLowerCase().includes(q));
+    const matchStatus =
+      filterStatus === 'todos' ||
+      (filterStatus === 'activo' && u.isActive) ||
+      (filterStatus === 'inactivo' && !u.isActive);
+    return matchSearch && matchStatus;
   });
 
-  const sorters = useMemo(() => ({
-    usuario: (a: User, b: User) => `${a.nombre} ${a.apellidos}`.localeCompare(`${b.nombre} ${b.apellidos}`),
-    rol: (a: User, b: User) => a.rolLabel.localeCompare(b.rolLabel),
-    sucursal: (a: User, b: User) => (a.sucursales[0] || '').localeCompare(b.sucursales[0] || ''),
-    cedula: (a: User, b: User) => (a.cedulaProfesional || '').localeCompare(b.cedulaProfesional || ''),
-    ultimoAcceso: (a: User, b: User) => a.ultimoAcceso.localeCompare(b.ultimoAcceso),
-    estado: (a: User, b: User) => a.status.localeCompare(b.status),
-  }), []);
-
-  const { sortedData, sortKey, direction, toggleSort } = useSort(filtered, sorters);
+  const sorters = useMemo(
+    () => ({
+      nombre: (a: TenantUserDto, b: TenantUserDto) => a.displayName.localeCompare(b.displayName),
+      acceso: (a: TenantUserDto, b: TenantUserDto) => a.userName.localeCompare(b.userName),
+    }),
+    [],
+  );
+  const { sorted, sortKey, sortDir, toggleSort } = useSort(filtered, sorters, 'nombre');
 
   const openCreate = () => {
     setEditingId(null);
     setForm(emptyForm);
-    setFormErrors({});
+    setFormError(null);
     setModalOpen(true);
   };
 
-  const openEdit = (u: User) => {
-    setEditingId(u.id);
+  const openEdit = (u: TenantUserDto) => {
+    setEditingId(u.userId);
     setForm({
-      nombre: u.nombre,
-      apellidos: u.apellidos,
-      email: u.email,
-      telefono: u.telefono,
-      rol: u.rol,
-      sucursalIds: u.sucursalIds || [],
-      cedulaProfesional: u.cedulaProfesional,
-      especialidadId: u.especialidadId,
-      status: u.status,
+      userName: u.userName,
+      displayName: u.displayName,
+      password: '',
+      isActive: u.isActive,
+      roleCodes: [...u.roleCodes].filter((c) => c.toLowerCase() !== 'superadmin'),
+      branchIds: [...u.branchIds],
     });
-    setFormErrors({});
+    setFormError(null);
     setModalOpen(true);
   };
 
-  const handleRolChange = (newRol: UserRole) => {
-    const newIsSingle = SINGLE_BRANCH_ROLES.includes(newRol);
+  const toggleRole = (code: string) => {
     setForm((prev) => ({
       ...prev,
-      rol: newRol,
-      // When switching to a single-branch role, keep at most 1 branch
-      sucursalIds: newIsSingle ? prev.sucursalIds.slice(0, 1) : prev.sucursalIds,
+      roleCodes: prev.roleCodes.includes(code)
+        ? prev.roleCodes.filter((c) => c !== code)
+        : [...prev.roleCodes, code],
     }));
   };
 
   const toggleBranch = (id: string) => {
-    setForm((prev) => {
-      const already = prev.sucursalIds.includes(id);
-      if (already) {
-        return { ...prev, sucursalIds: prev.sucursalIds.filter((s) => s !== id) };
-      }
-      // Single-branch roles can only have one branch
-      if (isSingleBranchRole) {
-        return { ...prev, sucursalIds: [id] };
-      }
-      return { ...prev, sucursalIds: [...prev.sucursalIds, id] };
-    });
+    setForm((prev) => ({
+      ...prev,
+      branchIds: prev.branchIds.includes(id)
+        ? prev.branchIds.filter((b) => b !== id)
+        : [...prev.branchIds, id],
+    }));
   };
 
-  const validate = (): boolean => {
-    const errors: Partial<Record<keyof FormData, string>> = {};
-    if (!form.nombre.trim()) errors.nombre = 'El nombre es obligatorio';
-    else if (form.nombre.trim().length > 60) errors.nombre = 'El nombre no puede exceder 60 caracteres';
-    else if (/\d/.test(form.nombre)) errors.nombre = 'El nombre no debe contener números';
-    if (!form.apellidos.trim()) errors.apellidos = 'Los apellidos son obligatorios';
-    else if (form.apellidos.trim().length > 60) errors.apellidos = 'Los apellidos no pueden exceder 60 caracteres';
-    else if (/\d/.test(form.apellidos)) errors.apellidos = 'Los apellidos no deben contener números';
-    if (!form.email.trim()) errors.email = 'El email es obligatorio';
-    else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email)) errors.email = 'Formato de email inválido';
-    else if (form.email.trim().length > 100) errors.email = 'El email no puede exceder 100 caracteres';
-    if (form.telefono.trim() && !/^\d{10}$/.test(form.telefono.replace(/\D/g, ''))) errors.telefono = 'Ingresa 10 dígitos';
-    if (form.sucursalIds.length === 0) errors.sucursalIds = 'Selecciona al menos una sucursal';
-    if (isSingleBranchRole && form.sucursalIds.length > 1) errors.sucursalIds = 'Este rol solo puede tener una sucursal';
-    if (form.email.trim() && items.some((u) => u.email.toLowerCase() === form.email.trim().toLowerCase() && u.id !== editingId)) {
-      errors.email = 'Ya existe un usuario con este email';
+  const save = async () => {
+    setFormError(null);
+    if (!form.displayName.trim() || form.displayName.trim().length < 2) {
+      setFormError('Indique el nombre para mostrar.');
+      return;
     }
-    setFormErrors(errors);
-    return Object.keys(errors).length === 0;
-  };
+    if (form.roleCodes.length === 0) {
+      setFormError('Asigne al menos un rol.');
+      return;
+    }
+    if (!editingId) {
+      if (form.userName.trim().length < 3) {
+        setFormError('El nombre de acceso debe tener al menos 3 caracteres.');
+        return;
+      }
+      if (form.password.length < 8) {
+        setFormError('La contraseña debe tener al menos 8 caracteres.');
+        return;
+      }
+    }
 
-  const handleSave = () => {
-    if (!validate()) return;
+    setSaving(true);
+    const res = editingId
+      ? await updateUser(editingId, {
+          displayName: form.displayName.trim(),
+          isActive: form.isActive,
+          roleCodes: form.roleCodes,
+          branchIds: form.branchIds,
+        })
+      : await createUser({
+          userName: form.userName.trim(),
+          displayName: form.displayName.trim(),
+          password: form.password,
+          isActive: form.isActive,
+          roleCodes: form.roleCodes,
+          branchIds: form.branchIds,
+        });
+    setSaving(false);
 
-    const assignedSucursales = sucursales
-      .filter((s) => form.sucursalIds.includes(s.id))
-      .map((s) => s.nombre);
-    const esp = form.especialidadId ? specialties.find((s) => s.id === form.especialidadId) : undefined;
-
-    if (editingId) {
-      setItems((prev) =>
-        prev.map((u) =>
-          u.id === editingId
-            ? {
-                ...u,
-                nombre: form.nombre.trim(),
-                apellidos: form.apellidos.trim(),
-                email: form.email.trim(),
-                telefono: form.telefono.trim(),
-                rol: form.rol,
-                rolLabel: roleLabels[form.rol],
-                sucursalIds: form.sucursalIds,
-                sucursales: assignedSucursales,
-                cedulaProfesional: form.cedulaProfesional,
-                especialidadId: form.especialidadId,
-                especialidad: esp?.nombre || '',
-                status: form.status,
-              }
-            : u
-        )
-      );
-    } else {
-      const newItem: User = {
-        id: `u${Date.now()}`,
-        nombre: form.nombre.trim(),
-        apellidos: form.apellidos.trim(),
-        email: form.email.trim(),
-        password: 'Temp123!',
-        telefono: form.telefono.trim(),
-        rol: form.rol,
-        rolLabel: roleLabels[form.rol],
-        sucursalIds: form.sucursalIds,
-        sucursales: assignedSucursales,
-        cedulaProfesional: form.cedulaProfesional,
-        especialidadId: form.especialidadId,
-        especialidad: esp?.nombre || '',
-        ultimoAcceso: '—',
-        status: form.status,
-        fechaCreacion: new Date().toISOString().split('T')[0],
-      };
-      setItems((prev) => [...prev, newItem]);
+    if (!res.success) {
+      setFormError(res.message ?? mensajeDeFalla(res.failure).titulo);
+      return;
     }
     setModalOpen(false);
+    await cargar();
   };
 
-  const handleDelete = () => {
+  const confirmDelete = async () => {
     if (!deleteTarget) return;
-    setItems((prev) => prev.filter((u) => u.id !== deleteTarget.id));
+    setSaving(true);
+    const res = await softDeleteUser(deleteTarget.userId);
+    setSaving(false);
+    if (!res.success) {
+      setError(res.message ?? mensajeDeFalla(res.failure).titulo);
+      setDeleteTarget(null);
+      return;
+    }
     setDeleteTarget(null);
+    await cargar();
   };
+
+  const confirmPassword = async () => {
+    if (!passwordTarget) return;
+    if (newPassword.length < 8) {
+      setFormError('La contraseña debe tener al menos 8 caracteres.');
+      return;
+    }
+    setSaving(true);
+    const res = await setUserPassword(passwordTarget.userId, newPassword);
+    setSaving(false);
+    if (!res.success) {
+      setFormError(res.message ?? mensajeDeFalla(res.failure).titulo);
+      return;
+    }
+    setPasswordTarget(null);
+    setNewPassword('');
+    setFormError(null);
+  };
+
+  if (loading) return <CargandoPantalla mensaje="Cargando usuarios…" />;
 
   return (
-    <div className="space-y-6">
-      <div className="flex items-center justify-end">
-        <Button icon={<i className="ri-add-line"></i>} onClick={openCreate}>
-          Nuevo Usuario
+    <div className="p-4 md:p-6 space-y-4" data-testid="page-admin-usuarios">
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        <div>
+          <h1 className="text-xl font-semibold text-foreground-900 font-heading">Usuarios</h1>
+          <p className="text-sm text-foreground-500 mt-0.5">
+            Alta y edición de cuentas del tenant. Permisos por rol en Seguridad → Roles.
+          </p>
+        </div>
+        <Button variant="primary" icon="ri-user-add-line" onClick={openCreate} data-testid="usuarios-nuevo">
+          Nuevo usuario
         </Button>
       </div>
 
-      <div className="flex flex-col sm:flex-row gap-3 items-start sm:items-center flex-wrap">
-        <div className="relative w-full sm:w-72">
-          <span className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 flex items-center justify-center text-foreground-400 pointer-events-none">
-            <i className="ri-search-line text-sm"></i>
-          </span>
-          <input
-            type="search"
-            aria-label="Buscar usuarios"
-            placeholder="Buscar por nombre, email o rol..."
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-            className="w-full pl-10 pr-3 py-2.5 text-sm bg-background-50 border border-secondary-200 rounded-lg text-foreground-900 placeholder:text-foreground-400 outline-none focus:border-primary-400 focus:ring-2 focus:ring-primary-100 transition-base"
-          />
-        </div>
-        <select
-          value={filterRol}
-          onChange={(e) => setFilterRol(e.target.value)}
-          className="px-3 py-2.5 text-sm bg-background-50 border border-secondary-200 rounded-lg text-foreground-900 outline-none focus:border-primary-400 cursor-pointer"
-        >
-          <option value="todos">Todos los roles</option>
-          {Object.entries(roleLabels).map(([key, label]) => (
-            <option key={key} value={key}>{label}</option>
-          ))}
-        </select>
-        <select
+      {error && (
+        <Card padding="md" className="border-danger-200 bg-danger-50/40">
+          <p className="text-sm text-danger-800">{error}</p>
+        </Card>
+      )}
+
+      <div className="flex flex-wrap gap-2 items-center">
+        <Input
+          value={search}
+          onChange={(e) => setSearch(e.target.value)}
+          placeholder="Buscar por nombre o acceso…"
+          className="w-64"
+          aria-label="Buscar usuarios"
+        />
+        <Select
           value={filterStatus}
-          onChange={(e) => setFilterStatus(e.target.value)}
-          className="px-3 py-2.5 text-sm bg-background-50 border border-secondary-200 rounded-lg text-foreground-900 outline-none focus:border-primary-400 cursor-pointer"
-        >
-          <option value="todos">Todos los estados</option>
-          <option value="activo">Activos</option>
-          <option value="inactivo">Inactivos</option>
-          <option value="bloqueado">Bloqueados</option>
-        </select>
+          onChange={(e) => setFilterStatus(e.target.value as typeof filterStatus)}
+          options={[
+            { value: 'todos', label: 'Todos' },
+            { value: 'activo', label: 'Activos' },
+            { value: 'inactivo', label: 'Inactivos' },
+          ]}
+          className="w-36"
+          aria-label="Filtrar por estado"
+        />
       </div>
 
-      <Card padding="none">
+      <Card padding="none" className="overflow-hidden">
         <div className="overflow-x-auto">
-          <table className="w-full text-sm">
-            <thead>
-              <tr className="border-b border-secondary-200 text-left">
-                <SortableTh label="Usuario" sortKey="usuario" activeKey={sortKey} direction={direction} onSort={toggleSort} />
-                <SortableTh label="Rol" sortKey="rol" activeKey={sortKey} direction={direction} onSort={toggleSort} />
-                <SortableTh label="Sucursales" sortKey="sucursal" activeKey={sortKey} direction={direction} onSort={toggleSort} />
-                <SortableTh label="Cédula / Esp." sortKey="cedula" activeKey={sortKey} direction={direction} onSort={toggleSort} />
-                <SortableTh label="Último Acceso" sortKey="ultimoAcceso" activeKey={sortKey} direction={direction} onSort={toggleSort} />
-                <SortableTh label="Estado" sortKey="estado" activeKey={sortKey} direction={direction} onSort={toggleSort} align="center" />
-                <th className="px-5 py-2 text-xs font-semibold text-foreground-500 uppercase tracking-wider w-24 text-center">Acciones</th>
+          <table className="w-full text-sm" data-testid="usuarios-table">
+            <thead className="bg-secondary-50 border-b border-secondary-200">
+              <tr>
+                <SortableTh label="Nombre" sortKey="nombre" currentKey={sortKey} dir={sortDir} onToggle={toggleSort} />
+                <SortableTh label="Acceso" sortKey="acceso" currentKey={sortKey} dir={sortDir} onToggle={toggleSort} />
+                <th className="text-left px-3 py-2 font-medium text-foreground-600">Roles</th>
+                <th className="text-left px-3 py-2 font-medium text-foreground-600">Estado</th>
+                <th className="text-right px-3 py-2 font-medium text-foreground-600">Acciones</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-secondary-100">
-              {sortedData.length === 0 ? (
-                <tr>
-                  <td colSpan={7} className="px-5 py-12 text-center text-foreground-400">
-                    <div className="flex flex-col items-center gap-2">
-                      <span className="w-10 h-10 flex items-center justify-center">
-                        <i className="ri-shield-user-line text-2xl"></i>
-                      </span>
-                      <p className="text-sm">No se encontraron usuarios</p>
-                      {(search || filterRol !== 'todos' || filterStatus !== 'todos') && (
-                        <button
-                          onClick={() => { setSearch(''); setFilterRol('todos'); setFilterStatus('todos'); }}
-                          className="text-xs text-primary-500 hover:text-primary-600 cursor-pointer"
-                        >
-                          Limpiar filtros
-                        </button>
-                      )}
+            <tbody>
+              {sorted.map((u) => (
+                <tr key={u.userId} className="border-b border-secondary-100 hover:bg-secondary-50/50">
+                  <td className="px-3 py-2">
+                    <p className="font-medium text-foreground-900">{u.displayName}</p>
+                    {u.professionalDisplayName && (
+                      <p className="text-2xs text-foreground-400">Prof.: {u.professionalDisplayName}</p>
+                    )}
+                  </td>
+                  <td className="px-3 py-2 font-mono text-xs text-foreground-700">{u.userName}</td>
+                  <td className="px-3 py-2">
+                    <div className="flex flex-wrap gap-1">
+                      {u.roleCodes.map((r) => (
+                        <Badge key={r} size="sm" variant="secondary">
+                          {r}
+                        </Badge>
+                      ))}
                     </div>
                   </td>
+                  <td className="px-3 py-2">
+                    <Badge size="sm" variant={u.isActive ? 'success' : 'warning'} dot>
+                      {u.isActive ? 'Activo' : 'Inactivo'}
+                    </Badge>
+                  </td>
+                  <td className="px-3 py-2 text-right whitespace-nowrap">
+                    <button
+                      type="button"
+                      className="text-primary-600 hover:underline text-xs mr-2"
+                      onClick={() => openEdit(u)}
+                    >
+                      Editar
+                    </button>
+                    <button
+                      type="button"
+                      className="text-secondary-700 hover:underline text-xs mr-2"
+                      onClick={() => {
+                        setPasswordTarget(u);
+                        setNewPassword('');
+                        setFormError(null);
+                      }}
+                    >
+                      Contraseña
+                    </button>
+                    <button
+                      type="button"
+                      className="text-danger-600 hover:underline text-xs"
+                      onClick={() => setDeleteTarget(u)}
+                    >
+                      Baja
+                    </button>
+                  </td>
                 </tr>
-              ) : (
-                sortedData.map((u) => {
-                  const st = statusMap[u.status];
-                  return (
-                    <tr key={u.id} className="hover:bg-secondary-50/50 transition-base group">
-                      <td className="px-5 py-2">
-                        <div className="flex items-center gap-3">
-                          <span className="w-9 h-9 rounded-full bg-secondary-100 text-secondary-700 flex items-center justify-center text-sm font-semibold">
-                            {u.nombre.charAt(0)}{u.apellidos.charAt(0)}
-                          </span>
-                          <div>
-                            <p className="font-medium text-foreground-900">{u.nombre} {u.apellidos}</p>
-                            <p className="text-xs text-foreground-500">{u.email}</p>
-                          </div>
-                        </div>
-                      </td>
-                      <td className="px-5 py-2">
-                        <Badge variant={roleVariant[u.rol]} size="sm">{u.rolLabel}</Badge>
-                      </td>
-                      <td className="px-5 py-2">
-                        <div className="flex flex-wrap gap-1 max-w-[180px]">
-                          {(u.sucursales || []).map((nombre, idx) => (
-                            <span
-                              key={idx}
-                              className="inline-flex items-center gap-1 px-1.5 py-0.5 text-2xs rounded-md bg-secondary-100 text-foreground-600 whitespace-nowrap"
-                              title={nombre}
-                            >
-                              <i className="ri-building-line text-2xs"></i>
-                              <span className="max-w-[100px] truncate">{nombre.replace(' - CDMX', '')}</span>
-                            </span>
-                          ))}
-                        </div>
-                      </td>
-                      <td className="px-5 py-2">
-                        {u.cedulaProfesional ? (
-                          <div className="text-xs">
-                            <span className="text-foreground-600 font-mono">{u.cedulaProfesional}</span>
-                            {u.especialidad && <span className="text-foreground-400 block">{u.especialidad}</span>}
-                          </div>
-                        ) : (
-                          <span className="text-xs text-foreground-400">—</span>
-                        )}
-                      </td>
-                      <td className="px-5 py-2 text-foreground-600 text-xs whitespace-nowrap">{u.ultimoAcceso}</td>
-                      <td className="px-5 py-2 text-center">
-                        <Badge variant={st.variant} size="sm" dot>{st.label}</Badge>
-                      </td>
-                      <td className="px-5 py-2">
-                        <div className="flex items-center justify-center gap-1 opacity-0 group-hover:opacity-100 transition-base">
-                          <button
-                            onClick={() => openEdit(u)}
-                            className="w-8 h-8 flex items-center justify-center rounded-lg text-foreground-400 hover:text-foreground-700 hover:bg-secondary-100 transition-base cursor-pointer"
-                            aria-label={`Editar usuario ${u.nombre} ${u.apellidos}`}
-                            title="Editar"
-                          >
-                            <i className="ri-pencil-line text-sm" aria-hidden="true"></i>
-                          </button>
-                          <button
-                            onClick={() => setDeleteTarget(u)}
-                            className="w-8 h-8 flex items-center justify-center rounded-lg text-foreground-400 hover:text-red-600 hover:bg-red-500/10 transition-base cursor-pointer"
-                            aria-label={`Eliminar usuario ${u.nombre} ${u.apellidos}`}
-                            title="Eliminar"
-                          >
-                            <i className="ri-delete-bin-line text-sm" aria-hidden="true"></i>
-                          </button>
-                        </div>
-                      </td>
-                    </tr>
-                  );
-                })
+              ))}
+              {sorted.length === 0 && (
+                <tr>
+                  <td colSpan={5} className="px-3 py-8 text-center text-foreground-500">
+                    No hay usuarios con esos filtros.
+                  </td>
+                </tr>
               )}
             </tbody>
           </table>
         </div>
       </Card>
 
-      {/* Create/Edit Modal */}
-      <Modal
-        open={modalOpen}
-        onClose={() => setModalOpen(false)}
-        title={editingId ? 'Editar Usuario' : 'Nuevo Usuario'}
-        size="lg"
-        footer={
-          <div className="flex gap-3">
-            <Button variant="ghost" onClick={() => setModalOpen(false)}>Cancelar</Button>
-            <Button onClick={handleSave}>{editingId ? 'Guardar Cambios' : 'Registrar Usuario'}</Button>
-          </div>
-        }
-      >
-        <div className="space-y-5">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+      <Modal open={modalOpen} onClose={() => setModalOpen(false)} size="lg">
+        <h2 className="text-lg font-semibold mb-4">{editingId ? 'Editar usuario' : 'Nuevo usuario'}</h2>
+        <div className="space-y-3">
+          {!editingId && (
             <Input
-              label="Nombre"
-              placeholder="Ej: Alejandro"
-              value={form.nombre}
-              onChange={(e) => setForm({ ...form, nombre: e.target.value })}
-              error={formErrors.nombre}
-              maxLength={60}
-              autoComplete="given-name"
+              label="Nombre de acceso"
+              value={form.userName}
+              onChange={(e) => setForm((f) => ({ ...f, userName: e.target.value }))}
+              data-testid="usuarios-username"
             />
-            <Input
-              label="Apellidos"
-              placeholder="Ej: García Mendoza"
-              value={form.apellidos}
-              onChange={(e) => setForm({ ...form, apellidos: e.target.value })}
-              error={formErrors.apellidos}
-              maxLength={60}
-              autoComplete="family-name"
-            />
-          </div>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <Input
-              label="Correo electrónico"
-              placeholder="usuario@medicore.mx"
-              type="email"
-              value={form.email}
-              onChange={(e) => setForm({ ...form, email: e.target.value })}
-              error={formErrors.email}
-              maxLength={100}
-              autoComplete="email"
-            />
-            <Input
-              label="Teléfono"
-              placeholder="55-1234-5678"
-              value={form.telefono}
-              onChange={(e) => setForm({ ...form, telefono: e.target.value })}
-              error={formErrors.telefono}
-              maxLength={20}
-              autoComplete="tel"
-            />
-          </div>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <Select
-              label="Rol"
-              value={form.rol}
-              onChange={(e) => handleRolChange(e.target.value as UserRole)}
-              options={Object.entries(roleLabels).map(([key, label]) => ({ value: key, label }))}
-            />
-            <Select
-              label="Estado"
-              value={form.status}
-              onChange={(e) => setForm({ ...form, status: e.target.value as UserStatus })}
-              options={[
-                { value: 'activo', label: 'Activo' },
-                { value: 'inactivo', label: 'Inactivo' },
-                { value: 'bloqueado', label: 'Bloqueado' },
-              ]}
-            />
-          </div>
-
-          {/* Branch Assignment */}
-          <div className="border-t border-secondary-200 pt-4">
-            <div className="flex items-center justify-between mb-2">
-              <label className="text-sm font-medium text-foreground-800">
-                Sucursales asignadas
-                {!isSingleBranchRole && (
-                  <span className="ml-1.5 text-xs font-normal text-foreground-500">(puede ser múltiple)</span>
-                )}
-              </label>
-              {isSingleBranchRole && (
-                <span className="inline-flex items-center gap-1 px-2 py-0.5 text-2xs rounded-full bg-amber-100 text-amber-700">
-                  <i className="ri-information-line text-2xs"></i>
-                  Solo 1 sucursal para este rol
-                </span>
-              )}
-            </div>
-            {formErrors.sucursalIds && (
-              <p className="text-xs text-red-500 mb-2">{formErrors.sucursalIds}</p>
-            )}
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-              {sucursales.map((suc) => {
-                const isSelected = form.sucursalIds.includes(suc.id);
-                const isDisabled = isSingleBranchRole && !isSelected && form.sucursalIds.length > 0;
-                return (
-                  <button
-                    key={suc.id}
-                    type="button"
-                    onClick={() => !isDisabled && toggleBranch(suc.id)}
-                    disabled={isDisabled}
-                    className={`flex items-center gap-3 px-3.5 py-2.5 rounded-xl border text-sm text-left transition-base cursor-pointer ${
-                      isSelected
-                        ? 'bg-primary-50 border-primary-300 text-primary-800'
-                        : isDisabled
-                          ? 'bg-secondary-50/50 border-secondary-200/50 text-foreground-400 cursor-not-allowed opacity-50'
-                          : 'bg-background-50 border-secondary-200 text-foreground-700 hover:border-primary-200 hover:bg-primary-50/30'
-                    }`}
-                  >
-                    <span className={`w-5 h-5 flex items-center justify-center flex-shrink-0 rounded-md ${isSelected ? 'bg-primary-100 text-primary-600' : 'bg-secondary-100 text-foreground-400'}`}>
-                      <i className={`${isSelected ? 'ri-check-line' : 'ri-building-line'} text-xs`}></i>
-                    </span>
-                    <div className="min-w-0">
-                      <p className="text-sm font-medium leading-tight truncate">{suc.nombre}</p>
-                      <p className="text-2xs text-foreground-400 truncate">{suc.ciudad} · {suc.estado}</p>
-                    </div>
-                    {!suc.activo && (
-                      <span className="ml-auto flex-shrink-0 text-2xs text-foreground-400 bg-secondary-100 rounded-full px-1.5 py-0.5">Inactiva</span>
-                    )}
-                  </button>
-                );
-              })}
-            </div>
-          </div>
-
-          {form.rol === 'medico' && (
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 border-t border-secondary-200 pt-4">
-              <Input
-                label="Cédula profesional"
-                placeholder="CED-12345678"
-                value={form.cedulaProfesional || ''}
-                onChange={(e) => setForm({ ...form, cedulaProfesional: e.target.value })}
-                maxLength={30}
-                autoComplete="off"
-              />
-              <Select
-                label="Especialidad"
-                value={form.especialidadId || ''}
-                onChange={(e) => setForm({ ...form, especialidadId: e.target.value || undefined })}
-                options={specialties.map((s) => ({ value: s.id, label: s.nombre }))}
-                placeholder="Seleccionar especialidad"
-              />
-            </div>
           )}
+          <Input
+            label="Nombre para mostrar"
+            value={form.displayName}
+            onChange={(e) => setForm((f) => ({ ...f, displayName: e.target.value }))}
+            data-testid="usuarios-displayname"
+          />
+          {!editingId && (
+            <Input
+              label="Contraseña inicial"
+              type="password"
+              value={form.password}
+              onChange={(e) => setForm((f) => ({ ...f, password: e.target.value }))}
+              data-testid="usuarios-password"
+            />
+          )}
+          <label className="flex items-center gap-2 text-sm">
+            <input
+              type="checkbox"
+              checked={form.isActive}
+              onChange={(e) => setForm((f) => ({ ...f, isActive: e.target.checked }))}
+            />
+            Activo
+          </label>
+          <div>
+            <p className="text-xs font-medium text-foreground-600 mb-1.5">Roles</p>
+            <div className="flex flex-wrap gap-2" data-testid="usuarios-roles">
+              {roleOptions.map((r) => (
+                <button
+                  key={r.code}
+                  type="button"
+                  onClick={() => toggleRole(r.code)}
+                  className={`px-2.5 py-1 rounded-lg text-xs border transition-base ${
+                    form.roleCodes.includes(r.code)
+                      ? 'bg-primary-100 border-primary-300 text-primary-800'
+                      : 'bg-secondary-50 border-secondary-200 text-foreground-600'
+                  }`}
+                >
+                  {r.name}
+                </button>
+              ))}
+            </div>
+          </div>
+          <div>
+            <p className="text-xs font-medium text-foreground-600 mb-1.5">Sucursales</p>
+            <div className="flex flex-wrap gap-2" data-testid="usuarios-branches">
+              {branches.map((b) => (
+                <button
+                  key={b.branchId}
+                  type="button"
+                  onClick={() => toggleBranch(b.branchId)}
+                  className={`px-2.5 py-1 rounded-lg text-xs border transition-base ${
+                    form.branchIds.includes(b.branchId)
+                      ? 'bg-accent-100 border-accent-300 text-accent-800'
+                      : 'bg-secondary-50 border-secondary-200 text-foreground-600'
+                  }`}
+                >
+                  {b.name || b.code}
+                </button>
+              ))}
+            </div>
+          </div>
+          {formError && <p className="text-sm text-danger-700">{formError}</p>}
+          <div className="flex justify-end gap-2 pt-2">
+            <Button variant="ghost" onClick={() => setModalOpen(false)}>
+              Cancelar
+            </Button>
+            <Button variant="primary" onClick={() => void save()} disabled={saving} data-testid="usuarios-guardar">
+              {saving ? 'Guardando…' : 'Guardar'}
+            </Button>
+          </div>
         </div>
       </Modal>
 
-      {/* Delete Modal */}
+      <Modal open={!!deleteTarget} onClose={() => setDeleteTarget(null)} size="sm">
+        <p className="text-sm text-foreground-800 mb-4">
+          ¿Dar de baja a <strong>{deleteTarget?.displayName}</strong>? Se cierran sus sesiones.
+        </p>
+        <div className="flex justify-end gap-2">
+          <Button variant="ghost" onClick={() => setDeleteTarget(null)}>
+            Cancelar
+          </Button>
+          <Button variant="danger" onClick={() => void confirmDelete()} disabled={saving}>
+            Confirmar baja
+          </Button>
+        </div>
+      </Modal>
+
       <Modal
-        open={!!deleteTarget}
-        onClose={() => setDeleteTarget(null)}
-        title="Eliminar Usuario"
+        open={!!passwordTarget}
+        onClose={() => {
+          setPasswordTarget(null);
+          setFormError(null);
+        }}
         size="sm"
-        footer={
-          <div className="flex gap-3">
-            <Button variant="ghost" onClick={() => setDeleteTarget(null)}>Cancelar</Button>
-            <Button variant="danger" onClick={handleDelete}>Eliminar</Button>
-          </div>
-        }
       >
-        {deleteTarget && (
-          <div className="space-y-4">
-            <div className="flex items-center gap-3 p-3 bg-red-500/10 rounded-lg border border-red-500/20">
-              <span className="w-10 h-10 flex items-center justify-center rounded-full bg-red-100 text-red-600">
-                <i className="ri-error-warning-line text-lg"></i>
-              </span>
-              <div>
-                <p className="text-sm font-medium text-red-800">¿Eliminar este usuario?</p>
-                <p className="text-xs text-red-600 mt-0.5">El usuario perderá acceso al sistema. Su registro en auditoría se conserva.</p>
-              </div>
-            </div>
-            <div className="p-3 bg-background-50 rounded-lg border border-secondary-200">
-              <p className="text-sm font-medium text-foreground-900">{deleteTarget.nombre} {deleteTarget.apellidos}</p>
-              <p className="text-xs text-foreground-500">{deleteTarget.rolLabel} · {(deleteTarget.sucursales || []).join(', ')}</p>
-            </div>
-          </div>
-        )}
+        <h2 className="text-base font-semibold mb-3">Restablecer contraseña</h2>
+        <p className="text-xs text-foreground-500 mb-3">{passwordTarget?.displayName}</p>
+        <Input
+          label="Nueva contraseña"
+          type="password"
+          value={newPassword}
+          onChange={(e) => setNewPassword(e.target.value)}
+          data-testid="usuarios-new-password"
+        />
+        {formError && <p className="text-sm text-danger-700 mt-2">{formError}</p>}
+        <div className="flex justify-end gap-2 mt-4">
+          <Button variant="ghost" onClick={() => setPasswordTarget(null)}>
+            Cancelar
+          </Button>
+          <Button variant="primary" onClick={() => void confirmPassword()} disabled={saving}>
+            Guardar
+          </Button>
+        </div>
       </Modal>
     </div>
   );

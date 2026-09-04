@@ -20,7 +20,6 @@ import {
 } from '@/api/prescriptions';
 import { mensajeDeFalla } from '@/api/errors';
 import Badge from '@/components/base/Badge';
-import type { RecetaView } from '@/pages/consultas/types';
 
 function failMsg(res: { message?: string; failure?: import('@/api/errors').ApiFailure }): string {
   if (res.failure?.apiMessage?.trim()) return res.failure.apiMessage;
@@ -68,43 +67,8 @@ interface Props {
   doctorName: string;
   doctorCedula: string;
   diagnosticoRelacionado: string;
-  onRecetaCreada: (receta: RecetaView) => void;
+  onRecetaCreada: (rx: PrescriptionDto) => void;
   onCancel: () => void;
-}
-
-function toLegacyReceta(
-  rx: PrescriptionDto,
-  meta: { patientName: string; patientExpediente: string; doctorId: string; doctorName: string; doctorCedula: string; diagnosticoRelacionado: string },
-): RecetaView {
-  const issued = rx.issuedAtUtc ?? rx.occurredAtUtc;
-  const d = new Date(issued);
-  return {
-    id: rx.prescriptionId,
-    patientId: rx.subjectId,
-    patientName: meta.patientName,
-    patientExpediente: meta.patientExpediente,
-    doctorId: rx.professionalId ?? meta.doctorId,
-    doctorName: meta.doctorName,
-    doctorCedula: meta.doctorCedula,
-    consultaId: rx.encounterId,
-    fecha: d.toISOString().slice(0, 10),
-    hora: `${String(d.getHours()).padStart(2, '0')}:${String(d.getMinutes()).padStart(2, '0')}`,
-    medicamentos: rx.items.map((it) => ({
-      id: it.prescriptionItemId,
-      medicamentoId: it.medicationId,
-      nombre: it.genericNameSnapshot,
-      presentacion: '',
-      concentracion: doseLabel(it.dose),
-      dosis: doseLabel(it.dose),
-      frecuencia: frequencyLabel(it.frequency),
-      via: it.route,
-      duracion: it.durationDays != null ? `${it.durationDays} días` : '',
-      indicaciones: it.instructions ?? '',
-    })),
-    indicacionesGenerales: rx.generalInstructions ?? '',
-    estado: rx.cancelledAtUtc ? 'cancelada' : rx.signedAtUtc ? 'activa' : 'activa',
-    diagnosticoRelacionado: meta.diagnosticoRelacionado,
-  };
 }
 
 export default function RecetaInlineCreator({
@@ -266,15 +230,11 @@ export default function RecetaInlineCreator({
     const signed = await signPrescription(created.data.prescriptionId);
     if (!signed.success || !signed.data) {
       setError(failMsg(signed) || 'Receta creada pero no firmada.');
-      onRecetaCreada(toLegacyReceta(created.data, {
-        patientName, patientExpediente, doctorId, doctorName, doctorCedula, diagnosticoRelacionado,
-      }));
+      onRecetaCreada(created.data);
       setSaving(false);
       return;
     }
-    onRecetaCreada(toLegacyReceta(signed.data, {
-      patientName, patientExpediente, doctorId, doctorName, doctorCedula, diagnosticoRelacionado,
-    }));
+    onRecetaCreada(signed.data);
     setSaving(false);
   };
 
@@ -471,6 +431,8 @@ export default function RecetaInlineCreator({
                 rows={2}
                 value={overrideJustification}
                 onChange={(e) => setOverrideJustification(e.target.value)}
+                data-testid="receta-justificacion-sc02"
+                placeholder="Obligatoria si el medicamento coincide con alergia registrada"
               />
             </label>
           )}

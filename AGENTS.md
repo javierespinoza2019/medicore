@@ -44,7 +44,7 @@ Estrategia y suite: [`docs/operacion/pruebas.md`](docs/operacion/pruebas.md) —
 ## Oleada de decisiones 2026-08-30 (resumen)
 
 Ratificadas en doc 06: firma A · roles B (+`trabajo_social`) · controlados A · establecimiento A ·
-triage A · monitor #21 · revocación global #75 (política). **Aplazado:** hospedaje Prod (#2/#70/#71).
+triage A · monitor #21 · revocación global #75 (política) · **foto paciente #44 (sí)**. **Aplazado:** hospedaje Prod (#2/#70/#71).
 Índice vivo: encabezado de [`docs/analisis/06-decisiones-abiertas.md`](docs/analisis/06-decisiones-abiertas.md).
 
 ## Ambientes

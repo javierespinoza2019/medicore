@@ -269,6 +269,10 @@ public sealed class SubjectServiceValidationTests
 
         public Task SoftDeleteAsync(Guid tenantId, Guid subjectId, Guid actorUserId, CancellationToken ct) =>
             Task.CompletedTask;
+
+        public Task<Models.Subject.SubjectDto?> SetPhotoPathAsync(
+            Guid tenantId, Guid subjectId, Guid actorUserId, string? photoRelativePath, CancellationToken ct) =>
+            Task.FromResult<Models.Subject.SubjectDto?>(null);
     }
 }
 

@@ -1,0 +1,3 @@
+# Raíz de almacenamiento local (FileStorage:RootPath).
+# Contenido: {TenantCode}/{Modulo}/{EntityId}/{archivo}
+# No versionar archivos subidos.

@@ -1,6 +1,6 @@
 import { useMemo, useRef, useCallback, useState, useEffect } from 'react';
 import { DndContext, useDraggable, PointerSensor, useSensor, useSensors, DragOverlay, type DragEndEvent } from '@dnd-kit/core';
-import { type Appointment, statusConfig } from '@/mocks/appointments';
+import { type AgendaAppointment, statusConfig, type Appointment } from '@/pages/agenda/types';
 import Avatar from '@/components/base/Avatar';
 import useDragToScroll from '@/hooks/useDragToScroll';
 import {

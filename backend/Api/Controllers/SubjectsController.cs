@@ -16,6 +16,7 @@ namespace MediCore.Api.Controllers;
 [Route("api/subjects")]
 public sealed class SubjectsController(
     ISubjectService subjectService,
+    ISubjectPhotoService subjectPhoto,
     IEffectivePermissionService permissionService) : MediCoreControllerBase
 {
     [HttpPost]
@@ -260,6 +261,65 @@ public sealed class SubjectsController(
 
         await subjectService.SoftDeleteAsync(TenantId(), id, UserId(), ct);
         return Ok(ApiResponse<object>.Ok(new { softDeleted = true }));
+    }
+
+    /// <summary>Foto de identificación (#44). Variante efectiva del sujeto resuelto por vínculos.</summary>
+    [HttpGet("{id:guid}/photo")]
+    public async Task<IActionResult> GetPhoto(Guid id, CancellationToken ct)
+    {
+        if (!await CanAccessPatientsAsync(permissionService, ct))
+            return Forbid();
+
+        var file = await subjectPhoto.OpenAsync(TenantId(), id, ct);
+        if (file is null)
+            return NotFound();
+        return File(file.Content, file.ContentType, file.FileName);
+    }
+
+    [HttpPut("{id:guid}/photo")]
+    [RequestSizeLimit(2 * 1024 * 1024 + 64 * 1024)]
+    public async Task<ActionResult<ApiResponse<SubjectDto>>> UploadPhoto(
+        Guid id,
+        IFormFile? file,
+        CancellationToken ct)
+    {
+        if (!await CanAccessPatientsAsync(permissionService, ct))
+            return Forbidden<SubjectDto>("Sin permiso para actualizar la foto del sujeto.");
+        if (file is null || file.Length == 0)
+            return BadRequest(ApiResponse<SubjectDto>.Fail("Debe enviar un archivo de imagen."));
+
+        try
+        {
+            await using var stream = file.OpenReadStream();
+            var subject = await subjectPhoto.UploadAsync(
+                TenantId(), id, UserId(), file.FileName, stream, file.Length, ct);
+            return Ok(ApiResponse<SubjectDto>.Ok(subject));
+        }
+        catch (ArgumentException ex)
+        {
+            return BadRequest(ApiResponse<SubjectDto>.Fail(ex.Message));
+        }
+        catch (InvalidOperationException ex)
+        {
+            return NotFound(ApiResponse<SubjectDto>.Fail(ex.Message));
+        }
+    }
+
+    [HttpDelete("{id:guid}/photo")]
+    public async Task<ActionResult<ApiResponse<SubjectDto>>> ClearPhoto(Guid id, CancellationToken ct)
+    {
+        if (!await CanAccessPatientsAsync(permissionService, ct))
+            return Forbidden<SubjectDto>("Sin permiso para quitar la foto del sujeto.");
+
+        try
+        {
+            var subject = await subjectPhoto.ClearAsync(TenantId(), id, UserId(), ct);
+            return Ok(ApiResponse<SubjectDto>.Ok(subject));
+        }
+        catch (InvalidOperationException ex)
+        {
+            return NotFound(ApiResponse<SubjectDto>.Fail(ex.Message));
+        }
     }
 
     [HttpGet("~/api/branches/{branchId:guid}/unidentified-label-config")]

@@ -95,6 +95,10 @@ public sealed class AppointmentsController(
         {
             return BadRequest(ApiResponse<AppointmentDto>.Fail(ex.Message));
         }
+        catch (InvalidOperationException ex)
+        {
+            return NotFound(ApiResponse<AppointmentDto>.Fail(ex.Message));
+        }
     }
 
     /// <summary>

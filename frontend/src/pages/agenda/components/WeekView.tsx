@@ -1,6 +1,6 @@
 import { useMemo, useState, useCallback, useRef } from 'react';
 import { DndContext, useDroppable, PointerSensor, useSensor, useSensors, DragOverlay, type DragEndEvent } from '@dnd-kit/core';
-import { type Appointment, statusConfig } from '@/mocks/appointments';
+import { type AgendaAppointment, statusConfig, type Appointment } from '@/pages/agenda/types';
 import WeekDayColumn from '@/pages/agenda/components/WeekDayColumn';
 import Avatar from '@/components/base/Avatar';
 import useDragToScroll from '@/hooks/useDragToScroll';

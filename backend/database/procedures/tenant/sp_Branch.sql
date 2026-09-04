@@ -28,6 +28,7 @@ BEGIN
         ResponsiblePhysicianProfessionalId,
         TimeZoneId,
         HasEmergencyService,
+        LogoRelativePath,
         IsActive
     FROM dbo.Branch
     WHERE TenantId = @TenantId
@@ -62,6 +63,7 @@ BEGIN
         ResponsiblePhysicianProfessionalId,
         TimeZoneId,
         HasEmergencyService,
+        LogoRelativePath,
         IsActive
     FROM dbo.Branch
     WHERE TenantId = @TenantId
@@ -123,6 +125,7 @@ BEGIN
             Code = @Code,
             Name = @Name,
             -- FacilityType / HasEmergencyService: se aceptan NULL a propósito (pregunta L).
+            -- LogoRelativePath: no se toca aquí (solo sp_Branch_SetLogoPath).
             FacilityType = @FacilityType,
             LegalName = @LegalName,
             AddressStreet = @AddressStreet,
@@ -180,6 +183,61 @@ BEGIN
         ResponsiblePhysicianProfessionalId,
         TimeZoneId,
         HasEmergencyService,
+        LogoRelativePath,
+        IsActive
+    FROM dbo.Branch
+    WHERE BranchId = @BranchId
+      AND TenantId = @TenantId
+      AND IsDeleted = 0;
+END
+GO
+
+CREATE OR ALTER PROCEDURE dbo.sp_Branch_SetLogoPath
+    @TenantId           UNIQUEIDENTIFIER,
+    @BranchId           UNIQUEIDENTIFIER,
+    @LogoRelativePath   NVARCHAR(512) = NULL,
+    @ActorUserId        UNIQUEIDENTIFIER
+AS
+BEGIN
+    SET NOCOUNT ON;
+
+    IF EXISTS (
+        SELECT 1 FROM dbo.Branch
+        WHERE BranchId = @BranchId AND TenantId <> @TenantId AND IsDeleted = 0
+    )
+        RETURN;
+
+    IF NOT EXISTS (
+        SELECT 1 FROM dbo.Branch
+        WHERE BranchId = @BranchId AND TenantId = @TenantId AND IsDeleted = 0
+    )
+        RETURN;
+
+    UPDATE dbo.Branch
+    SET LogoRelativePath = @LogoRelativePath
+    WHERE BranchId = @BranchId
+      AND TenantId = @TenantId
+      AND IsDeleted = 0;
+
+    SELECT
+        BranchId,
+        TenantId,
+        Code,
+        Name,
+        FacilityType,
+        LegalName,
+        AddressStreet,
+        AddressNumber,
+        AddressNeighborhood,
+        AddressMunicipality,
+        AddressState,
+        AddressPostalCode,
+        PhoneNumber,
+        HealthLicense,
+        ResponsiblePhysicianProfessionalId,
+        TimeZoneId,
+        HasEmergencyService,
+        LogoRelativePath,
         IsActive
     FROM dbo.Branch
     WHERE BranchId = @BranchId

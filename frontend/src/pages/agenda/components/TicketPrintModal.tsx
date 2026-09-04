@@ -1,7 +1,6 @@
 import { useEffect, useMemo } from 'react';
-import type { Appointment } from '@/mocks/appointments';
-import { getPatientById } from '@/mocks/patients';
-import { sucursales } from '@/mocks/branches';
+import type { AgendaAppointment, Appointment } from '@/pages/agenda/types';
+import { useBranchLetterhead } from '@/hooks/useBranchLetterhead';
 import { exportElementToPDF, exportElementToThermalPDFBlob } from '@/utils/exportUtils';
 import InstitucionalLogo from '@/components/feature/InstitucionalLogo';
 import { useAgendaProfessionalsCatalog } from '@/pages/agenda/hooks/useAgendaProfessionalsCatalog';
@@ -13,13 +12,12 @@ interface TicketPrintModalProps {
 }
 
 export default function TicketPrintModal({ appointment, isOpen, onClose }: TicketPrintModalProps) {
-  const patient = useMemo(() => getPatientById(appointment.patientId), [appointment.patientId]);
   const { professionals } = useAgendaProfessionalsCatalog(true);
   const professional = useMemo(
     () => professionals.find((p) => p.healthcareProfessionalId === appointment.doctorId),
     [professionals, appointment.doctorId],
   );
-  const sucursal = sucursales[0];
+  const { letterhead: sucursal } = useBranchLetterhead();
 
   useEffect(() => {
     if (isOpen) {
@@ -103,11 +101,7 @@ export default function TicketPrintModal({ appointment, isOpen, onClose }: Ticke
               <div className="mb-3">
                 <p className="text-2xs uppercase tracking-wider text-foreground-400 font-semibold mb-1 print:text-gray-500">Paciente</p>
                 <p className="text-sm font-bold text-foreground-900 print:text-black">{appointment.patientName}</p>
-                {patient && (
-                  <p className="text-2xs text-foreground-500 print:text-gray-600">
-                    Exp. {patient.expediente} · {patient.edad} años · {patient.sexo === 'M' ? 'Masculino' : 'Femenino'}
-                  </p>
-                )}
+                <p className="text-2xs text-foreground-500 print:text-gray-600">{appointment.patientId.slice(0, 8)}…</p>
               </div>
 
               {/* Date & Time — prominent */}

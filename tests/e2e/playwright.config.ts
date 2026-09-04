@@ -8,6 +8,7 @@ import { defineConfig, devices } from '@playwright/test';
 const baseURL = process.env.MEDICORE_BASE_URL?.trim() || 'http://127.0.0.1:5173';
 const apiURL = process.env.MEDICORE_API_URL?.trim() || 'http://localhost:5080';
 const environment = process.env.MEDICORE_ENVIRONMENT?.trim() || 'development';
+const slowMo = Number(process.env.MEDICORE_SLOW_MO ?? '0') || undefined;
 
 // La suite escribe datos: no se ejecuta contra un ambiente con pacientes reales.
 if (
@@ -57,7 +58,10 @@ export default defineConfig({
     {
       name: 'chromium',
       testIgnore: CONTRATO_API,
-      use: { ...devices['Desktop Chrome'] },
+      use: {
+        ...devices['Desktop Chrome'],
+        ...(slowMo ? { launchOptions: { slowMo } } : {}),
+      },
     },
   ],
   /* No arranca el frontend: el operador debe tener `npm run dev` en docs/frontend. */

@@ -13,6 +13,11 @@ public interface ITenantRepository
         Guid actorUserId,
         UpdateTenantProfileRequest request,
         CancellationToken ct);
+    Task<TenantProfileDto?> SetLogoPathAsync(
+        Guid tenantId,
+        Guid actorUserId,
+        string? logoRelativePath,
+        CancellationToken ct);
 }
 
 public sealed class TenantRepository(ISqlConnectionFactory connectionFactory) : ITenantRepository
@@ -55,6 +60,26 @@ public sealed class TenantRepository(ISqlConnectionFactory connectionFactory) : 
                 request.Rfc,
                 request.PrimaryColorToken,
                 request.Name,
+                ActorUserId = actorUserId
+            },
+            commandType: CommandType.StoredProcedure,
+            cancellationToken: ct);
+        return await conn.QuerySingleOrDefaultAsync<TenantProfileDto>(cmd);
+    }
+
+    public async Task<TenantProfileDto?> SetLogoPathAsync(
+        Guid tenantId,
+        Guid actorUserId,
+        string? logoRelativePath,
+        CancellationToken ct)
+    {
+        using var conn = connectionFactory.Create();
+        var cmd = new CommandDefinition(
+            "sp_Tenant_SetLogoPath",
+            new
+            {
+                TenantId = tenantId,
+                LogoRelativePath = logoRelativePath,
                 ActorUserId = actorUserId
             },
             commandType: CommandType.StoredProcedure,

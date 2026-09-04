@@ -69,7 +69,12 @@ public sealed class AppointmentService(IAppointmentRepository repository) : IApp
             BranchId = request.BranchId,
             Code = request.Code.Trim(),
             Name = request.Name.Trim(),
-            IsActive = request.IsActive
+            IsActive = request.IsActive,
+            SpecialtyId = request.SpecialtyId,
+            ProfessionalIds = request.ProfessionalIds?
+                .Where(id => id != Guid.Empty)
+                .Distinct()
+                .ToList()
         };
 
         return await repository.UpsertRoomAsync(tenantId, roomId, actorUserId, normalized, ct)
@@ -144,6 +149,11 @@ public sealed class AppointmentService(IAppointmentRepository repository) : IApp
 
         if (toState == AppointmentStates.Cancelada && string.IsNullOrWhiteSpace(request.Reason))
             throw new ArgumentException("Cancelar una cita exige motivo.");
+
+        var current = await repository.GetByIdAsync(tenantId, appointmentId, ct)
+            ?? throw new InvalidOperationException("Cita no encontrada.");
+        if (!AppointmentStates.CanTransition(current.State, toState))
+            throw new ArgumentException("Transición de estado de cita no permitida.");
 
         return await repository.ChangeStateAsync(
             tenantId, appointmentId, actorUserId, actorProfessionalId, DateTimeOffset.UtcNow,

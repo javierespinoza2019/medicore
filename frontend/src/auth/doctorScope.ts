@@ -7,7 +7,7 @@
  * no lo inventa.
  */
 
-import type { User } from '@/mocks/users';
+import type { User } from '@/types/session';
 
 /** `true` cuando el usuario es médico (con o sin profesional ligado). */
 export function isMedico(user: User | null | undefined): boolean {

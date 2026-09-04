@@ -62,6 +62,9 @@ public interface ISubjectRepository
         CancellationToken ct);
 
     Task SoftDeleteAsync(Guid tenantId, Guid subjectId, Guid actorUserId, CancellationToken ct);
+
+    Task<SubjectDto?> SetPhotoPathAsync(
+        Guid tenantId, Guid subjectId, Guid actorUserId, string? photoRelativePath, CancellationToken ct);
 }
 
 public sealed class CreateSubjectCommand
@@ -518,6 +521,25 @@ public sealed class SubjectRepository(ISqlConnectionFactory connectionFactory) :
         await conn.ExecuteAsync(cmd);
     }
 
+    public async Task<SubjectDto?> SetPhotoPathAsync(
+        Guid tenantId, Guid subjectId, Guid actorUserId, string? photoRelativePath, CancellationToken ct)
+    {
+        using var conn = connectionFactory.Create();
+        var cmd = new CommandDefinition(
+            "sp_Subject_SetPhotoPath",
+            new
+            {
+                TenantId = tenantId,
+                SubjectId = subjectId,
+                PhotoRelativePath = photoRelativePath,
+                ActorUserId = actorUserId
+            },
+            commandType: CommandType.StoredProcedure,
+            cancellationToken: ct);
+        await conn.ExecuteAsync(cmd);
+        return await GetByIdAsync(tenantId, subjectId, ct);
+    }
+
     private static async Task<SubjectDto?> ReadSubjectBundleAsync(SqlMapper.GridReader multi)
     {
         var row = await multi.ReadSingleOrDefaultAsync<SubjectRow>();
@@ -547,6 +569,7 @@ public sealed class SubjectRepository(ISqlConnectionFactory connectionFactory) :
             Curp = row.Curp,
             CurpValidatedAtUtc = ToDto(row.CurpValidatedAtUtc),
             DeceasedAtUtc = ToDto(row.DeceasedAtUtc),
+            PhotoRelativePath = row.PhotoRelativePath,
             CreatedAtUtc = ToDto(row.CreatedAtUtc) ?? DateTimeOffset.UtcNow,
             UpdatedAtUtc = ToDto(row.UpdatedAtUtc) ?? DateTimeOffset.UtcNow,
             RequestedSubjectId = row.RequestedSubjectId,

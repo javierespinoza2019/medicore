@@ -118,9 +118,89 @@ test.describe('00 — Contrato API · establecimiento / sucursales (M11)', () =>
     expect(body.data.hasEmergencyService).toBeNull();
   });
 
+  test('PUT /api/tenant/profile actualiza primaryColorToken (white-label)', async ({ apiCtx }) => {
+    const sesion = await sesionValida(apiCtx);
+    const lectura = await apiCtx.get('/api/tenant/profile', { headers: autorizacion(sesion) });
+    expect(lectura.status()).toBe(200);
+    const actual = (await lectura.json()).data;
+    const token = '#0EA5E9';
+
+    const res = await apiCtx.put('/api/tenant/profile', {
+      headers: autorizacion(sesion),
+      data: {
+        name: actual.name,
+        legalName: actual.legalName,
+        rfc: actual.rfc,
+        primaryColorToken: token,
+      },
+    });
+    expect(res.status(), await res.text()).toBe(200);
+    const body = await res.json();
+    expect(body.success).toBe(true);
+    expect(body.data.primaryColorToken).toBe(token);
+
+    // Restaura el token previo (null permitido) para no ensuciar demo compartida.
+    const restore = await apiCtx.put('/api/tenant/profile', {
+      headers: autorizacion(sesion),
+      data: {
+        name: actual.name,
+        legalName: actual.legalName,
+        rfc: actual.rfc,
+        primaryColorToken: actual.primaryColorToken,
+      },
+    });
+    expect(restore.status()).toBe(200);
+  });
+
+  test('ciclo logo tenant: PUT imagen → GET bytes → DELETE limpia', async ({ apiCtx }) => {
+    const sesion = await sesionValida(apiCtx);
+    // PNG 1×1 mínimo (sin PHI).
+    const png = Buffer.from(
+      'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8z8BQDwAEhQGAhKmMIQAAAABJRU5ErkJggg==',
+      'base64',
+    );
+
+    const upload = await apiCtx.put('/api/tenant/logo', {
+      headers: autorizacion(sesion),
+      multipart: {
+        file: {
+          name: 'logo-e2e.png',
+          mimeType: 'image/png',
+          buffer: png,
+        },
+      },
+    });
+    expect(upload.status(), await upload.text()).toBe(200);
+    const uploaded = await upload.json();
+    expect(uploaded.success).toBe(true);
+    expect(uploaded.data.logoRelativePath).toMatch(/\/Tenant\//i);
+    expect(uploaded.data.logoRelativePath).toMatch(/logo\.png$/i);
+
+    const getLogo = await apiCtx.get('/api/tenant/logo', { headers: autorizacion(sesion) });
+    expect(getLogo.status()).toBe(200);
+    expect(getLogo.headers()['content-type'] ?? '').toMatch(/image\/png/i);
+    const bytes = await getLogo.body();
+    expect(bytes.byteLength).toBeGreaterThan(10);
+
+    const getBranchFallback = await apiCtx.get(`/api/branches/${CENTRAL_DEMO}/logo`, {
+      headers: autorizacion(sesion),
+    });
+    expect(getBranchFallback.status()).toBe(200);
+
+    const clear = await apiCtx.delete('/api/tenant/logo', { headers: autorizacion(sesion) });
+    expect(clear.status(), await clear.text()).toBe(200);
+    const cleared = await clear.json();
+    expect(cleared.data.logoRelativePath).toBeNull();
+
+    expect((await apiCtx.get('/api/tenant/logo', { headers: autorizacion(sesion) })).status()).toBe(
+      404,
+    );
+  });
+
   test('endpoints de branches/tenant rechazan sin token', async ({ apiCtx }) => {
     expect((await apiCtx.get('/api/branches')).status()).toBe(401);
     expect((await apiCtx.get('/api/tenant/profile')).status()).toBe(401);
+    expect((await apiCtx.get('/api/tenant/logo')).status()).toBe(401);
     expect(
       (
         await apiCtx.put(`/api/branches/${CENTRAL_DEMO}`, {

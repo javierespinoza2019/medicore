@@ -1,17 +1,23 @@
 namespace MediCore.Models.Appointment;
 
-/// <summary>Estados de cita (M9). Sin DELETE físico; cancelada deja historial.</summary>
+/// <summary>
+/// Estados de cita (M9). Incluye flujo clínico intermedio (#agenda 2026-09-02).
+/// Sin DELETE físico; cancelada / no_asistio / atendida dejan historial.
+/// </summary>
 public static class AppointmentStates
 {
     public const string Agendada = "agendada";
     public const string Confirmada = "confirmada";
+    public const string Llego = "llego";
+    public const string EnEspera = "en_espera";
+    public const string EnConsulta = "en_consulta";
     public const string Atendida = "atendida";
     public const string NoAsistio = "no_asistio";
     public const string Cancelada = "cancelada";
 
     public static readonly HashSet<string> All = new(StringComparer.OrdinalIgnoreCase)
     {
-        Agendada, Confirmada, Atendida, NoAsistio, Cancelada
+        Agendada, Confirmada, Llego, EnEspera, EnConsulta, Atendida, NoAsistio, Cancelada
     };
 
     /// <summary>Estados que liberan el intervalo (no cuentan para traslape).</summary>
@@ -19,6 +25,37 @@ public static class AppointmentStates
     {
         Cancelada, NoAsistio
     };
+
+    /// <summary>Terminales: no admiten más cambios de estado.</summary>
+    public static readonly HashSet<string> Terminal = new(StringComparer.OrdinalIgnoreCase)
+    {
+        Cancelada, NoAsistio, Atendida
+    };
+
+    /// <summary>
+    /// Transiciones permitidas. Conserva atajos previos (p. ej. confirmada→atendida)
+    /// y añade el flujo de llegada / sala / consulta.
+    /// </summary>
+    public static bool CanTransition(string fromState, string toState)
+    {
+        if (string.IsNullOrWhiteSpace(fromState) || string.IsNullOrWhiteSpace(toState))
+            return false;
+        var from = fromState.Trim().ToLowerInvariant();
+        var to = toState.Trim().ToLowerInvariant();
+        if (from == to) return false;
+        if (Terminal.Contains(from)) return false;
+        if (!All.Contains(from) || !All.Contains(to)) return false;
+
+        return from switch
+        {
+            Agendada => to is Confirmada or Llego or Atendida or Cancelada or NoAsistio,
+            Confirmada => to is Llego or EnEspera or EnConsulta or Atendida or Cancelada or NoAsistio,
+            Llego => to is EnEspera or EnConsulta or Cancelada or NoAsistio,
+            EnEspera => to is EnConsulta or Cancelada or NoAsistio,
+            EnConsulta => to is Atendida or Cancelada,
+            _ => false
+        };
+    }
 }
 
 public sealed class ConsultingRoomDto
@@ -29,6 +66,9 @@ public sealed class ConsultingRoomDto
     public string Code { get; set; } = string.Empty;
     public string Name { get; set; } = string.Empty;
     public bool IsActive { get; set; }
+    public Guid? SpecialtyId { get; set; }
+    public string? SpecialtyName { get; set; }
+    public IReadOnlyList<Guid> ProfessionalIds { get; set; } = [];
     public DateTimeOffset CreatedAtUtc { get; set; }
     public DateTimeOffset UpdatedAtUtc { get; set; }
 }
@@ -39,6 +79,8 @@ public sealed class UpsertConsultingRoomRequest
     public string Code { get; set; } = string.Empty;
     public string Name { get; set; } = string.Empty;
     public bool IsActive { get; set; } = true;
+    public Guid? SpecialtyId { get; set; }
+    public IReadOnlyList<Guid>? ProfessionalIds { get; set; }
 }
 
 public sealed class AppointmentDto

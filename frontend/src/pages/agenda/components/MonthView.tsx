@@ -1,5 +1,5 @@
 import { useMemo } from 'react';
-import { type Appointment, statusConfig } from '@/mocks/appointments';
+import { type AgendaAppointment, statusConfig, type Appointment } from '@/pages/agenda/types';
 
 const DIAS_SEMANA = ['Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb', 'Dom'];
 const MESES = ['Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio', 'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre'];

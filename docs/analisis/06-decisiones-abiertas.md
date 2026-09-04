@@ -8,6 +8,12 @@ Este documento contiene todo lo que **no** se dio por resuelto. Nada de esto fue
 
 ## Decisiones ya ratificadas por el cliente
 
+### Oleada 2026-09-02 (fotografía del paciente)
+
+| # | Tema | Resolución |
+|---|---|---|
+| 44 | **Fotografía del paciente para identificación** | **Sí — se captura.** Dato biométrico/sensible; el cliente asume la base de licitud y el aviso de privacidad. Implementación: `PhotoRelativePath` en Subject + `files/{TenantCode}/Pacientes/{subjectId}/foto.{ext}`; API `PUT/DELETE/GET /api/subjects/{id}/photo`; UI en detalle de paciente. **No** se afirma por sí sola cumplimiento LFPDPPP art. 9; el dictamen de licitud queda del lado del establecimiento. Contrato: [`docs/operacion/sujeto.md`](../operacion/sujeto.md). |
+
 ### Oleada 2026-08-31 (break-glass y SaMD)
 
 | # | Tema | Resolución |
@@ -294,7 +300,7 @@ Surgen del análisis de [`08-identidad-y-paciente-no-identificado.md`](08-identi
 
 ### Requieren dictamen legal del cliente
 
-44. **Fotografía del paciente para identificación.** ¿Se desea capturarla? Es **dato biométrico y por tanto sensible**, y **no se verificó** una base de licitud específica para este fin en la LFPDPPP vigente. Las fracciones V y VI del artículo 9 habilitan tratar datos *"indispensables"* para la atención médica mientras el titular no pueda consentir (doc 01 §4), pero **si una fotografía facial es "indispensable" para identificar, o si excede la minimización exigida, es un juicio legal y no técnico**. Riesgo si se implementa sin dictamen: tratamiento de dato sensible sin habilitación clara. Riesgo si no se implementa: menor capacidad de identificación posterior. **No se propone como funcionalidad.**
+44. ~~**Fotografía del paciente para identificación.**~~ **RATIFICADA 2026-09-02 — Sí.** Ver oleada superior. Implementada en producto; el establecimiento responde por base de licitud / aviso. **No** se afirma cumplimiento LFPDPPP sin fuente oficial + fecha.
 45. **Aviso al Ministerio Público: ¿quién emite el juicio de presunción, y con qué criterio operativo?** Ya **no** es una laguna: la obligación sanitaria está verificada en el **artículo 19 fracción V** del Reglamento de la LGS en materia de Prestación de Servicios de Atención Médica, a cargo del **responsable del establecimiento**, y su disparador es *"lesiones u otros signos que **presumiblemente** se encuentren vinculadas a la comisión de hechos ilícitos"* — no "accidente" ni "lesión" (doc 01 §2, verificado el 2026-08-22). Lo que falta es del cliente: **¿qué rol de su organización emite ese juicio de presunción y con qué criterio documentado?** Sin eso, el sistema puede ofrecer y sugerir la notificación, pero nadie la asume. Queda además sin verificar si existen deberes **adicionales** de denuncia en legislación penal federal o estatal, que no se revisó.
 46. **Artículo 81 del Reglamento en establecimiento ambulatorio — la pregunta se estrechó, pero no desapareció.** La verificación del **artículo 51 Bis 2 de la LGS** cambió el panorama: la ley obliga al *"prestador de servicios de salud"* —sin decir hospital— a *"proceder de inmediato para preservar la vida y salud del usuario, **dejando constancia en el expediente clínico**"* cuando no hay quien pueda autorizar, y **no exige el acuerdo de dos médicos** (doc 01 §2, verificado el 2026-08-22). Es decir, **la habilitación para actuar ya no depende de resolver si una clínica ambulatoria es "hospital"**. Lo que sigue abierto es más acotado: ¿el establecimiento debe cumplir además el requisito **reforzado** del artículo 81 del Reglamento —valoración con acuerdo de al menos dos médicos autorizados— por prestar servicio de urgencias, o le basta la constancia del 51 Bis 2? El diseño soporta el requisito más exigente para no quedar corto, pero el criterio debe dictaminarlo el área legal.
 

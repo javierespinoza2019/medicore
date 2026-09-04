@@ -29,20 +29,20 @@ BEGIN
         BranchIdsCsv = (
             SELECT STRING_AGG(CONVERT(NVARCHAR(36), ub.BranchId), N',')
             FROM dbo.UserBranch ub
-            WHERE ub.UserId = u.UserId AND ub.TenantId = u.TenantId
+            WHERE ub.UserId = u.UserId AND ub.TenantId = u.TenantId AND ub.IsDeleted = 0
         ),
         BranchCodesCsv = (
             SELECT STRING_AGG(b.Code, N',')
             FROM dbo.UserBranch ub
             INNER JOIN dbo.Branch b ON b.BranchId = ub.BranchId AND b.IsDeleted = 0 AND b.IsActive = 1
-            WHERE ub.UserId = u.UserId AND ub.TenantId = u.TenantId
+            WHERE ub.UserId = u.UserId AND ub.TenantId = u.TenantId AND ub.IsDeleted = 0
         ),
         hp.HealthcareProfessionalId,
         ProfessionalLicense = hp.ProfessionalLicense,
         SpecialtyName = sp.Name
     FROM dbo.[User] u
     INNER JOIN dbo.Tenant t ON t.TenantId = u.TenantId AND t.IsDeleted = 0 AND t.IsActive = 1
-    LEFT JOIN dbo.UserRole ur ON ur.UserId = u.UserId AND ur.TenantId = u.TenantId
+    LEFT JOIN dbo.UserRole ur ON ur.UserId = u.UserId AND ur.TenantId = u.TenantId AND ur.IsDeleted = 0
     LEFT JOIN dbo.Role r ON r.RoleId = ur.RoleId AND r.TenantId = u.TenantId
     LEFT JOIN dbo.HealthcareProfessional hp
         ON hp.UserId = u.UserId AND hp.TenantId = u.TenantId AND hp.IsDeleted = 0 AND hp.IsActive = 1
@@ -79,19 +79,19 @@ BEGIN
         BranchIdsCsv = (
             SELECT STRING_AGG(CONVERT(NVARCHAR(36), ub.BranchId), N',')
             FROM dbo.UserBranch ub
-            WHERE ub.UserId = u.UserId AND ub.TenantId = u.TenantId
+            WHERE ub.UserId = u.UserId AND ub.TenantId = u.TenantId AND ub.IsDeleted = 0
         ),
         BranchCodesCsv = (
             SELECT STRING_AGG(b.Code, N',')
             FROM dbo.UserBranch ub
             INNER JOIN dbo.Branch b ON b.BranchId = ub.BranchId AND b.IsDeleted = 0 AND b.IsActive = 1
-            WHERE ub.UserId = u.UserId AND ub.TenantId = u.TenantId
+            WHERE ub.UserId = u.UserId AND ub.TenantId = u.TenantId AND ub.IsDeleted = 0
         ),
         hp.HealthcareProfessionalId,
         ProfessionalLicense = hp.ProfessionalLicense,
         SpecialtyName = sp.Name
     FROM dbo.[User] u
-    LEFT JOIN dbo.UserRole ur ON ur.UserId = u.UserId AND ur.TenantId = u.TenantId
+    LEFT JOIN dbo.UserRole ur ON ur.UserId = u.UserId AND ur.TenantId = u.TenantId AND ur.IsDeleted = 0
     LEFT JOIN dbo.Role r ON r.RoleId = ur.RoleId AND r.TenantId = u.TenantId
     LEFT JOIN dbo.HealthcareProfessional hp
         ON hp.UserId = u.UserId AND hp.TenantId = u.TenantId AND hp.IsDeleted = 0 AND hp.IsActive = 1

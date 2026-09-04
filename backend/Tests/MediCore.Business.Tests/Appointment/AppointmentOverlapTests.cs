@@ -79,10 +79,42 @@ public sealed class AppointmentOverlapTests
                 default));
     }
 
+    [Theory]
+    [InlineData("agendada", "llego", true)]
+    [InlineData("llego", "en_espera", true)]
+    [InlineData("en_espera", "en_consulta", true)]
+    [InlineData("en_consulta", "atendida", true)]
+    [InlineData("agendada", "en_consulta", false)]
+    [InlineData("atendida", "llego", false)]
+    [InlineData("cancelada", "confirmada", false)]
+    public void CanTransition_matriz_flujo_intermedio(string from, string to, bool ok)
+    {
+        Assert.Equal(ok, AppointmentStates.CanTransition(from, to));
+    }
+
+    [Fact]
+    public async Task ChangeState_llego_desde_agendada_persiste()
+    {
+        var id = Guid.NewGuid();
+        var repo = new FakeRepo
+        {
+            Current = new AppointmentDto { AppointmentId = id, State = AppointmentStates.Agendada }
+        };
+        var svc = new AppointmentService(repo);
+        var updated = await svc.ChangeStateAsync(
+            Guid.NewGuid(), id, Guid.NewGuid(), null,
+            new ChangeAppointmentStateRequest { ToState = "llego" },
+            default);
+        Assert.NotNull(updated);
+        Assert.Equal(AppointmentStates.Llego, repo.LastChangeToState);
+    }
+
     private sealed class FakeRepo : MediCore.DataAccess.Appointment.IAppointmentRepository
     {
         public bool ListCalled { get; private set; }
         public Guid? LastProfessionalFilter { get; private set; }
+        public AppointmentDto? Current { get; set; }
+        public string? LastChangeToState { get; private set; }
 
         public Task<IReadOnlyList<ConsultingRoomDto>> ListRoomsAsync(
             Guid tenantId, Guid? branchId, bool onlyActive, CancellationToken ct) =>
@@ -99,7 +131,7 @@ public sealed class AppointmentOverlapTests
             Task.FromResult<AppointmentDto?>(null);
 
         public Task<AppointmentDto?> GetByIdAsync(Guid tenantId, Guid appointmentId, CancellationToken ct) =>
-            Task.FromResult<AppointmentDto?>(null);
+            Task.FromResult(Current);
 
         public Task<AppointmentDto?> RescheduleAsync(
             Guid tenantId, Guid appointmentId, Guid actorUserId, Guid? actorProfessionalId,
@@ -108,8 +140,13 @@ public sealed class AppointmentOverlapTests
 
         public Task<AppointmentDto?> ChangeStateAsync(
             Guid tenantId, Guid appointmentId, Guid actorUserId, Guid? actorProfessionalId,
-            DateTimeOffset occurredAtUtc, ChangeAppointmentStateRequest request, CancellationToken ct) =>
-            Task.FromResult<AppointmentDto?>(null);
+            DateTimeOffset occurredAtUtc, ChangeAppointmentStateRequest request, CancellationToken ct)
+        {
+            LastChangeToState = request.ToState;
+            if (Current is not null)
+                Current.State = request.ToState;
+            return Task.FromResult(Current);
+        }
 
         public Task<IReadOnlyList<AppointmentDto>> ListByRangeAsync(
             Guid tenantId, Guid branchId, DateTimeOffset fromUtc, DateTimeOffset toUtc,
