@@ -257,6 +257,33 @@ BEGIN
     )
         THROW 50202, N'Traslape de consultorio en el intervalo solicitado.', 1;
 
+    -- Reglas de bloqueo activas (50230).
+    IF EXISTS (
+        SELECT 1
+        FROM dbo.ScheduleBlock b
+        WHERE b.TenantId = @TenantId
+          AND b.BranchId = @BranchId
+          AND b.IsDeleted = 0
+          AND b.IsActive = 1
+          AND b.StartUtc < @ScheduledEndUtc
+          AND b.EndUtc > @ScheduledStartUtc
+          AND (
+                b.Kind IN (N'dia', N'rango')
+             OR (b.Kind = N'medico' AND b.ProfessionalId = @ProfessionalId)
+             OR (
+                    b.Kind = N'especialidad'
+                AND EXISTS (
+                    SELECT 1 FROM dbo.HealthcareProfessional hp
+                    WHERE hp.TenantId = @TenantId
+                      AND hp.HealthcareProfessionalId = @ProfessionalId
+                      AND hp.IsDeleted = 0
+                      AND hp.SpecialtyId = b.SpecialtyId
+                )
+             )
+          )
+    )
+        THROW 50230, N'El horario está bloqueado por una regla de agenda.', 1;
+
     BEGIN TRAN;
 
     INSERT INTO dbo.Appointment (
@@ -429,6 +456,32 @@ BEGIN
           AND ScheduledEndUtc > @ScheduledStartUtc
     )
         THROW 50202, N'Traslape de consultorio en el intervalo solicitado.', 1;
+
+    IF EXISTS (
+        SELECT 1
+        FROM dbo.ScheduleBlock b
+        WHERE b.TenantId = @TenantId
+          AND b.BranchId = @BranchId
+          AND b.IsDeleted = 0
+          AND b.IsActive = 1
+          AND b.StartUtc < @ScheduledEndUtc
+          AND b.EndUtc > @ScheduledStartUtc
+          AND (
+                b.Kind IN (N'dia', N'rango')
+             OR (b.Kind = N'medico' AND b.ProfessionalId = @NewProfessional)
+             OR (
+                    b.Kind = N'especialidad'
+                AND EXISTS (
+                    SELECT 1 FROM dbo.HealthcareProfessional hp
+                    WHERE hp.TenantId = @TenantId
+                      AND hp.HealthcareProfessionalId = @NewProfessional
+                      AND hp.IsDeleted = 0
+                      AND hp.SpecialtyId = b.SpecialtyId
+                )
+             )
+          )
+    )
+        THROW 50230, N'El horario está bloqueado por una regla de agenda.', 1;
 
     BEGIN TRAN;
 

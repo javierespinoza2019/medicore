@@ -40,6 +40,12 @@ Terminales (sin más cambios): `atendida`, `no_asistio`, `cancelada`.
 `en_triage` / `llamando`: **sin contrato API** — la UI no simula overlay ni permite
 transiciones inventadas; quedan fuera de filtros/leyenda hasta triage/monitor.
 
+### Reglas de bloqueo
+
+Persistidas (2026-09-04): tabla `ScheduleBlock` + `GET/PUT/DELETE /api/schedule-blocks`.
+Tipos: `rango` | `dia` | `medico` | `especialidad`. Crear/reprogramar cita sobre un bloqueo
+activo → **409** (`THROW 50230`). Baja lógica (sin `DELETE` SQL).
+
 Matriz: `AppointmentStates.CanTransition` + `sp_Appointment_ChangeState` (`THROW 50229` si no aplica).
 
 ## Offline / SyncService
@@ -68,8 +74,8 @@ CENTRAL (idempotente). Incluido en `tools/apply-database.ps1` (Dev/QA).
   Especialidad opcional; médicos vía `ConsultingRoomProfessional` (baja lógica al quitar).
 - Estados de flujo clínico `llego` / `en_espera` / `en_consulta` **persisten en API**.
   Sin overlay local para `en_triage` / `llamando`; terminales no ofrecen «reactivar».
-- Configuración → Reglas de bloqueo: aviso honesto (pendiente API); no se persisten en
-  `localStorage` ni se inventan slots bloqueados.
+- Configuración → Reglas de bloqueo: CRUD vía `/api/schedule-blocks` (tipos rango/día/médico/
+  especialidad); citas conflictivas → 409.
 - Componentes auxiliares de agenda (impreso ticket, tabs config, vista consultorios) consumen
   `useAgendaProfessionalsCatalog` → `/api/professionals` + `/api/specialties`.
 - Cédula en ticket solo si el API la trae; no se fabrica.
@@ -78,6 +84,7 @@ CENTRAL (idempotente). Incluido en `tools/apply-database.ps1` (Dev/QA).
 
 - Contrato: `tests/e2e/specs/00-smoke/api-appointments.spec.ts` (incluye caso
   «profesional del catálogo API»).
+- Bloqueos: `tests/e2e/specs/00-smoke/api-schedule-blocks.spec.ts` (upsert/list/409/baja).
 - UI: `tests/e2e/specs/05-agenda/agenda-ui.spec.ts` (chromium; Vite + API; wizard «Nueva cita»
   y configuración de consultorios con `PUT /api/consulting-rooms/{id}`).
 

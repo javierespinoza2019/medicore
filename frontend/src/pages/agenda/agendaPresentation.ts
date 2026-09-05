@@ -1,7 +1,9 @@
 import type { AppointmentDto, AppointmentState, ConsultingRoomDto } from '@/api/appointments';
+import type { ScheduleBlockDto } from '@/api/scheduleBlocks';
 import type { ProfessionalDto } from '@/api/professionals';
 import type { AgendaAppointment, AgendaAppointmentEstado } from '@/pages/agenda/types';
 import type { AgendaConsultorio } from '@/pages/agenda/consultorioTypes';
+import type { ReglaBloqueo, ReglaBloqueoTipo } from '@/pages/agenda/agendaRulesTypes';
 
 function localDateFromUtc(iso: string): string {
   const d = new Date(iso);
@@ -93,5 +95,28 @@ export function roomToConsultorio(room: ConsultingRoomDto): AgendaConsultorio {
     especialidadId: room.specialtyId ?? '',
     medicosIds: room.professionalIds ?? [],
     activo: room.isActive,
+  };
+}
+
+export function dtoToReglaBloqueo(dto: ScheduleBlockDto): ReglaBloqueo {
+  const kind = (dto.kind || 'rango').toLowerCase() as ReglaBloqueoTipo;
+  const tipo: ReglaBloqueoTipo =
+    kind === 'dia' || kind === 'medico' || kind === 'especialidad' || kind === 'rango'
+      ? kind
+      : 'rango';
+  const localDate =
+    typeof dto.localDate === 'string' && dto.localDate.length >= 10
+      ? dto.localDate.slice(0, 10)
+      : localDateFromUtc(dto.startUtc);
+  return {
+    id: dto.blockId,
+    tipo,
+    nombre: dto.name,
+    fecha: localDate,
+    horaInicio: tipo === 'rango' ? localTimeFromUtc(dto.startUtc) : undefined,
+    horaFin: tipo === 'rango' ? localTimeFromUtc(dto.endUtc) : undefined,
+    doctorId: dto.professionalId ?? undefined,
+    especialidadId: dto.specialtyId ?? undefined,
+    activo: dto.isActive,
   };
 }

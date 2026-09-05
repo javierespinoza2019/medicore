@@ -19,14 +19,26 @@ public sealed class MedicationsController(
     public async Task<ActionResult<ApiResponse<MedicationDto[]>>> Search(
         [FromQuery] string? query,
         [FromQuery] bool includeControlled = false,
+        [FromQuery] bool onlyActive = true,
+        [FromQuery] int maxRows = 40,
         CancellationToken ct = default)
     {
-        if (!await CanAccessPrescriptionsAsync(permissionService, ct))
+        var canPrescribe = await CanAccessPrescriptionsAsync(permissionService, ct);
+        var canManage = await CanManageCatalogsAsync(permissionService, ct);
+        if (!canPrescribe && !canManage)
             return Forbidden<MedicationDto[]>("Sin permiso para catálogo de medicamentos.");
 
-        // Por defecto se excluyen controlados en la búsqueda de prescritir.
+        // Admin de catálogo: inactivos / controlados. Prescribir: activos y sin controlados.
+        if ((includeControlled || !onlyActive) && !canManage)
+            return Forbidden<MedicationDto[]>("Sin permiso para listar controlados o inactivos.");
+
         var list = await prescriptionService.SearchMedicationsAsync(
-            TenantId(), query, excludeControlled: !includeControlled, ct);
+            TenantId(),
+            query,
+            excludeControlled: !includeControlled,
+            ct,
+            onlyActive: onlyActive,
+            maxRows: maxRows);
         return Ok(ApiResponse<MedicationDto[]>.Ok(list.ToArray()));
     }
 

@@ -162,3 +162,49 @@ public sealed class ChangeAppointmentStateRequest
     /// <summary>Obligatorio al cancelar.</summary>
     public string? Reason { get; set; }
 }
+
+public static class ScheduleBlockKinds
+{
+    public const string Rango = "rango";
+    public const string Dia = "dia";
+    public const string Medico = "medico";
+    public const string Especialidad = "especialidad";
+
+    public static readonly HashSet<string> All = new(StringComparer.OrdinalIgnoreCase)
+    {
+        Rango, Dia, Medico, Especialidad
+    };
+}
+
+public sealed class ScheduleBlockDto
+{
+    public Guid BlockId { get; set; }
+    public Guid TenantId { get; set; }
+    public Guid BranchId { get; set; }
+    public string Kind { get; set; } = string.Empty;
+    public string Name { get; set; } = string.Empty;
+    public DateOnly LocalDate { get; set; }
+    public DateTimeOffset StartUtc { get; set; }
+    public DateTimeOffset EndUtc { get; set; }
+    public Guid? ProfessionalId { get; set; }
+    public string? ProfessionalFullName { get; set; }
+    public Guid? SpecialtyId { get; set; }
+    public string? SpecialtyName { get; set; }
+    public bool IsActive { get; set; }
+    public Guid CreatedByUserId { get; set; }
+    public DateTimeOffset CreatedAtUtc { get; set; }
+    public DateTimeOffset UpdatedAtUtc { get; set; }
+}
+
+public sealed class UpsertScheduleBlockRequest
+{
+    public Guid BranchId { get; set; }
+    public string Kind { get; set; } = string.Empty;
+    public string Name { get; set; } = string.Empty;
+    public DateOnly LocalDate { get; set; }
+    public DateTimeOffset StartUtc { get; set; }
+    public DateTimeOffset EndUtc { get; set; }
+    public Guid? ProfessionalId { get; set; }
+    public Guid? SpecialtyId { get; set; }
+    public bool IsActive { get; set; } = true;
+}

@@ -67,10 +67,12 @@ Lo que hoy existe (medido el **2026-08-29**, puerta **M12 parcial**):
   configurable, sin mocks), `04-consulta-receta` (SC-01/02 API + **UI SOAP/receta/firma/cancelación**
   en `flujo-consulta-ui.spec.ts` chromium/Vite+API: borrador SOAP, receta con captura alérgica,
   firma de nota M6, SC-02 justificación overlap, cancelación M8; `consultas/` sin mocks),
-  `05-agenda/agenda-ui` (calendario rico + wizard nueva cita + upsert consultorios con especialidad/médicos API; sin carpeta `src/mocks`; sin overlay `en_triage`/`llamando`),
+  `05-agenda/agenda-ui` (calendario rico + wizard nueva cita + upsert consultorios con especialidad/médicos API; sin carpeta `src/mocks`; sin overlay `en_triage`/`llamando`; reglas de bloqueo API),
+  `00-smoke/api-schedule-blocks` (contrato: upsert/list/409/baja lógica),
   `05-farmacia/farmacia-ui` (chromium: placeholder honesto sin mocks de surtido/inventario),
-  rutas caja/facturación/FHIR/reportes/usuarios/catálogos/normatividad vía `ModulePlaceholder`
-  (deep-links de `permisos-por-rol-ui` OK; no inventan datos),
+  rutas caja/facturación/FHIR/reportes/servicios/normatividad vía `ModulePlaceholder`
+  (deep-links de `permisos-por-rol-ui` OK; no inventan datos; usuarios + catálogo medicamentos = API),
+  `00-smoke/api-medications-admin` (upsert/list admin/desactivar),
   `10-admin/profesionales-especialidades-ui` (chromium: listar/alta/edición/baja lógica
   médicos y especialidades contra API; sin mocks),
   `10-admin/white-label-ui` (logo tenant/API + `primaryColorToken` → CSS),
@@ -89,7 +91,7 @@ Lo que hoy existe (medido el **2026-08-29**, puerta **M12 parcial**):
   [`06-decisiones-abiertas.md`](../analisis/06-decisiones-abiertas.md).
 - Contratos HTTP: [`auth-sesiones.md`](auth-sesiones.md), [`establecimiento.md`](establecimiento.md), [`encuentros.md`](encuentros.md),
   [`agenda.md`](agenda.md), [`triage.md`](triage.md), [`expediente.md`](expediente.md),
-  [`notas.md`](notas.md), [`recetas.md`](recetas.md), [`profesionales.md`](profesionales.md),
+  [`notas.md`](notas.md), [`recetas.md`](recetas.md), [`catalogos.md`](catalogos.md), [`profesionales.md`](profesionales.md),
   [`live-cola.md`](live-cola.md).
 - Pantallas clínicas (`pacientes`, `urgencias`, `triage`, `agenda`, `dashboard` operativo API,
   `consultas`/notas/receta con listado y cancelación en episodio, `recetas` con cancelación en detalle,

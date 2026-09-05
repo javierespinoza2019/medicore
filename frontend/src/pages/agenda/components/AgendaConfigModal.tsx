@@ -1,8 +1,9 @@
 import { useEffect, useState } from 'react';
 import type { AgendaConsultorio } from '@/pages/agenda/consultorioTypes';
+import type { ReglaBloqueo } from '@/pages/agenda/agendaRulesTypes';
 import Tabs from '@/components/base/Tabs';
 import ConsultoriosTab from '@/pages/agenda/components/ConsultoriosTab';
-import Card from '@/components/base/Card';
+import ReglasBloqueoTab from '@/pages/agenda/components/ReglasBloqueoTab';
 
 interface AgendaConfigModalProps {
   open: boolean;
@@ -17,6 +18,9 @@ interface AgendaConfigModalProps {
     specialtyId?: string | null;
     professionalIds?: string[];
   }) => Promise<boolean>;
+  reglasBloqueo: ReglaBloqueo[];
+  defaultFecha: string;
+  onReloadBlocks: () => Promise<void>;
 }
 
 export default function AgendaConfigModal({
@@ -25,6 +29,9 @@ export default function AgendaConfigModal({
   consultorios,
   branchId,
   onUpsertRoom,
+  reglasBloqueo,
+  defaultFecha,
+  onReloadBlocks,
 }: AgendaConfigModalProps) {
   const [tab, setTab] = useState('consultorios');
 
@@ -95,16 +102,12 @@ export default function AgendaConfigModal({
               onUpsert={onUpsertRoom}
             />
           ) : (
-            <Card padding="md" className="border-dashed border-secondary-300 bg-secondary-50/50">
-              <p className="text-sm font-semibold text-foreground-900">Reglas de bloqueo</p>
-              <p className="text-xs text-foreground-500 mt-2 leading-relaxed">
-                Los bloqueos de horario por médico, especialidad o consultorio requieren contrato API.
-                No se guardan en el navegador para no simular persistencia.
-              </p>
-              <p className="text-xs text-amber-800 mt-3 bg-amber-50 border border-amber-200 rounded-lg px-3 py-2 inline-block">
-                Pendiente de API — sin reglas inventadas.
-              </p>
-            </Card>
+            <ReglasBloqueoTab
+              branchId={branchId}
+              reglasBloqueo={reglasBloqueo}
+              defaultFecha={defaultFecha}
+              onReload={onReloadBlocks}
+            />
           )}
         </div>
       </div>

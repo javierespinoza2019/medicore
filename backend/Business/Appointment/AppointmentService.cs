@@ -42,6 +42,14 @@ public interface IAppointmentService
 
     Task<IReadOnlyList<AppointmentDto>> ListBySubjectAsync(
         Guid tenantId, Guid subjectId, CancellationToken ct);
+
+    Task<IReadOnlyList<ScheduleBlockDto>> ListBlocksAsync(
+        Guid tenantId, Guid branchId, DateTimeOffset fromUtc, DateTimeOffset toUtc, CancellationToken ct);
+
+    Task<ScheduleBlockDto> UpsertBlockAsync(
+        Guid tenantId, Guid blockId, Guid actorUserId, UpsertScheduleBlockRequest request, CancellationToken ct);
+
+    Task SoftDeleteBlockAsync(Guid tenantId, Guid blockId, Guid actorUserId, CancellationToken ct);
 }
 
 public sealed class AppointmentService(IAppointmentRepository repository) : IAppointmentService
@@ -197,6 +205,49 @@ public sealed class AppointmentService(IAppointmentRepository repository) : IApp
     public Task<IReadOnlyList<AppointmentDto>> ListBySubjectAsync(
         Guid tenantId, Guid subjectId, CancellationToken ct) =>
         repository.ListBySubjectAsync(tenantId, subjectId, ct);
+
+    public Task<IReadOnlyList<ScheduleBlockDto>> ListBlocksAsync(
+        Guid tenantId, Guid branchId, DateTimeOffset fromUtc, DateTimeOffset toUtc, CancellationToken ct) =>
+        repository.ListBlocksAsync(tenantId, branchId, fromUtc, toUtc, ct);
+
+    public async Task<ScheduleBlockDto> UpsertBlockAsync(
+        Guid tenantId, Guid blockId, Guid actorUserId, UpsertScheduleBlockRequest request, CancellationToken ct)
+    {
+        if (request.BranchId == Guid.Empty)
+            throw new ArgumentException("branchId es obligatorio.");
+        if (string.IsNullOrWhiteSpace(request.Name))
+            throw new ArgumentException("El nombre de la regla es obligatorio.");
+        if (request.Name.Trim().Length > 200)
+            throw new ArgumentException("El nombre de la regla no puede exceder 200 caracteres.");
+        var kind = (request.Kind ?? string.Empty).Trim().ToLowerInvariant();
+        if (!ScheduleBlockKinds.All.Contains(kind))
+            throw new ArgumentException("Tipo de bloqueo no reconocido.");
+        ValidateInterval(request.StartUtc, request.EndUtc);
+
+        if (kind == ScheduleBlockKinds.Medico && (request.ProfessionalId is null || request.ProfessionalId == Guid.Empty))
+            throw new ArgumentException("El bloqueo por médico requiere professionalId.");
+        if (kind == ScheduleBlockKinds.Especialidad && (request.SpecialtyId is null || request.SpecialtyId == Guid.Empty))
+            throw new ArgumentException("El bloqueo por especialidad requiere specialtyId.");
+
+        var normalized = new UpsertScheduleBlockRequest
+        {
+            BranchId = request.BranchId,
+            Kind = kind,
+            Name = request.Name.Trim(),
+            LocalDate = request.LocalDate,
+            StartUtc = request.StartUtc.ToUniversalTime(),
+            EndUtc = request.EndUtc.ToUniversalTime(),
+            ProfessionalId = kind == ScheduleBlockKinds.Medico ? request.ProfessionalId : null,
+            SpecialtyId = kind == ScheduleBlockKinds.Especialidad ? request.SpecialtyId : null,
+            IsActive = request.IsActive
+        };
+
+        return await repository.UpsertBlockAsync(tenantId, blockId, actorUserId, normalized, ct)
+            ?? throw new InvalidOperationException("No se pudo guardar la regla de bloqueo.");
+    }
+
+    public Task SoftDeleteBlockAsync(Guid tenantId, Guid blockId, Guid actorUserId, CancellationToken ct) =>
+        repository.SoftDeleteBlockAsync(tenantId, blockId, actorUserId, ct);
 
     /// <summary>Detecta traslape de intervalos abiertos por la izquierda [start, end).</summary>
     public static bool IntervalsOverlap(

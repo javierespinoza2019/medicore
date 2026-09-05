@@ -9,7 +9,7 @@ namespace MediCore.DataAccess.Prescription;
 public interface IPrescriptionRepository
 {
     Task<IReadOnlyList<MedicationDto>> SearchMedicationsAsync(
-        Guid tenantId, string? query, bool excludeControlled, int maxRows, CancellationToken ct);
+        Guid tenantId, string? query, bool excludeControlled, int maxRows, bool onlyActive, CancellationToken ct);
 
     Task<MedicationDto?> GetMedicationAsync(Guid tenantId, Guid medicationId, CancellationToken ct);
 
@@ -42,7 +42,7 @@ public interface IPrescriptionRepository
 public sealed class PrescriptionRepository(ISqlConnectionFactory connectionFactory) : IPrescriptionRepository
 {
     public async Task<IReadOnlyList<MedicationDto>> SearchMedicationsAsync(
-        Guid tenantId, string? query, bool excludeControlled, int maxRows, CancellationToken ct)
+        Guid tenantId, string? query, bool excludeControlled, int maxRows, bool onlyActive, CancellationToken ct)
     {
         using var conn = connectionFactory.Create();
         var cmd = new CommandDefinition(
@@ -52,6 +52,7 @@ public sealed class PrescriptionRepository(ISqlConnectionFactory connectionFacto
                 TenantId = tenantId,
                 Query = query,
                 ExcludeControlled = excludeControlled,
+                OnlyActive = onlyActive,
                 MaxRows = maxRows
             },
             commandType: CommandType.StoredProcedure,

@@ -1,4 +1,4 @@
-/** Reglas de bloqueo locales (configuración UI; sin persistencia API en Fase 1). */
+/** Reglas de bloqueo de agenda (UI + API ScheduleBlock). */
 
 export type ReglaBloqueoTipo = 'rango' | 'dia' | 'medico' | 'especialidad';
 
@@ -13,5 +13,3 @@ export interface ReglaBloqueo {
   especialidadId?: string;
   activo: boolean;
 }
-
-export const reglasBloqueoIniciales: ReglaBloqueo[] = [];

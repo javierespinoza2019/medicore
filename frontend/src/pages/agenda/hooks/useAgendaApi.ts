@@ -12,16 +12,19 @@ import {
   type AppointmentDto,
   type CreateAppointmentRequest,
 } from '@/api/appointments';
+import { listScheduleBlocks } from '@/api/scheduleBlocks';
 import { listProfessionals, type ProfessionalDto } from '@/api/professionals';
 import { resolveBranchId } from '@/utils/branchResolution';
 import { computeAgendaRange } from '@/pages/agenda/agendaDateUtils';
 import {
   dtoToAgendaAppointment,
+  dtoToReglaBloqueo,
   roomToConsultorio,
   uiStateToApi,
 } from '@/pages/agenda/agendaPresentation';
 import type { AgendaAppointment, AgendaAppointmentEstado } from '@/pages/agenda/types';
 import type { AgendaConsultorio } from '@/pages/agenda/consultorioTypes';
+import type { ReglaBloqueo } from '@/pages/agenda/agendaRulesTypes';
 
 type ViewMode = 'day' | 'week' | 'month' | 'list';
 
@@ -39,6 +42,7 @@ export function useAgendaApi(
   const [branches, setBranches] = useState<BranchDto[]>([]);
   const [appointmentsRaw, setAppointmentsRaw] = useState<AppointmentDto[]>([]);
   const [consultorios, setConsultorios] = useState<AgendaConsultorio[]>([]);
+  const [reglasBloqueo, setReglasBloqueo] = useState<ReglaBloqueo[]>([]);
   const [professionals, setProfessionals] = useState<ProfessionalDto[]>([]);
   const [subjects, setSubjects] = useState<SubjectListItemDto[]>([]);
   const [loading, setLoading] = useState(false);
@@ -75,7 +79,7 @@ export function useAgendaApi(
     setLoading(true);
     setError(null);
     const range = computeAgendaRange(view, selectedDate, currentYear, currentMonth);
-    const [aRes, rRes] = await Promise.all([
+    const [aRes, rRes, bRes] = await Promise.all([
       listAppointments({
         branchId,
         from: range.from,
@@ -83,6 +87,7 @@ export function useAgendaApi(
         mine: isDoctor,
       }),
       listConsultingRooms(branchId, false),
+      listScheduleBlocks(branchId, range.from, range.to),
     ]);
     setLoading(false);
     if (!aRes.success) {
@@ -93,6 +98,11 @@ export function useAgendaApi(
     setAppointmentsRaw(aRes.data ?? []);
     if (rRes.success && rRes.data) {
       setConsultorios(rRes.data.map(roomToConsultorio));
+    }
+    if (bRes.success && bRes.data) {
+      setReglasBloqueo(bRes.data.map(dtoToReglaBloqueo));
+    } else {
+      setReglasBloqueo([]);
     }
   }, [branchId, failClosed, isDoctor, view, selectedDate, currentYear, currentMonth]);
 
@@ -222,6 +232,7 @@ export function useAgendaApi(
     appointments,
     consultorios,
     setConsultorios,
+    reglasBloqueo,
     professionals,
     subjects,
     loading,

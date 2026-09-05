@@ -34,6 +34,14 @@ public interface IAppointmentRepository
 
     Task<IReadOnlyList<AppointmentDto>> ListBySubjectAsync(
         Guid tenantId, Guid subjectId, CancellationToken ct);
+
+    Task<IReadOnlyList<ScheduleBlockDto>> ListBlocksAsync(
+        Guid tenantId, Guid branchId, DateTimeOffset fromUtc, DateTimeOffset toUtc, CancellationToken ct);
+
+    Task<ScheduleBlockDto?> UpsertBlockAsync(
+        Guid tenantId, Guid blockId, Guid actorUserId, UpsertScheduleBlockRequest request, CancellationToken ct);
+
+    Task SoftDeleteBlockAsync(Guid tenantId, Guid blockId, Guid actorUserId, CancellationToken ct);
 }
 
 public sealed class AppointmentRepository(ISqlConnectionFactory connectionFactory) : IAppointmentRepository
@@ -132,7 +140,7 @@ public sealed class AppointmentRepository(ISqlConnectionFactory connectionFactor
             await conn.ExecuteAsync(cmd);
             return await GetByIdAsync(tenantId, appointmentId, ct);
         }
-        catch (SqlException ex) when (ex.Number is 50201 or 50202)
+        catch (SqlException ex) when (ex.Number is 50201 or 50202 or 50230)
         {
             throw new AppointmentOverlapException(ex.Message, ex);
         }
@@ -182,7 +190,7 @@ public sealed class AppointmentRepository(ISqlConnectionFactory connectionFactor
             await conn.ExecuteAsync(cmd);
             return await GetByIdAsync(tenantId, appointmentId, ct);
         }
-        catch (SqlException ex) when (ex.Number is 50201 or 50202)
+        catch (SqlException ex) when (ex.Number is 50201 or 50202 or 50230)
         {
             throw new AppointmentOverlapException(ex.Message, ex);
         }
@@ -257,6 +265,77 @@ public sealed class AppointmentRepository(ISqlConnectionFactory connectionFactor
         return rows.Select(MapAppointment).ToList();
     }
 
+    public async Task<IReadOnlyList<ScheduleBlockDto>> ListBlocksAsync(
+        Guid tenantId, Guid branchId, DateTimeOffset fromUtc, DateTimeOffset toUtc, CancellationToken ct)
+    {
+        using var conn = connectionFactory.Create();
+        var cmd = new CommandDefinition(
+            "sp_ScheduleBlock_List",
+            new
+            {
+                TenantId = tenantId,
+                BranchId = branchId,
+                FromUtc = fromUtc.UtcDateTime,
+                ToUtc = toUtc.UtcDateTime
+            },
+            commandType: CommandType.StoredProcedure,
+            cancellationToken: ct);
+        var rows = await conn.QueryAsync(cmd);
+        return rows.Select(MapBlock).ToList();
+    }
+
+    public async Task<ScheduleBlockDto?> UpsertBlockAsync(
+        Guid tenantId, Guid blockId, Guid actorUserId, UpsertScheduleBlockRequest request, CancellationToken ct)
+    {
+        using var conn = connectionFactory.Create();
+        try
+        {
+            var cmd = new CommandDefinition(
+                "sp_ScheduleBlock_Upsert",
+                new
+                {
+                    TenantId = tenantId,
+                    BlockId = blockId,
+                    request.BranchId,
+                    request.Kind,
+                    request.Name,
+                    LocalDate = request.LocalDate.ToDateTime(TimeOnly.MinValue),
+                    StartUtc = request.StartUtc.UtcDateTime,
+                    EndUtc = request.EndUtc.UtcDateTime,
+                    request.ProfessionalId,
+                    request.SpecialtyId,
+                    request.IsActive,
+                    ActorUserId = actorUserId
+                },
+                commandType: CommandType.StoredProcedure,
+                cancellationToken: ct);
+            var row = await conn.QuerySingleOrDefaultAsync(cmd);
+            return row is null ? null : MapBlock(row);
+        }
+        catch (SqlException ex) when (ex.Number is 50210 or 50212 or 50222 or 50231 or 50232 or 50233 or 50234)
+        {
+            throw new ArgumentException(ex.Message, ex);
+        }
+    }
+
+    public async Task SoftDeleteBlockAsync(Guid tenantId, Guid blockId, Guid actorUserId, CancellationToken ct)
+    {
+        using var conn = connectionFactory.Create();
+        try
+        {
+            var cmd = new CommandDefinition(
+                "sp_ScheduleBlock_SoftDelete",
+                new { TenantId = tenantId, BlockId = blockId, ActorUserId = actorUserId },
+                commandType: CommandType.StoredProcedure,
+                cancellationToken: ct);
+            await conn.ExecuteAsync(cmd);
+        }
+        catch (SqlException ex) when (ex.Number is 50235)
+        {
+            throw new InvalidOperationException(ex.Message, ex);
+        }
+    }
+
     private static ConsultingRoomDto MapRoom(dynamic r)
     {
         Guid? specialtyId = null;
@@ -282,6 +361,53 @@ public sealed class AppointmentRepository(ISqlConnectionFactory connectionFactor
             SpecialtyId = specialtyId,
             SpecialtyName = r.SpecialtyName as string,
             ProfessionalIds = [],
+            CreatedAtUtc = ToDto(r.CreatedAtUtc) ?? DateTimeOffset.UtcNow,
+            UpdatedAtUtc = ToDto(r.UpdatedAtUtc) ?? DateTimeOffset.UtcNow
+        };
+    }
+
+    private static ScheduleBlockDto MapBlock(dynamic r)
+    {
+        DateOnly localDate;
+        object rawDate = r.LocalDate;
+        if (rawDate is DateOnly d) localDate = d;
+        else if (rawDate is DateTime dt) localDate = DateOnly.FromDateTime(dt);
+        else localDate = DateOnly.FromDateTime(Convert.ToDateTime(rawDate));
+
+        Guid? professionalId = null;
+        Guid? specialtyId = null;
+        try
+        {
+            object? rawP = r.ProfessionalId;
+            if (rawP is Guid gp) professionalId = gp;
+            else if (rawP is not null and not DBNull) professionalId = (Guid)rawP;
+        }
+        catch { /* columna ausente */ }
+
+        try
+        {
+            object? rawS = r.SpecialtyId;
+            if (rawS is Guid gs) specialtyId = gs;
+            else if (rawS is not null and not DBNull) specialtyId = (Guid)rawS;
+        }
+        catch { /* columna ausente */ }
+
+        return new ScheduleBlockDto
+        {
+            BlockId = r.BlockId,
+            TenantId = r.TenantId,
+            BranchId = r.BranchId,
+            Kind = r.Kind ?? string.Empty,
+            Name = r.Name ?? string.Empty,
+            LocalDate = localDate,
+            StartUtc = ToDto(r.StartUtc) ?? DateTimeOffset.UtcNow,
+            EndUtc = ToDto(r.EndUtc) ?? DateTimeOffset.UtcNow,
+            ProfessionalId = professionalId,
+            ProfessionalFullName = r.ProfessionalFullName,
+            SpecialtyId = specialtyId,
+            SpecialtyName = r.SpecialtyName,
+            IsActive = r.IsActive,
+            CreatedByUserId = r.CreatedByUserId,
             CreatedAtUtc = ToDto(r.CreatedAtUtc) ?? DateTimeOffset.UtcNow,
             UpdatedAtUtc = ToDto(r.UpdatedAtUtc) ?? DateTimeOffset.UtcNow
         };

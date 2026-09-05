@@ -66,6 +66,7 @@ export default function Agenda() {
     branchId,
     appointments,
     consultorios,
+    reglasBloqueo,
     subjects,
     loading,
     error,
@@ -768,7 +769,7 @@ export default function Agenda() {
                 date={selectedDate}
                 appointments={filteredAppointments}
                 consultorios={consultorios}
-                reglasBloqueo={[]}
+                reglasBloqueo={reglasBloqueo}
                 onSelectAppointment={setDetailAppointment}
                 onScheduleAtTime={handleScheduleAtTime}
                 timeGranularity={timeGranularity}
@@ -837,6 +838,9 @@ export default function Agenda() {
           consultorios={consultorios}
           branchId={branchId}
           onUpsertRoom={upsertRoom}
+          reglasBloqueo={reglasBloqueo}
+          defaultFecha={selectedDate}
+          onReloadBlocks={reload}
         />
         <TicketPrintModal
           appointment={

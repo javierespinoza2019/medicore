@@ -187,3 +187,63 @@ public sealed class ConsultingRoomsController(IAppointmentService appointmentSer
         }
     }
 }
+
+[ApiController]
+[Authorize]
+[Route("api/schedule-blocks")]
+public sealed class ScheduleBlocksController(IAppointmentService appointmentService) : ControllerBase
+{
+    [HttpGet]
+    public async Task<ActionResult<ApiResponse<IReadOnlyList<ScheduleBlockDto>>>> List(
+        [FromQuery] Guid branchId,
+        [FromQuery] DateTimeOffset from,
+        [FromQuery] DateTimeOffset to,
+        CancellationToken ct = default)
+    {
+        var tenantId = Guid.Parse(User.FindFirstValue(MediCoreClaims.TenantId)!);
+        try
+        {
+            var list = await appointmentService.ListBlocksAsync(tenantId, branchId, from, to, ct);
+            return Ok(ApiResponse<IReadOnlyList<ScheduleBlockDto>>.Ok(list));
+        }
+        catch (ArgumentException ex)
+        {
+            return BadRequest(ApiResponse<IReadOnlyList<ScheduleBlockDto>>.Fail(ex.Message));
+        }
+    }
+
+    [HttpPut("{id:guid}")]
+    public async Task<ActionResult<ApiResponse<ScheduleBlockDto>>> Upsert(
+        Guid id,
+        [FromBody] UpsertScheduleBlockRequest request,
+        CancellationToken ct)
+    {
+        var tenantId = Guid.Parse(User.FindFirstValue(MediCoreClaims.TenantId)!);
+        var userId = Guid.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier)!);
+        try
+        {
+            var block = await appointmentService.UpsertBlockAsync(tenantId, id, userId, request, ct);
+            return Ok(ApiResponse<ScheduleBlockDto>.Ok(block));
+        }
+        catch (ArgumentException ex)
+        {
+            return BadRequest(ApiResponse<ScheduleBlockDto>.Fail(ex.Message));
+        }
+    }
+
+    [HttpDelete("{id:guid}")]
+    public async Task<ActionResult<ApiResponse<object?>>> SoftDelete(Guid id, CancellationToken ct)
+    {
+        var tenantId = Guid.Parse(User.FindFirstValue(MediCoreClaims.TenantId)!);
+        var userId = Guid.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier)!);
+        try
+        {
+            await appointmentService.SoftDeleteBlockAsync(tenantId, id, userId, ct);
+            return Ok(ApiResponse<object?>.Ok(null));
+        }
+        catch (InvalidOperationException ex)
+        {
+            return NotFound(ApiResponse<object?>.Fail(ex.Message));
+        }
+    }
+}

@@ -13,6 +13,7 @@ CREATE OR ALTER PROCEDURE dbo.sp_Medication_Search
     @TenantId           UNIQUEIDENTIFIER,
     @Query              NVARCHAR(200) = NULL,
     @ExcludeControlled  BIT = 1,
+    @OnlyActive         BIT = 1,
     @MaxRows            INT = 40
 AS
 BEGIN
@@ -20,7 +21,7 @@ BEGIN
     SET XACT_ABORT ON;
 
     IF @MaxRows IS NULL OR @MaxRows < 1 SET @MaxRows = 40;
-    IF @MaxRows > 100 SET @MaxRows = 100;
+    IF @MaxRows > 200 SET @MaxRows = 200;
 
     DECLARE @Q NVARCHAR(200) = NULLIF(LTRIM(RTRIM(@Query)), N'');
 
@@ -38,7 +39,7 @@ BEGIN
     FROM dbo.Medication m
     WHERE m.TenantId = @TenantId
       AND m.IsDeleted = 0
-      AND m.IsActive = 1
+      AND (@OnlyActive = 0 OR m.IsActive = 1)
       AND (@ExcludeControlled = 0 OR m.IsControlledSubstance = 0)
       AND (
             @Q IS NULL

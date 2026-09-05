@@ -107,6 +107,9 @@ Invoke-SqlFile (Join-Path $root "procedures\tenant\sp_Branch.sql") $Database
 Invoke-SqlFile (Join-Path $root "procedures\subject\sp_Subject.sql") $Database
 Invoke-SqlFile (Join-Path $root "procedures\encounter\sp_Encounter.sql") $Database
 Invoke-SqlFile (Join-Path $root "procedures\schedule\sp_Appointment.sql") $Database
+Invoke-SqlFile (Join-Path $root "procedures\schedule\sp_ScheduleBlock.sql") $Database
+Invoke-SqlFile (Join-Path $root "procedures\prescription\sp_Medication.sql") $Database
+Invoke-SqlFile (Join-Path $root "procedures\prescription\sp_Prescription.sql") $Database
 
 if ($runSeed) {
     Invoke-SqlFile (Join-Path $root "seeds\001_demo_tenant.sql") $Database

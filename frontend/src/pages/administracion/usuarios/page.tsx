@@ -117,7 +117,7 @@ export default function AdminUsuarios() {
     }),
     [],
   );
-  const { sorted, sortKey, sortDir, toggleSort } = useSort(filtered, sorters, 'nombre');
+  const { sortedData, sortKey, direction, toggleSort } = useSort(filtered, sorters, 'nombre');
 
   const openCreate = () => {
     setEditingId(null);
@@ -237,7 +237,7 @@ export default function AdminUsuarios() {
     setFormError(null);
   };
 
-  if (loading) return <CargandoPantalla mensaje="Cargando usuarios…" />;
+  if (loading) return <CargandoPantalla />;
 
   return (
     <div className="p-4 md:p-6 space-y-4" data-testid="page-admin-usuarios">
@@ -285,15 +285,15 @@ export default function AdminUsuarios() {
           <table className="w-full text-sm" data-testid="usuarios-table">
             <thead className="bg-secondary-50 border-b border-secondary-200">
               <tr>
-                <SortableTh label="Nombre" sortKey="nombre" currentKey={sortKey} dir={sortDir} onToggle={toggleSort} />
-                <SortableTh label="Acceso" sortKey="acceso" currentKey={sortKey} dir={sortDir} onToggle={toggleSort} />
+                <SortableTh label="Nombre" sortKey="nombre" activeKey={sortKey} direction={direction} onSort={toggleSort} />
+                <SortableTh label="Acceso" sortKey="acceso" activeKey={sortKey} direction={direction} onSort={toggleSort} />
                 <th className="text-left px-3 py-2 font-medium text-foreground-600">Roles</th>
                 <th className="text-left px-3 py-2 font-medium text-foreground-600">Estado</th>
                 <th className="text-right px-3 py-2 font-medium text-foreground-600">Acciones</th>
               </tr>
             </thead>
             <tbody>
-              {sorted.map((u) => (
+              {sortedData.map((u) => (
                 <tr key={u.userId} className="border-b border-secondary-100 hover:bg-secondary-50/50">
                   <td className="px-3 py-2">
                     <p className="font-medium text-foreground-900">{u.displayName}</p>
@@ -345,7 +345,7 @@ export default function AdminUsuarios() {
                   </td>
                 </tr>
               ))}
-              {sorted.length === 0 && (
+              {sortedData.length === 0 && (
                 <tr>
                   <td colSpan={5} className="px-3 py-8 text-center text-foreground-500">
                     No hay usuarios con esos filtros.

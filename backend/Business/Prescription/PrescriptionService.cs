@@ -11,7 +11,8 @@ namespace MediCore.Business.Prescription;
 public interface IPrescriptionService
 {
     Task<IReadOnlyList<MedicationDto>> SearchMedicationsAsync(
-        Guid tenantId, string? query, bool excludeControlled, CancellationToken ct);
+        Guid tenantId, string? query, bool excludeControlled, CancellationToken ct,
+        bool onlyActive = true, int maxRows = 40);
 
     Task<MedicationDto> UpsertMedicationAsync(
         Guid tenantId, Guid actorUserId, Guid? medicationId, UpsertMedicationRequest request, CancellationToken ct);
@@ -41,8 +42,10 @@ public sealed class PrescriptionService(
     IHealthcareProfessionalRepository professionalRepository) : IPrescriptionService
 {
     public Task<IReadOnlyList<MedicationDto>> SearchMedicationsAsync(
-        Guid tenantId, string? query, bool excludeControlled, CancellationToken ct) =>
-        prescriptionRepository.SearchMedicationsAsync(tenantId, query, excludeControlled, 40, ct);
+        Guid tenantId, string? query, bool excludeControlled, CancellationToken ct,
+        bool onlyActive = true, int maxRows = 40) =>
+        prescriptionRepository.SearchMedicationsAsync(
+            tenantId, query, excludeControlled, Math.Clamp(maxRows, 1, 200), onlyActive, ct);
 
     public async Task<MedicationDto> UpsertMedicationAsync(
         Guid tenantId, Guid actorUserId, Guid? medicationId, UpsertMedicationRequest request, CancellationToken ct)

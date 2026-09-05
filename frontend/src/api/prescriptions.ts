@@ -136,6 +136,41 @@ export async function searchMedications(
   return apiFetch<MedicationDto[]>(`/api/medications${qs ? `?${qs}` : ''}`);
 }
 
+/** Listado admin: incluye inactivos y controlados (requiere canAdminCatalogos). */
+export async function listMedicationsAdmin(
+  query = '',
+): Promise<ApiResponse<MedicationDto[]>> {
+  const q = new URLSearchParams({
+    includeControlled: 'true',
+    onlyActive: 'false',
+    maxRows: '200',
+  });
+  if (query.trim()) q.set('query', query.trim());
+  return apiFetch<MedicationDto[]>(`/api/medications?${q}`);
+}
+
+export type UpsertMedicationPayload = {
+  genericName: string;
+  brandName?: string | null;
+  presentation?: string | null;
+  concentration?: string | null;
+  defaultRoute?: string | null;
+  saleClassification: SaleClassification;
+  isControlledSubstance: boolean;
+  isActive: boolean;
+};
+
+export async function upsertMedication(
+  payload: UpsertMedicationPayload,
+  medicationId?: string | null,
+): Promise<ApiResponse<MedicationDto>> {
+  const q = medicationId ? `?medicationId=${encodeURIComponent(medicationId)}` : '';
+  return apiFetch<MedicationDto>(`/api/medications${q}`, {
+    method: 'POST',
+    body: JSON.stringify(payload),
+  });
+}
+
 export async function createPrescription(
   encounterId: string,
   payload: CreatePrescriptionPayload,
