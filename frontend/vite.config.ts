@@ -1,13 +1,12 @@
 import { defineConfig, loadEnv } from "vite";
 import react from "@vitejs/plugin-react";
+import { VitePWA } from "vite-plugin-pwa";
 import { resolve } from "node:path";
 import AutoImport from "unplugin-auto-import/vite";
-// import { readdyJsxRuntimeProxyPlugin } from "./vite.jsx-runtime-proxy";
 
 const base = process.env.BASE_PATH || "/";
 const isPreview = process.env.IS_PREVIEW ? true : false;
-//const proxyPlugins = isPreview ? [readdyJsxRuntimeProxyPlugin()] : [];
-// https://vite.dev/config/
+
 // Modos: development | qa | production (archivos .env.<modo>).
 export default defineConfig(({ mode }) => {
   const env = loadEnv(mode, __dirname, "VITE_");
@@ -19,10 +18,9 @@ export default defineConfig(({ mode }) => {
     __IS_PREVIEW__: JSON.stringify(isPreview),
     __READDY_PROJECT_ID__: JSON.stringify(process.env.PROJECT_ID || ""),
     __READDY_VERSION_ID__: JSON.stringify(process.env.VERSION_ID || ""),
-    __READDY_AI_DOMAIN__: JSON.stringify(process.env.READDY_AI_DOMAIN || ""),
+    __READDY_AI_DOMAIN__: JSON.stringify(process.env.AI_DOMAIN || process.env.READDY_AI_DOMAIN || ""),
   },
   plugins: [
-    // ...proxyPlugins,
     react(),
     AutoImport({
       imports: [
@@ -66,12 +64,49 @@ export default defineConfig(({ mode }) => {
             "Outlet",
           ],
         },
-        // React i18n
         {
           "react-i18next": ["useTranslation", "Trans"],
         },
       ],
       dts: true,
+    }),
+    VitePWA({
+      registerType: "autoUpdate",
+      includeAssets: ["favicon.ico", "pwa-192.png", "pwa-512.png"],
+      manifest: {
+        name: "MediCore — Gestión Clínica",
+        short_name: "MediCore",
+        description:
+          "Plataforma clínica ambulatoria y urgencias. Continuidad de la atención con cola local.",
+        start_url: "/",
+        scope: "/",
+        display: "standalone",
+        orientation: "any",
+        background_color: "#0f172a",
+        theme_color: "#2563eb",
+        lang: "es-MX",
+        icons: [
+          { src: "pwa-192.png", sizes: "192x192", type: "image/png", purpose: "any" },
+          { src: "pwa-512.png", sizes: "512x512", type: "image/png", purpose: "any" },
+          { src: "pwa-512.png", sizes: "512x512", type: "image/png", purpose: "maskable" },
+        ],
+      },
+      workbox: {
+        // Shell de la SPA. No precachear respuestas /api (PHI / verdad en servidor).
+        navigateFallback: "/index.html",
+        navigateFallbackDenylist: [/^\/api\//],
+        globPatterns: ["**/*.{js,css,html,ico,png,svg,woff2,webmanifest}"],
+        runtimeCaching: [
+          {
+            urlPattern: ({ url }) => url.pathname.startsWith("/api/"),
+            handler: "NetworkOnly",
+          },
+        ],
+      },
+      devOptions: {
+        // En Vite dev el SW complica el proxy; PWA se valida en build/preview/prod.
+        enabled: false,
+      },
     }),
   ],
   base,
@@ -91,9 +126,6 @@ export default defineConfig(({ mode }) => {
       "/api": {
         target: proxyTarget,
         changeOrigin: true,
-        // Si el API no está escuchando, el proxy responde 503 en lugar de un 500 genérico:
-        // así el cliente clasifica el caso como indisponibilidad del servidor y no como
-        // error de negocio, igual que en QA/producción (donde el fetch falla directamente).
         configure: (proxy) => {
           proxy.on("error", (_err, _req, res) => {
             const respuesta = res as import("node:http").ServerResponse | undefined;

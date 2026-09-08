@@ -44,6 +44,32 @@ Es intencional: un ambiente mal configurado debe fallar al inicio, no a medias.
 En el frontend toda variable `VITE_*` termina embebida en el bundle, por eso los archivos
 `.env.development`, `.env.qa` y `.env.production` sí se versionan y **no** admiten secretos.
 
+PWA / estaciones: ver [`pwa-dispositivos.md`](pwa-dispositivos.md).
+
+### Tenant piloto Clínicas del Valle
+
+Reinicio/siembra operativa: `tools/reset-and-bootstrap-clinicas-del-valle.ps1`
+(seed `010_provision_clinicas_del_valle.sql`). Código tenant: `clinicas_del_valle`.
+Sucursales: `CHALCO`, `SATELITE`. Wipe de filas solo con `-IAuthorizeDestructiveReset`
+(doc 06, 2026-09-08). Alinear `VITE_TENANT_CODE` en el build del frontend.
+
+### Hosts demo actuales (Site4Now)
+
+| Pieza | URL |
+|---|---|
+| SPA | `https://medi-core.app` |
+| API | `https://api.medi-core.app` |
+| `VITE_API_BASE_URL` (build prod) | `https://api.medi-core.app` |
+| CORS / orígenes SPA | `https://medi-core.app` (+ `www` si aplica) |
+| `AllowedHosts` (API) | `api.medi-core.app` (y alias del sitio si IIS los usa) |
+
+Comprobación rápida: `GET https://api.medi-core.app/api/health` debe devolver JSON `200`.
+Si IIS responde **HTTP 500.30** (*ASP.NET Core app failed to start*), el proceso no arrancó:
+casi siempre faltan en el panel del sitio las variables `ConnectionStrings__MediCore` y
+`Jwt__SigningKey` (≥32 caracteres, sin la llave `DEV_*` de desarrollo), o el
+`ASPNETCORE_ENVIRONMENT` no coincide con el `appsettings` publicado. Revisar el log de
+stdout/stderr del Application Pool; no es un fallo de red del frontend.
+
 ## Validaciones del perfil `Platform`
 
 `PlatformOptions.Validate()` rechaza combinaciones contradictorias:

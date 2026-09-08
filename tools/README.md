@@ -11,6 +11,28 @@ Registra la cadena de conexión de Dev en user-secrets (fuera del repositorio). 
 .\set-dev-secrets.ps1
 ```
 
+## reset-and-bootstrap-clinicas-del-valle.ps1
+
+Siembra el tenant piloto **Clínicas del Valle** (`clinicas_del_valle`) con sucursales
+`CHALCO` y `SATELITE`. Por omisión **no borra** nada (idempotente).
+
+Reinicio desde cero (demo sin PHI): `-IAuthorizeDestructiveReset` + escribir `BORRAR`
+en consola. Vacía filas de negocio conservando esquema; luego siembra. Ver doc 06
+(oleada 2026-09-08).
+
+```powershell
+# Solo sembrar / alinear
+.\reset-and-bootstrap-clinicas-del-valle.ps1 -Server <srv> -Database <db> `
+  -SqlUser <u> -SqlPassword <p> -SkipCreateDatabase
+
+# Vaciar filas + sembrar (pide BORRAR)
+.\reset-and-bootstrap-clinicas-del-valle.ps1 -Server <srv> -Database <db> `
+  -SqlUser <u> -SqlPassword <p> -SkipCreateDatabase -IAuthorizeDestructiveReset -ApplySchema
+```
+
+Login sembrado: `admin` / `Demo123!` (o `-AdminPasswordHash` con `tools/hashpwd`).
+Frontend: `VITE_TENANT_CODE=clinicas_del_valle`.
+
 ## apply-database.ps1
 
 Aplica migraciones, procedimientos y seeds a un ambiente. Requiere `sqlcmd` y acceso al servidor SQL.

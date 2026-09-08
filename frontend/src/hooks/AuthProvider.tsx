@@ -7,6 +7,7 @@ import { tenantCode } from '@/config/environment';
 import { AuthContext, type AuthContextType, type LoginOutcome } from '@/hooks/authContext';
 import type { ApiFailure } from '@/api/errors';
 import { startOutboxDrain, tryDrainOutbox } from '@/sync/outboxDrain';
+import { clearClinicalCache } from '@/sync/clinicalReadCache';
 import { normalizeSessionPermissions, type PermissionKey } from '@/utils/permissions';
 import { breakGlassEligibleRoles, type BreakGlassGrant } from '@/api/auth';
 import { resolveStoredBranchId } from '@/utils/branchResolution';
@@ -148,6 +149,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       } catch {
         // almacenamiento no disponible
       }
+      // Lecturas clínicas se purgan; la cola de salida (outbox) NO se borra (ADR-014).
+      void clearClinicalCache();
     }
   }, [applySession]);
 

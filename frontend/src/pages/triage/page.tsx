@@ -12,7 +12,6 @@ import {
   CANONICAL_VITAL_CODES,
   getEffectiveTriageScale,
   getTriage,
-  saveTriage,
   VITAL_DEFAULT_UNITS,
   VITAL_LABELS,
   type CanonicalVitalCode,
@@ -21,6 +20,8 @@ import {
   type TriageScaleLevel,
 } from '@/api/triage';
 import { useEncounterQueue } from '@/hooks/useEncounterQueue';
+import { useDevice } from '@/hooks/DeviceProvider';
+import { runClinicalOutboxCommand, isClinicalOutboxErr } from '@/sync/runClinicalOutboxCommand';
 import {
   accentForEncounter,
   computeQueueStats,
@@ -133,6 +134,7 @@ export default function TriagePage() {
     cacheAgeLabel,
     showStaleBanner,
   } = useEncounterQueue(false);
+  const { allowsClinicalCache, isPendingApproval } = useDevice();
 
   const [scale, setScale] = useState<TriageScaleConfigDto | null>(null);
   const [scaleError, setScaleError] = useState<string | null>(null);
@@ -332,10 +334,31 @@ export default function TriagePage() {
       vitals: buildVitalsFromForm(vitals, { notMeasuredReason }),
     };
 
-    const res = await saveTriage(selected.encounterId, body);
+    const out = await runClinicalOutboxCommand(
+      'triage.save',
+      { encounterId: selected.encounterId, ...body },
+      { allowsOfflineQueue: allowsClinicalCache, isPendingApproval },
+    );
+    if (isClinicalOutboxErr(out)) {
+      setSaving(false);
+      setSaveErr(out.error);
+      return;
+    }
+    if (out.queued) {
+      setSaving(false);
+      setSaveMsg(
+        'Triage guardado en cola local. Se sincronizará al recuperar el enlace (sin bloquear la atención).',
+      );
+      void refresh();
+      return;
+    }
+
+    const res = await getTriage(selected.encounterId);
     setSaving(false);
     if (!res.success || !res.data) {
-      setSaveErr(res.message ?? 'No se pudo guardar el triage.');
+      // Sync OK pero lectura falló: no inventar DTO; avisar y refrescar cola.
+      setSaveMsg('Triage sincronizado. Actualice para ver el detalle.');
+      void refresh();
       return;
     }
     setExisting(res.data);

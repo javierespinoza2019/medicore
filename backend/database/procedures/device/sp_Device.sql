@@ -40,7 +40,8 @@ BEGIN
         WHERE DeviceId = @DeviceId AND TenantId = @TenantId;
     END
 
-    SELECT DeviceId, DevicePublicId, DisplayName, IsApproved, AllowsOfflineQueue
+    SELECT DeviceId, DevicePublicId, DisplayName, Platform, BranchId,
+           IsApproved, AllowsOfflineQueue, RequestedByUserId, CreatedAtUtc
     FROM dbo.Device
     WHERE DeviceId = @DeviceId AND TenantId = @TenantId;
 END
@@ -52,7 +53,8 @@ CREATE OR ALTER PROCEDURE dbo.sp_Device_GetByPublicId
 AS
 BEGIN
     SET NOCOUNT ON;
-    SELECT DeviceId, DevicePublicId, DisplayName, IsApproved, AllowsOfflineQueue
+    SELECT DeviceId, DevicePublicId, DisplayName, Platform, BranchId,
+           IsApproved, AllowsOfflineQueue, RequestedByUserId, CreatedAtUtc
     FROM dbo.Device
     WHERE TenantId = @TenantId AND DevicePublicId = @DevicePublicId;
 END
@@ -71,8 +73,24 @@ BEGIN
         AllowsOfflineQueue = @AllowsOfflineQueue
     WHERE TenantId = @TenantId AND DevicePublicId = @DevicePublicId;
 
-    SELECT DeviceId, DevicePublicId, DisplayName, IsApproved, AllowsOfflineQueue
+    SELECT DeviceId, DevicePublicId, DisplayName, Platform, BranchId,
+           IsApproved, AllowsOfflineQueue, RequestedByUserId, CreatedAtUtc
     FROM dbo.Device
     WHERE TenantId = @TenantId AND DevicePublicId = @DevicePublicId;
+END
+GO
+
+CREATE OR ALTER PROCEDURE dbo.sp_Device_List
+    @TenantId UNIQUEIDENTIFIER,
+    @OnlyPending BIT = 0
+AS
+BEGIN
+    SET NOCOUNT ON;
+    SELECT DeviceId, DevicePublicId, DisplayName, Platform, BranchId,
+           IsApproved, AllowsOfflineQueue, RequestedByUserId, CreatedAtUtc
+    FROM dbo.Device
+    WHERE TenantId = @TenantId
+      AND (@OnlyPending = 0 OR IsApproved = 0)
+    ORDER BY CreatedAtUtc DESC;
 END
 GO

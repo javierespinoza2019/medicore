@@ -1,14 +1,11 @@
 /**
  * Panel de notas clínicas contra API real (M6 / WS-H).
- * No usa mocks. Firma local + sello: UI no afirma validez jurídica (pregunta G).
+ * Escrituras vía cola local + sync (ADR-014). Firma local + sello: UI no afirma validez jurídica (pregunta G).
  */
 import { useCallback, useEffect, useState } from 'react';
 import {
-  addNoteAddendum,
-  createNote,
   listNotesByEncounter,
   sealStateLabel,
-  signNote,
   type ClinicalNoteDto,
   type NoteType,
 } from '@/api/notes';
@@ -16,6 +13,8 @@ import { mensajeDeFalla } from '@/api/errors';
 import Button from '@/components/base/Button';
 import Card from '@/components/base/Card';
 import Badge from '@/components/base/Badge';
+import { useDevice } from '@/hooks/DeviceProvider';
+import { runClinicalOutboxCommand, isClinicalOutboxErr } from '@/sync/runClinicalOutboxCommand';
 
 type Props = {
   encounterId: string;
@@ -37,9 +36,12 @@ export default function ClinicalNotesPanel({
   encounterId,
   defaultNoteType = 'evolucion',
 }: Props) {
+  const { allowsClinicalCache, isPendingApproval } = useDevice();
+  const gate = { allowsOfflineQueue: allowsClinicalCache, isPendingApproval };
   const [notes, setNotes] = useState<ClinicalNoteDto[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [info, setInfo] = useState<string | null>(null);
   const [noteType, setNoteType] = useState<NoteType>(defaultNoteType);
   const [subjetivo, setSubjetivo] = useState('');
   const [objetivo, setObjetivo] = useState('');
@@ -77,19 +79,25 @@ export default function ClinicalNotesPanel({
   const handleCreate = async () => {
     setBusy(true);
     setError(null);
+    setInfo(null);
     try {
-      const res = await createNote(encounterId, {
-        noteType,
-        prognosis: prognosis.trim() || null,
-        body: {
-          subjetivo: subjetivo.trim() || null,
-          objetivo: objetivo.trim() || null,
-          analisis: analisis.trim() || null,
-          plan: plan.trim() || null,
+      const out = await runClinicalOutboxCommand(
+        'note.create',
+        {
+          encounterId,
+          noteType,
+          prognosis: prognosis.trim() || null,
+          body: {
+            subjetivo: subjetivo.trim() || null,
+            objetivo: objetivo.trim() || null,
+            analisis: analisis.trim() || null,
+            plan: plan.trim() || null,
+          },
         },
-      });
-      if (!res.success) {
-        setError(mensajeDeFalla(res.failure).titulo || res.message || 'No se pudo crear la nota.');
+        gate,
+      );
+      if (isClinicalOutboxErr(out)) {
+        setError(out.error);
         return;
       }
       setSubjetivo('');
@@ -97,6 +105,10 @@ export default function ClinicalNotesPanel({
       setAnalisis('');
       setPlan('');
       setPrognosis('');
+      if (out.queued) {
+        setInfo('Nota en cola local. Se sincronizará al recuperar el enlace.');
+        return;
+      }
       await reload();
     } catch {
       setError('No se pudo crear la nota.');
@@ -108,14 +120,22 @@ export default function ClinicalNotesPanel({
   const handleSign = async (noteId: string) => {
     setBusy(true);
     setError(null);
+    setInfo(null);
     try {
-      const res = await signNote(noteId);
-      if (!res.success) {
+      const out = await runClinicalOutboxCommand(
+        'note.sign',
+        { noteId, contentHash: null },
+        gate,
+      );
+      if (isClinicalOutboxErr(out)) {
         setError(
-          mensajeDeFalla(res.failure).titulo ||
-            res.message ||
+          out.error ||
             'No se pudo firmar. Se requiere profesional ligado con cédula capturada.',
         );
+        return;
+      }
+      if (out.queued) {
+        setInfo('Firma en cola local. Se aplicará al sincronizar.');
         return;
       }
       await reload();
@@ -133,14 +153,23 @@ export default function ClinicalNotesPanel({
     }
     setBusy(true);
     setError(null);
+    setInfo(null);
     try {
-      const res = await addNoteAddendum(noteId, addendumReason.trim());
-      if (!res.success) {
-        setError(mensajeDeFalla(res.failure).titulo || res.message || 'No se pudo registrar el addendum.');
+      const out = await runClinicalOutboxCommand(
+        'note.addendum',
+        { noteId, reasonText: addendumReason.trim(), bodyJson: null },
+        gate,
+      );
+      if (isClinicalOutboxErr(out)) {
+        setError(out.error);
         return;
       }
       setAddendumFor(null);
       setAddendumReason('');
+      if (out.queued) {
+        setInfo('Addendum en cola local. Se sincronizará al recuperar el enlace.');
+        return;
+      }
       await reload();
     } catch {
       setError('No se pudo registrar el addendum.');
@@ -168,6 +197,14 @@ export default function ClinicalNotesPanel({
           role="alert"
         >
           {error}
+        </div>
+      )}
+      {info && (
+        <div
+          className="mb-3 p-3 rounded-lg border border-sky-500/30 bg-sky-500/10 text-sm text-sky-900"
+          role="status"
+        >
+          {info}
         </div>
       )}
 

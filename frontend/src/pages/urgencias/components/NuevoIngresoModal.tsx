@@ -11,6 +11,7 @@ import Button from '@/components/base/Button';
 import Input from '@/components/base/Input';
 import Select from '@/components/base/Select';
 import { useAuth } from '@/hooks/useAuth';
+import { useDevice } from '@/hooks/DeviceProvider';
 import { resolveBranchId } from '@/hooks/useEncounterQueue';
 import { enqueueCommand } from '@/sync/outboxQueue';
 import { syncOutboxCommand } from '@/sync/outboxSync';
@@ -74,6 +75,7 @@ function provisionalEncounter(input: {
  */
 export default function NuevoIngresoModal({ open, onClose, onCreated }: Props) {
   const { sucursalActualId } = useAuth();
+  const { allowsClinicalCache, isPendingApproval } = useDevice();
   const [branches, setBranches] = useState<BranchDto[]>([]);
   const [mode, setMode] = useState<'existente' | 'no_identificado'>('no_identificado');
   const [search, setSearch] = useState('');
@@ -139,6 +141,16 @@ export default function NuevoIngresoModal({ open, onClose, onCreated }: Props) {
       const needNewSubject = mode === 'no_identificado' || !subjectId;
       let sid = subjectId;
       const offline = obtenerEstadoEnlace().alcanzable === false;
+
+      if (offline && !allowsClinicalCache) {
+        setError(
+          isPendingApproval
+            ? 'Esta estación está pendiente de aprobación. Sin cola offline no se puede capturar sin enlace. Pida a un administrador que la apruebe en Administración → Dispositivos.'
+            : 'Esta estación no tiene cola offline habilitada. Conéctese a la red o registre/apruebe el dispositivo.',
+        );
+        setSaving(false);
+        return;
+      }
 
       if (needNewSubject) {
         const clientSubjectId = newClientId();

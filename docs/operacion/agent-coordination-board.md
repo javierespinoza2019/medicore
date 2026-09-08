@@ -10,6 +10,8 @@ Modo de trabajo (2026-08-30): **uno a uno** (sin enjambre multi-Dev).
 | — | Autónomo: poda `@/mocks` + components huérfanos | **done** | 2026-09-03 |
 | — | Reglas de bloqueo agenda (ScheduleBlock) | **done** | 2026-09-04; API+UI+E2E |
 | — | Catálogos: medicamentos admin | **done** | 2026-09-04; CIE/estudios placeholder |
+| — | PWA producto + dispositivos + caché clínica | **done** | 2026-09-08; ver `pwa-dispositivos.md` |
+| — | Cola offline F1 (triage/agenda/notas/receta) | **done** | 2026-09-08; `runClinicalOutboxCommand` |
 
 ## Memoria reciente (no reabrir sin cliente)
 
@@ -21,12 +23,15 @@ Modo de trabajo (2026-08-30): **uno a uno** (sin enjambre multi-Dev).
   normatividad operativa pendiente de API.
 - **Usuarios tenant**: CRUD API/UI entregado (`usuarios.md`).
 - **Catálogos**: medicamentos admin API/UI (`catalogos.md`); CIE/estudios = aviso.
+- **PWA**: manifest+SW; registro/aprobación de estaciones; caché de cola con antigüedad solo si aprobado; escrituras F1 (ingreso, triage, agenda, notas, receta) vía cola local.
 - Agenda: estados intermedios API; sin overlay `en_triage`/`llamando`; **reglas de bloqueo API**.
 - #75 (change-password + revoke-all) y matriz permisos tenant: **entregados** (API + UI).
 - `frontend/src/mocks/` eliminado; sesión en `types/session.ts`; UI residual de placeholders borrada.
 
 ## Backlog (cuando se reanude)
 
+- Más pantallas F1 a cola (alergias, historia, estados de encuentro)
+- SC-11 E2E PWA/offline contra stack real
 - `en_triage`/`llamando` reales (triage/monitor) o limpiar tipos UI
 - CIE-10 (versión doc 06), estudios F2, caja/CFDI/FHIR, servicios/tarifas
 - Fase 2: IVA (#7), libro farmacia (#60) — suelen requerir asesor/Reglamento

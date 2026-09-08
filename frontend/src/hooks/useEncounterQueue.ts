@@ -6,6 +6,7 @@ import {
 } from '@/api/encounters';
 import { listBranches, type BranchDto } from '@/api/branches';
 import { useAuth } from '@/hooks/useAuth';
+import { useDevice } from '@/hooks/DeviceProvider';
 import { esFallaDeEnlace } from '@/api/errors';
 import { resolveBranchId } from '@/utils/branchResolution';
 
@@ -17,13 +18,20 @@ import {
   subscribeLiveQueueStatus,
   type LiveQueueStatus,
 } from '@/sync/liveQueue';
+import {
+  encounterQueueCacheKey,
+  getClinicalCache,
+  putClinicalCache,
+} from '@/sync/clinicalReadCache';
 
 /**
  * Cola de urgencias desde API real (M4 + live M10).
  * Live = invalidación; la verdad sigue en API. Sin enlace: caché + antigüedad (SC-09).
+ * Caché solo en dispositivo aprobado con AllowsOfflineQueue (doc 13 §3.4).
  */
 export function useEncounterQueue(includeClosed = false) {
   const { sucursalActualId } = useAuth();
+  const { allowsClinicalCache } = useDevice();
   const [branches, setBranches] = useState<BranchDto[]>([]);
   const [queue, setQueue] = useState<EncounterQueueDto | null>(null);
   const [loading, setLoading] = useState(false);
@@ -59,12 +67,21 @@ export function useEncounterQueue(includeClosed = false) {
     }
     setLoading(true);
     setError(null);
+    const cacheKey = encounterQueueCacheKey(branchId, includeClosed);
     const res = await listEncounterQueue(branchId, includeClosed);
     setLoading(false);
     if (!res.success || !res.data) {
       const enlace = esFallaDeEnlace(res.failure);
       setError(res.message ?? 'No se pudo cargar la cola de urgencias.');
-      if (enlace) {
+      if (enlace && allowsClinicalCache) {
+        const cached = await getClinicalCache<EncounterQueueDto>(cacheKey);
+        if (cached) {
+          setQueue(cached.data);
+          setFetchedAt(cached.fetchedAt);
+          setFromCache(true);
+          setError(null);
+          return;
+        }
         setFromCache(true);
       }
       return;
@@ -72,13 +89,15 @@ export function useEncounterQueue(includeClosed = false) {
     setQueue(res.data);
     setFetchedAt(new Date());
     setFromCache(false);
-  }, [branchId, includeClosed]);
+    if (allowsClinicalCache) {
+      void putClinicalCache(cacheKey, res.data);
+    }
+  }, [allowsClinicalCache, branchId, includeClosed]);
 
   useEffect(() => {
     void refresh();
   }, [refresh]);
 
-  // Polling de respaldo: más lento si hay live; más frecuente sin empuje.
   useEffect(() => {
     const ms = liveStatus === 'conectado' ? 60_000 : 30_000;
     const id = window.setInterval(() => void refresh(), ms);
@@ -103,7 +122,6 @@ export function useEncounterQueue(includeClosed = false) {
     setFromCache(false);
   }, []);
 
-  // ageTick fuerza recálculo del texto de antigüedad mientras hay caché.
   const cacheAgeLabel =
     ageTick >= 0 && (fromCache || liveStatus === 'sin_enlace')
       ? formatCacheAge(fetchedAt)

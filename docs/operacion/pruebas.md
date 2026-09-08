@@ -92,6 +92,7 @@ Lo que hoy existe (medido el **2026-08-29**, puerta **M12 parcial**):
 - Contratos HTTP: [`auth-sesiones.md`](auth-sesiones.md), [`establecimiento.md`](establecimiento.md), [`encuentros.md`](encuentros.md),
   [`agenda.md`](agenda.md), [`triage.md`](triage.md), [`expediente.md`](expediente.md),
   [`notas.md`](notas.md), [`recetas.md`](recetas.md), [`catalogos.md`](catalogos.md), [`profesionales.md`](profesionales.md),
+  [`pwa-dispositivos.md`](pwa-dispositivos.md),
   [`live-cola.md`](live-cola.md).
 - Pantallas clínicas (`pacientes`, `urgencias`, `triage`, `agenda`, `dashboard` operativo API,
   `consultas`/notas/receta con listado y cancelación en episodio, `recetas` con cancelación en detalle,

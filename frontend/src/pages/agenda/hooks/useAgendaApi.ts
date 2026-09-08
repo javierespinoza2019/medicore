@@ -1,10 +1,9 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useAuth } from '@/hooks/useAuth';
+import { useDevice } from '@/hooks/DeviceProvider';
 import { listBranches, type BranchDto } from '@/api/branches';
 import { searchSubjects, type SubjectListItemDto } from '@/api/subjects';
 import {
-  changeAppointmentState,
-  createAppointment,
   listAppointments,
   listConsultingRooms,
   rescheduleAppointment,
@@ -15,6 +14,7 @@ import {
 import { listScheduleBlocks } from '@/api/scheduleBlocks';
 import { listProfessionals, type ProfessionalDto } from '@/api/professionals';
 import { resolveBranchId } from '@/utils/branchResolution';
+import { runClinicalOutboxCommand, isClinicalOutboxErr } from '@/sync/runClinicalOutboxCommand';
 import { computeAgendaRange } from '@/pages/agenda/agendaDateUtils';
 import {
   dtoToAgendaAppointment,
@@ -35,6 +35,7 @@ export function useAgendaApi(
   currentMonth: number,
 ) {
   const { user, sucursalActualId } = useAuth();
+  const { allowsClinicalCache, isPendingApproval } = useDevice();
   const isDoctor = user?.rol === 'medico';
   const myDoctorId = user?.doctorId?.trim() || null;
   const failClosed = isDoctor && !myDoctorId;
@@ -168,15 +169,50 @@ export function useAgendaApi(
         scheduledEndUtc: end.toISOString(),
         notes: input.motivo.trim() || null,
       };
-      const res = await createAppointment(body);
-      if (!res.success || !res.data) {
-        setError(res.message ?? 'No se pudo agendar la cita.');
+      const out = await runClinicalOutboxCommand('appointment.create', body, {
+        allowsOfflineQueue: allowsClinicalCache,
+        isPendingApproval,
+      });
+      if (isClinicalOutboxErr(out)) {
+        setError(out.error);
         return null;
       }
+      if (out.queued) {
+        setError(null);
+        await reload();
+        // Provisional local: sin DTO de servidor; la UI se alinea al sincronizar.
+        const prof = professionals.find(
+          (p) => p.healthcareProfessionalId.toLowerCase() === input.professionalId.toLowerCase(),
+        );
+        return {
+          id: out.command.id,
+          sucursalId: branchId,
+          patientId: input.subjectId,
+          patientName: 'En cola (sin enlace)',
+          doctorId: input.professionalId,
+          doctorName: prof?.fullName ?? '',
+          especialidad: prof?.specialtyName ?? '',
+          fecha: input.fecha,
+          horaInicio: input.horaInicio,
+          horaFin: input.horaFin,
+          estado: 'reservada',
+          motivo: input.motivo,
+          consultorio: '',
+          roomId: input.roomId,
+        };
+      }
       await reload();
-      return dtoToAgendaAppointment(res.data, professionals);
+      const list = await listAppointments({
+        branchId,
+        from: start.toISOString(),
+        to: end.toISOString(),
+        professionalId: input.professionalId,
+      });
+      const created = list.data?.find((a) => a.appointmentId === out.serverEntityId);
+      if (created) return dtoToAgendaAppointment(created, professionals);
+      return null;
     },
-    [branchId, professionals, reload],
+    [allowsClinicalCache, branchId, isPendingApproval, professionals, reload],
   );
 
   const changeStatus = useCallback(
@@ -186,18 +222,26 @@ export function useAgendaApi(
         setError('Ese estado de agenda aún no se persiste en el servidor.');
         return false;
       }
-      const res = await changeAppointmentState(appointmentId, {
-        toState: apiState,
-        reason: reason ?? null,
-      });
-      if (!res.success) {
-        setError(res.message ?? 'No se pudo cambiar el estado.');
+      const out = await runClinicalOutboxCommand(
+        'appointment.state',
+        {
+          appointmentId,
+          toState: apiState,
+          reason: reason ?? null,
+        },
+        { allowsOfflineQueue: allowsClinicalCache, isPendingApproval },
+      );
+      if (isClinicalOutboxErr(out)) {
+        setError(out.error);
         return false;
+      }
+      if (out.queued) {
+        setError(null);
       }
       await reload();
       return true;
     },
-    [reload],
+    [allowsClinicalCache, isPendingApproval, reload],
   );
 
   const moveAppointment = useCallback(

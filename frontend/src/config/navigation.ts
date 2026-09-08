@@ -111,6 +111,7 @@ export const navigationItems: NavItem[] = [
       { key: 'sucursales', label: 'Sucursales', icon: 'ri-building-line', path: '/app/administracion/sucursales', subtitle: 'Sucursales y consultorios' },
       { key: 'servicios', label: 'Servicios', icon: 'ri-price-tag-3-line', path: '/app/administracion/servicios', subtitle: 'Catálogo de servicios y tarifas' },
       { key: 'catalogos', label: 'Catálogos', icon: 'ri-book-open-line', path: '/app/administracion/catalogos', subtitle: 'Medicamentos, CIE-10 y estudios' },
+      { key: 'dispositivos', label: 'Dispositivos', icon: 'ri-smartphone-line', path: '/app/administracion/dispositivos', subtitle: 'Estaciones PWA y cola offline' },
     ],
   },
   {

@@ -30,6 +30,7 @@ const AdminEspecialidades = lazy(() => import("@/pages/administracion/especialid
 const AdminSucursales = lazy(() => import("@/pages/administracion/sucursales/page"));
 const AdminServicios = lazy(() => import("@/pages/administracion/servicios/page"));
 const AdminCatalogos = lazy(() => import("@/pages/administracion/catalogos/page"));
+const AdminDispositivos = lazy(() => import("@/pages/administracion/dispositivos/page"));
 const SeguridadRoles = lazy(() => import("@/pages/seguridad/roles/page"));
 const SeguridadAuditoria = lazy(() => import("@/pages/seguridad/auditoria/page"));
 const MonitorTurnos = lazy(() => import("@/pages/monitor-turnos/page"));
@@ -150,6 +151,10 @@ const routes: RouteObject[] = [
   {
     path: "/app/administracion/catalogos",
     element: <EnApp><AdminCatalogos /></EnApp>,
+  },
+  {
+    path: "/app/administracion/dispositivos",
+    element: <EnApp><AdminDispositivos /></EnApp>,
   },
   {
     path: "/app/seguridad/roles",

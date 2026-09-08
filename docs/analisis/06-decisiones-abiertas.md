@@ -8,6 +8,12 @@ Este documento contiene todo lo que **no** se dio por resuelto. Nada de esto fue
 
 ## Decisiones ya ratificadas por el cliente
 
+### Oleada 2026-09-08 (reinicio demo Clínicas del Valle)
+
+| # | Tema | Resolución |
+|---|---|---|
+| — | **Reinicio excepcional de BD demo** | Autorizado **solo** vía `tools/reset-and-bootstrap-clinicas-del-valle.ps1 -IAuthorizeDestructiveReset` + confirmación interactiva `BORRAR`. Ejecuta `backend/database/ops/ops_wipe_business_data.sql` (`DELETE` de filas de negocio; **sin** `DROP`/`TRUNCATE` de objetos) y siembra tenant `clinicas_del_valle` (seed `010_provision_*`). **Prohibido** contra Production con PHI. No relaja la regla cotidiana de AGENTS.md; es excepción operativa de demo/shared. |
+
 ### Oleada 2026-09-02 (fotografía del paciente)
 
 | # | Tema | Resolución |

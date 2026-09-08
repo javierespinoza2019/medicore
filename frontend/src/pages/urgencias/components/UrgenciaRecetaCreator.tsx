@@ -9,14 +9,15 @@ import {
 } from '@/api/clinicalRecord';
 import {
   searchMedications,
-  createPrescription,
-  signPrescription,
+  getPrescription,
   CONTROLLED_BLOCKED_MESSAGE,
   type MedicationDto,
   type PrescriptionDto,
   type FrequencyKind,
 } from '@/api/prescriptions';
 import { mensajeDeFalla } from '@/api/errors';
+import { useDevice } from '@/hooks/DeviceProvider';
+import { runClinicalOutboxCommand, isClinicalOutboxErr } from '@/sync/runClinicalOutboxCommand';
 
 function failMsg(res: { message?: string; failure?: import('@/api/errors').ApiFailure }): string {
   if (res.failure?.apiMessage?.trim()) return res.failure.apiMessage;
@@ -68,6 +69,8 @@ export default function UrgenciaRecetaCreator({
   onCreated,
   onCancel,
 }: Props) {
+  const { allowsClinicalCache, isPendingApproval } = useDevice();
+  const gate = { allowsOfflineQueue: allowsClinicalCache, isPendingApproval };
   const [record, setRecord] = useState<ClinicalRecordDto | null>(null);
   const [allergyChoice, setAllergyChoice] = useState<AllergyStatusCode>('niega');
   const [captureEventId, setCaptureEventId] = useState<string | null>(null);
@@ -186,7 +189,8 @@ export default function UrgenciaRecetaCreator({
     setError(null);
     const prioridadNota = `Prioridad urgencias: ${prioridad}.`;
     const generales = [prioridadNota, generalInstructions.trim()].filter(Boolean).join(' ');
-    const created = await createPrescription(encounterId, {
+    const createPayload = {
+      encounterId,
       allergyStatusCaptureEventId: captureEventId,
       allergyOverrideJustification: overrideJustification.trim() || null,
       generalInstructions: generales || null,
@@ -200,18 +204,35 @@ export default function UrgenciaRecetaCreator({
         refillsAllowed: 0,
         instructions: d.instructions || null,
       })),
-    });
-    if (!created.success || !created.data) {
-      setError(failMsg(created));
+    };
+    const created = await runClinicalOutboxCommand('prescription.create', createPayload, gate);
+    if (isClinicalOutboxErr(created)) {
+      setError(created.error);
       setSaving(false);
       return;
     }
-    const signed = await signPrescription(created.data.prescriptionId);
-    const finalRx = signed.data ?? created.data;
-    if (!signed.success && !signed.data) {
-      setError(failMsg(signed));
+    if (created.queued || !created.serverEntityId) {
+      setError(
+        'Receta en cola local (borrador). Al recuperar enlace se creará; fírmela después desde la lista.',
+      );
+      setDraftItems([]);
+      setSaving(false);
+      return;
     }
-    onCreated(finalRx);
+    const signed = await runClinicalOutboxCommand(
+      'prescription.sign',
+      { prescriptionId: created.serverEntityId, contentHash: null },
+      gate,
+    );
+    const finalRx = await getPrescription(created.serverEntityId);
+    if (isClinicalOutboxErr(signed)) {
+      setError(signed.error || 'No se pudo confirmar la receta.');
+    } else if (signed.queued) {
+      setError('Firma en cola local. Se aplicará al sincronizar.');
+    }
+    if (finalRx.success && finalRx.data) {
+      onCreated(finalRx.data);
+    }
     setSaving(false);
   };
 
