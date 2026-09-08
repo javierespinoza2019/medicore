@@ -74,17 +74,18 @@ export default defineConfig(({ mode }) => {
       registerType: "autoUpdate",
       includeAssets: ["favicon.ico", "pwa-192.png", "pwa-512.png"],
       manifest: {
-        name: "MediCore — Gestión Clínica",
+        name: "MediCore",
         short_name: "MediCore",
         description:
-          "Plataforma clínica ambulatoria y urgencias. Continuidad de la atención con cola local.",
+          "Tu estación clínica: urgencias, consulta y expediente. Sigue capturando aunque falle el internet.",
         start_url: "/",
         scope: "/",
         display: "standalone",
         orientation: "any",
-        background_color: "#0f172a",
+        background_color: "#000000",
         theme_color: "#2563eb",
         lang: "es-MX",
+        categories: ["medical", "health", "productivity"],
         icons: [
           { src: "pwa-192.png", sizes: "192x192", type: "image/png", purpose: "any" },
           { src: "pwa-512.png", sizes: "512x512", type: "image/png", purpose: "any" },

@@ -8,6 +8,8 @@ export interface NavItem {
   subtitle?: string;
   children?: NavItem[];
   badge?: number;
+  /** Si true, no aparece en el menú lateral (la ruta puede seguir existiendo). */
+  hiddenInNav?: boolean;
 }
 
 export const navigationItems: NavItem[] = [
@@ -24,6 +26,8 @@ export const navigationItems: NavItem[] = [
     icon: 'ri-bar-chart-2-line',
     path: '/app/reportes',
     subtitle: 'Indicadores operativos, clínicos y financieros',
+    // BI = módulo futuro (doc 12 §5); placeholder no se ofrece en menú principal.
+    hiddenInNav: true,
   },
   {
     key: 'operacion',

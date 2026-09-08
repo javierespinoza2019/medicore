@@ -70,6 +70,9 @@ casi siempre faltan en el panel del sitio las variables `ConnectionStrings__Medi
 `ASPNETCORE_ENVIRONMENT` no coincide con el `appsettings` publicado. Revisar el log de
 stdout/stderr del Application Pool; no es un fallo de red del frontend.
 
+SPA en IIS: la raíz de `medi-core.app` debe incluir `web.config` (fallback a `index.html`).
+Sin eso, F5 en `/app/...` responde 404 de IIS. Detalle: [`pwa-dispositivos.md`](pwa-dispositivos.md).
+
 ## Validaciones del perfil `Platform`
 
 `PlatformOptions.Validate()` rechaza combinaciones contradictorias:

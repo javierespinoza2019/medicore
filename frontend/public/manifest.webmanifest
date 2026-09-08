@@ -1,14 +1,15 @@
 {
-  "name": "MediCore — Gestión Clínica",
+  "name": "MediCore",
   "short_name": "MediCore",
-  "description": "Plataforma clínica ambulatoria y urgencias. Continuidad de la atención con cola local.",
+  "description": "Tu estación clínica: urgencias, consulta y expediente. Sigue capturando aunque falle el internet.",
   "start_url": "/",
   "scope": "/",
   "display": "standalone",
   "orientation": "any",
-  "background_color": "#0f172a",
+  "background_color": "#000000",
   "theme_color": "#2563eb",
   "lang": "es-MX",
+  "categories": ["medical", "health", "productivity"],
   "icons": [
     {
       "src": "/pwa-192.png",

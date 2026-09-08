@@ -29,10 +29,18 @@ SPs: `sp_Device_UpsertPending`, `GetByPublicId`, `List`, `Approve`.
 
 ```powershell
 cd frontend
-npm run build   # sale a frontend/out/ con manifest + SW
+npm run build   # sale a frontend/out/ con manifest + SW + web.config
 ```
 
 Variables: `VITE_API_BASE_URL`, `VITE_TENANT_CODE` (provisional por build).
+
+**IIS (Site4Now):** el `web.config` en la raíz del sitio reescribe rutas `/app/...` a `index.html`.
+Sin URL Rewrite + ese archivo, **F5 en cualquier sección → 404**. Subir siempre el `web.config`
+junto con `out/` (Vite lo copia desde `public/`).
+
+Iconos PWA / favicon: salen de `src/assets/images/logo.png` (fuente del favicon original) vía
+`python frontend/tools/generate-pwa-icons.py` → `public/pwa-192.png`, `pwa-512.png`, `favicon.ico`.
+Variantes: `logo-blue.jpeg`, `logo-dark.jpeg`; wordmark: `medicore.jpeg`.
 
 ## Guion de prueba en medi-core.app
 

@@ -31,10 +31,11 @@ function filterNavByRole(
 ): NavItem[] {
   if (!role) return [];
   return items
+    .filter((item) => !item.hiddenInNav)
     .map((item) => {
       if (item.children && item.children.length > 0) {
-        const filteredChildren = item.children.filter((child) =>
-          canAccessRoute(role, child.path, sessionPermissions)
+        const filteredChildren = item.children.filter(
+          (child) => !child.hiddenInNav && canAccessRoute(role, child.path, sessionPermissions),
         );
         if (filteredChildren.length === 0) return null;
         return { ...item, children: filteredChildren };

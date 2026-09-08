@@ -248,7 +248,12 @@ export default function AdminUsuarios() {
             Alta y edición de cuentas del tenant. Permisos por rol en Seguridad → Roles.
           </p>
         </div>
-        <Button variant="primary" icon="ri-user-add-line" onClick={openCreate} data-testid="usuarios-nuevo">
+        <Button
+          variant="primary"
+          icon={<i className="ri-user-add-line" aria-hidden />}
+          onClick={openCreate}
+          data-testid="usuarios-nuevo"
+        >
           Nuevo usuario
         </Button>
       </div>
