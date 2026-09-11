@@ -35,9 +35,26 @@ Sin fila en `TenantRolePermissionConfig` → se usan los defaults de plantilla (
 
 Login, refresh y `GET /api/auth/me` devuelven `permissions` efectivos del tenant; el front los usa en `PermissionGate` (sustituyen `rolePermissions` estático cuando el servidor los envía).
 
+## Frontend
+
+`frontend/src/pages/seguridad/roles/page.tsx` — cards estilo Readdy (stats, cobertura, preview
+de matriz, modal de edición). **Nuevo / Duplicar / Eliminar** deshabilitados (plantillas
+cerradas §19). Catálogo de permisos = API, no el mock granular del prototipo.
+
 ## Auditoría
 
-Consulta de bitácora (`GET /api/audit/*`) sigue restringida a `admin` + SuperAdmin hasta fase posterior, independiente de la matriz.
+Consulta: permiso efectivo `canVerAuditoria` (ver [`auditoria.md`](auditoria.md)). Doc 06 §19
+hablaba de admin+SuperAdmin; la matriz puede conceder el bit a otras plantillas.
+
+## Búsqueda por descripción (SC-23)
+
+AuthZ efectiva (`EffectivePermissionAccess.CanSearchSubjectByDescription`):
+
+- **Sí:** SuperAdmin, `canAdminUsers` (admin/directivo), o `canEditPatient` **sin**
+  `canCreateConsulta`/`canEditConsulta` (recepción / trabajo social).
+- **No:** médico (u otros con consulta clínica), aunque tengan `canEditPatient`.
+
+Alineado a `SubjectAccess` (org vs sucursal). Doc 06 §48 sigue abierto para rol definitivo.
 
 ## Break-glass (#23)
 

@@ -26,6 +26,7 @@ public interface ITenantUserRepository
         Guid userId,
         string displayName,
         bool isActive,
+        DateTime? lockoutUntilUtc,
         string? roleCodesCsv,
         string? branchIdsCsv,
         Guid? actorUserId,
@@ -109,6 +110,7 @@ public sealed class TenantUserRepository(ISqlConnectionFactory connectionFactory
         Guid userId,
         string displayName,
         bool isActive,
+        DateTime? lockoutUntilUtc,
         string? roleCodesCsv,
         string? branchIdsCsv,
         Guid? actorUserId,
@@ -125,6 +127,7 @@ public sealed class TenantUserRepository(ISqlConnectionFactory connectionFactory
                     UserId = userId,
                     DisplayName = displayName,
                     IsActive = isActive,
+                    LockoutUntilUtc = lockoutUntilUtc,
                     RoleCodesCsv = roleCodesCsv,
                     BranchIdsCsv = branchIdsCsv,
                     ActorUserId = actorUserId

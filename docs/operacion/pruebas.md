@@ -7,6 +7,13 @@ Principio: **cada módulo que se implementa deja sus pruebas en el mismo cambio.
 final de «escribir las pruebas»; lo que existe al final es la suma de lo que cada módulo dejó, y
 esa suma se corre de una sola vez con `tools/run-all-tests.ps1`.
 
+**Ciclo de calidad (plan por módulos, enrich + seguridad automatizable):**  
+[`plan-pruebas-ciclo-calidad.md`](plan-pruebas-ciclo-calidad.md) (2026-09-10).
+
+**QA guiado (overlay en vivo, perfil aparte):** `tools/run-guided-qa.ps1` — ciclo Smoke
+`CP-MC-SMOKE` 1/6 con barra inyectada por Playwright (no en el bundle del producto).
+No sustituye la suite de regresión; veredicto = mismos expects. Ver §QA guiado abajo.
+
 ## Niveles
 
 | Nivel | Dónde vive | Para qué sirve | Necesita BD |
@@ -70,7 +77,11 @@ Lo que hoy existe (medido el **2026-08-29**, puerta **M12 parcial**):
   `05-agenda/agenda-ui` (calendario rico + wizard nueva cita + upsert consultorios con especialidad/médicos API; sin carpeta `src/mocks`; sin overlay `en_triage`/`llamando`; reglas de bloqueo API),
   `00-smoke/api-schedule-blocks` (contrato: upsert/list/409/baja lógica),
   `05-farmacia/farmacia-ui` (chromium: placeholder honesto sin mocks de surtido/inventario),
-  rutas caja/facturación/FHIR/reportes/servicios/normatividad vía `ModulePlaceholder`
+  rutas FHIR/reportes vía `ModulePlaceholder`; finanzas = placeholders honestos
+  (`finanzas.md`; caja/cortes/CFDI Fase 2); clínico = consultas/recetas API +
+  estudios/farmacia placeholders (`clinico.md`); pacientes/operación/dashboard =
+  API + honestidad (`pacientes.md`, `operacion.md`, `dashboard.md`); normatividad = plantillas
+  honestas + placeholders (`normatividad.md`; profesionales lee API),
   (deep-links de `permisos-por-rol-ui` OK; no inventan datos; usuarios + catálogo medicamentos = API),
   `00-smoke/api-medications-admin` (upsert/list admin/desactivar),
   `10-admin/profesionales-especialidades-ui` (chromium: listar/alta/edición/baja lógica
@@ -79,9 +90,11 @@ Lo que hoy existe (medido el **2026-08-29**, puerta **M12 parcial**):
   `08-multi-tenant` (bravo), `09-offline` (ULID + sync + SC-11 IndexedDB), `07-accesibilidad`
   (teclado login + axe login WCAG AA), `00-smoke/dashboard-ui` (panel operativo API, sin KPIs mock).
   Caja offline: skip Fase 2.
-- `tests/e2e`, proyecto `chromium`: login, dos estaciones, SC-19 estación offline, `sc-ui`,
+- `tests/e2e`, proyecto `chromium` (corre **después** de `contrato-api` para no cruzar
+  logout/revoke con UI): login, dos estaciones, SC-19 estación offline, `sc-ui`,
   SC-11 IndexedDB, teclado login, **dashboard-ui**, **flujo-consulta-ui**, **registro-ui**, **expediente-ui**,
   **farmacia-ui** (placeholder), **urgencias-receta-ui** (receta M8 + SC-04), **triage-print-ui**,
+  **monitor-turnos-ui** (#21 sin PHI), **sala-espera-ui** (honestidad urgencias),
   **agenda-ui**,
   **permisos-por-rol-ui**, **admin profesionales/especialidades**, **white-label**
   (`10-admin/white-label-ui`) cuando hay Vite.
@@ -144,11 +157,34 @@ formulario avance.
 
 Las unitarias y el `type-check`/`lint` no requieren nada de lo anterior salvo el SDK y `npm install`.
 
+## QA guiado (overlay)
+
+Perfil **aparte** de la regresión: muestra en vivo `k/N`, ID `CP-MC-*`, título, escenario y ✓/✗
+sobre la SPA. El overlay lo **inyecta Playwright** (`tests/e2e/fixtures/guided-overlay.ts`); no
+existe en `frontend/` ni en demo/prod.
+
+| | |
+|---|---|
+| Comando | `./tools/run-guided-qa.ps1` (`-Cycle smoke` \| `sc-rx` \| `urg` \| `off` \| `authz`; `-Headless`; `-SlowMo`) |
+| Ciclos | **Smoke** · **SC-RX** · **URG** · **OFF** · **AUTHZ** (`CP-MC-AUTHZ` matriz + UI + IDOR) |
+| Proyecto PW | `guided-qa` (solo si `MEDICORE_E2E_GUIDED=1`) |
+| Catálogos | `tests/e2e/guided/ciclos/*.ts` |
+| Specs | `tests/e2e/specs/guided/*.spec.ts` |
+
+`run-all-tests.ps1` **no** ejecuta este perfil (chromium ignora `specs/guided/`).
+
 ## Cómo se corre todo junto
 
 ```powershell
 # Suite completa en Dev
 ./tools/run-all-tests.ps1
+
+# QA guiado (headed, overlay) — requiere API + Vite
+./tools/run-guided-qa.ps1
+./tools/run-guided-qa.ps1 -Cycle sc-rx
+./tools/run-guided-qa.ps1 -Cycle urg
+./tools/run-guided-qa.ps1 -Cycle off
+./tools/run-guided-qa.ps1 -Cycle authz
 
 # Sin E2E (API no levantada, o en uso por alguien más)
 ./tools/run-all-tests.ps1 -Skip e2e
@@ -156,7 +192,7 @@ Las unitarias y el `type-check`/`lint` no requieren nada de lo anterior salvo el
 # Solo backend
 ./tools/run-all-tests.ps1 -Skip frontend,e2e
 
-# QA
+# QA ambiente
 ./tools/run-all-tests.ps1 -Environment qa
 ```
 

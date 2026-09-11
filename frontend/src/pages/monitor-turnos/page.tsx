@@ -284,23 +284,18 @@ export default function MonitorTurnos() {
           </div>
         </div>
 
-        {/* Publicidad (estática, sin PHI) */}
+        {/* Panel lateral: sin PHI; sin campañas inventadas del prototipo */}
         <aside className="flex w-[420px] flex-shrink-0 flex-col overflow-y-auto border-l border-secondary-200/70 bg-background-50">
           <div className="flex-shrink-0 p-5">
-            <div className="relative overflow-hidden rounded-2xl bg-primary-100">
-              <div className="flex h-52 items-center justify-center bg-gradient-to-br from-primary-200 to-primary-400">
-                <i className="ri-stethoscope-line text-6xl text-primary-700/40" aria-hidden />
+            <div className="relative overflow-hidden rounded-2xl border border-dashed border-secondary-300 bg-secondary-50">
+              <div className="flex h-40 items-center justify-center bg-gradient-to-br from-secondary-100 to-secondary-200">
+                <i className="ri-image-line text-5xl text-foreground-300" aria-hidden />
               </div>
-              <div className="absolute inset-0 bg-gradient-to-t from-primary-900/80 via-primary-900/20 to-transparent" />
-              <div className="absolute bottom-0 left-0 right-0 p-4">
-                <span className="mb-2 inline-block rounded-full bg-accent-500 px-3 py-1 text-sm font-bold text-white">
-                  PROMOCIÓN
-                </span>
-                <h3 className="text-lg font-bold leading-tight text-white">
-                  Consulta de control familiar
-                </h3>
-                <p className="mt-1 text-sm text-white/80">
-                  Examen físico y plan nutricional
+              <div className="p-4">
+                <p className="text-sm font-semibold text-foreground-800">Espacio del establecimiento</p>
+                <p className="mt-1 text-xs text-foreground-500">
+                  El prototipo mostraba promociones mock («control familiar»). Aquí no se inventan
+                  campañas; white-label de avisos pendientes.
                 </p>
               </div>
             </div>
@@ -309,18 +304,10 @@ export default function MonitorTurnos() {
           <div className="mx-5 border-t border-secondary-200/70" />
 
           <div className="flex-shrink-0 p-5">
-            <div className="rounded-2xl bg-secondary-100 p-5">
-              <div className="mb-4 flex items-center gap-4">
-                <div className="flex h-14 w-14 items-center justify-center rounded-full bg-foreground-900 text-background-50">
-                  <i className="ri-time-line text-2xl" aria-hidden />
-                </div>
-                <div>
-                  <h3 className="text-xl font-bold text-foreground-900">Servicio 24/7</h3>
-                  <p className="text-sm text-foreground-500">Emergencias y urgencias</p>
-                </div>
-              </div>
-              <p className="text-center text-sm text-foreground-500">
-                Disponibles todos los días del año
+            <div className="rounded-2xl border border-amber-200 bg-amber-50 p-5">
+              <p className="text-sm font-semibold text-amber-950">Privacidad en pantalla</p>
+              <p className="mt-2 text-xs text-amber-900">
+                Doc 06 #21: solo número de turno. Sin nombre ni otra PHI en esta vista pública.
               </p>
             </div>
           </div>
@@ -328,7 +315,7 @@ export default function MonitorTurnos() {
           <div className="mt-auto border-t border-secondary-200/70 p-5">
             <p className="text-center text-sm text-foreground-400">
               {branchName}
-              {branchPhone ? ` · Consultas: ${branchPhone}` : ''}
+              {branchPhone ? ` · ${branchPhone}` : ''}
             </p>
           </div>
         </aside>

@@ -43,9 +43,15 @@ alwaysApply: false
 
 ## UX
 
-- Conservar AppLayout, tokens OKLCH, densidad del prototipo.
+- Conservar AppLayout, tokens OKLCH, densidad del prototipo (`docs/frontend`).
+- **Alineación UI = layout Readdy + honestidad + API.** Leer el JSX del prototipo (header, ribbon,
+  toolbar, filas, empty, acciones). Campos sin contrato → disabled / «No capturado» / N/D; no
+  inventar datos ni marcar «alineado» solo porque hay endpoint. Corrección 2026-09-10 (pacientes,
+  auditoría): ver skill `medicore-maintain`.
+- Placeholders: `ModulePlaceholder` / módulos dedicados con `designNote` + CTA; sin CRUD mock.
 - No bloquear urgencias con diálogos de “error de red”; indicador pasivo de sync.
 - Assets locales (no CDN) para operación degradada.
+- Monitor (#21): solo número; sin promociones clínicas inventadas en pantalla pública.
 
 ## TypeScript
 

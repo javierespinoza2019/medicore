@@ -11,3 +11,9 @@ alwaysApply: false
 - Conservar IDs SC-01… en títulos/`test.skip` hasta implementar.
 - Offline: usar `context.setOffline` y multi-context (dos estaciones).
 - No borrar el mapa SC para “poner verde” la suite.
+- Plan de ciclo por módulos + enrich/seguridad automatizable:
+  `docs/operacion/plan-pruebas-ciclo-calidad.md` (oleadas O1–O5). Orquestador:
+  `tools/run-all-tests.ps1`.
+- Seguridad «pentest light»: IDOR/JWT/roles/tenant en specs; **prohibido** DoS, exploits contra
+  demo/prod pública, o `DELETE`/`TRUNCATE` de limpieza.
+- Placeholders (caja/CFDI/estudios/farmacia surtido): asertar honestidad, no flujo de negocio.

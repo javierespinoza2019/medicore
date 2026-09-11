@@ -33,6 +33,8 @@ La atención no se detiene. No bloquees ingreso a urgencias con CURP/nombre/pago
 - No afirmes cumplimiento NOM/LFPDPPP sin fuente oficial + fecha.
 - Preferir generalizar patrones buenos ya en código (`desconocido`, `null` en glucosa) antes de inventar modelos nuevos.
 - Español de México; cambios mínimos y enfocados a la tarea.
+- UI vs Readdy: layout (JSX prototipo) + honestidad + API; ver skill `medicore-maintain`.
+- Ciclo de calidad: `docs/operacion/plan-pruebas-ciclo-calidad.md`.
 
 ## Cierre de tarea
 

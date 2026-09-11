@@ -21,25 +21,8 @@ public sealed class ProfessionalService(IHealthcareProfessionalRepository reposi
         Guid tenantId, bool onlyActive, string? search, CancellationToken ct) =>
         repository.ListAsync(tenantId, onlyActive, search, ct);
 
-    public async Task<ProfessionalDto?> GetByIdAsync(Guid tenantId, Guid id, CancellationToken ct)
-    {
-        var row = await repository.GetByIdAsync(tenantId, id, ct);
-        if (row is null)
-            return null;
-        return new ProfessionalDto
-        {
-            HealthcareProfessionalId = row.HealthcareProfessionalId,
-            TenantId = row.TenantId,
-            UserId = row.UserId,
-            FullName = row.FullName,
-            ProfessionalLicense = row.ProfessionalLicense,
-            SpecialtyId = row.SpecialtyId,
-            SpecialtyName = row.SpecialtyName,
-            IsActive = row.IsActive,
-            CreatedAtUtc = row.CreatedAtUtc,
-            UpdatedAtUtc = row.UpdatedAtUtc
-        };
-    }
+    public Task<ProfessionalDto?> GetByIdAsync(Guid tenantId, Guid id, CancellationToken ct) =>
+        repository.GetDtoByIdAsync(tenantId, id, ct);
 
     public async Task<ProfessionalDto> CreateAsync(
         Guid tenantId, Guid actorUserId, CreateProfessionalRequest request, CancellationToken ct)
@@ -58,7 +41,8 @@ public sealed class ProfessionalService(IHealthcareProfessionalRepository reposi
             FullName = request.FullName.Trim(),
             ProfessionalLicense = NormalizeOptional(request.ProfessionalLicense),
             SpecialtyId = request.SpecialtyId,
-            IsActive = request.IsActive
+            IsActive = request.IsActive,
+            RoomId = request.RoomId
         };
 
         var created = await repository.CreateAsync(tenantId, id, actorUserId, normalized, ct)
@@ -76,6 +60,8 @@ public sealed class ProfessionalService(IHealthcareProfessionalRepository reposi
         var clearLicense = request.ClearProfessionalLicense
             || (request.ProfessionalLicense is not null && string.IsNullOrWhiteSpace(request.ProfessionalLicense));
 
+        // RoomId con valor → sincroniza consultorio principal.
+        // ClearRoomAssignments → limpia ligas. Null sin clear → no toca CRP.
         var normalized = new UpdateProfessionalRequest
         {
             UserId = request.UserId,
@@ -85,7 +71,9 @@ public sealed class ProfessionalService(IHealthcareProfessionalRepository reposi
             ClearProfessionalLicense = clearLicense,
             SpecialtyId = request.SpecialtyId,
             ClearSpecialtyId = request.ClearSpecialtyId,
-            IsActive = request.IsActive
+            IsActive = request.IsActive,
+            RoomId = request.ClearRoomAssignments ? null : request.RoomId,
+            ClearRoomAssignments = request.ClearRoomAssignments
         };
 
         return repository.UpdateAsync(tenantId, id, actorUserId, normalized, ct);

@@ -12,6 +12,20 @@ public sealed class ProfessionalDto
     public bool IsActive { get; set; }
     public DateTimeOffset CreatedAtUtc { get; set; }
     public DateTimeOffset? UpdatedAtUtc { get; set; }
+
+    /// <summary>UserName de la cuenta ligada (correo/acceso). Null si no hay liga.</summary>
+    public string? LinkedUserName { get; set; }
+    public string? LinkedUserDisplayName { get; set; }
+
+    /// <summary>Primer consultorio activo (orden CreatedAtUtc). UI Readdy = un consultorio.</summary>
+    public Guid? PrimaryRoomId { get; set; }
+    public Guid? PrimaryBranchId { get; set; }
+    public string? PrimaryBranchName { get; set; }
+    public string? PrimaryRoomLabel { get; set; }
+
+    /// <summary>Agregado de sucursales/consultorios vigentes (puede haber más de uno vía agenda).</summary>
+    public string? BranchNames { get; set; }
+    public string? RoomLabels { get; set; }
 }
 
 public sealed class CreateProfessionalRequest
@@ -22,6 +36,8 @@ public sealed class CreateProfessionalRequest
     public string? ProfessionalLicense { get; set; }
     public Guid? SpecialtyId { get; set; }
     public bool IsActive { get; set; } = true;
+    /// <summary>Consultorio principal (prototipo). Opcional.</summary>
+    public Guid? RoomId { get; set; }
 }
 
 public sealed class UpdateProfessionalRequest
@@ -34,6 +50,9 @@ public sealed class UpdateProfessionalRequest
     public Guid? SpecialtyId { get; set; }
     public bool ClearSpecialtyId { get; set; }
     public bool IsActive { get; set; } = true;
+    /// <summary>Si viene con valor, deja solo ese consultorio. Si null y ClearRoomAssignments, limpia.</summary>
+    public Guid? RoomId { get; set; }
+    public bool ClearRoomAssignments { get; set; }
 }
 
 public sealed class SpecialtyDto

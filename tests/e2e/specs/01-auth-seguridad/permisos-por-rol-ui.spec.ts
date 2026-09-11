@@ -1,5 +1,5 @@
-import { test, expect } from '@playwright/test';
-import { api } from '../../fixtures/api';
+import { test, expect, request as playwrightRequest } from '@playwright/test';
+import { api, autorizacion, idE2E, sesionValida } from '../../fixtures/api';
 import { entorno } from '../../fixtures/tenants';
 import {
   apiDisponible,
@@ -32,36 +32,63 @@ test.describe('01 — Auth / seguridad · permisos por rol (UI)', () => {
   test('recepción: sin Administración/Urgencias/Consultas/Caja; deep-links denegados → dashboard', async ({
     page,
   }) => {
-    await loginUi(page, {
-      userName: users.recepcion.email,
-      password: users.recepcion.password,
+    // Usuario efímero: jose.ramirez puede tener break-glass activo (60 min) en BD compartida.
+    const ctx = await playwrightRequest.newContext({ baseURL: api.url });
+    const admin = await sesionValida(ctx);
+    const headers = autorizacion(admin);
+    const stamp = idE2E('recv');
+    const ephemeralUserId = crypto.randomUUID();
+    const userName = `e2e.recv.${stamp}@medicore.mx`.slice(0, 128);
+    const password = 'RecvUi123!';
+    const branches = await ctx.get('/api/branches?onlyActive=true', { headers });
+    expect(branches.status(), await branches.text()).toBe(200);
+    const branchId = ((await branches.json()).data as Array<{ branchId: string }>)[0].branchId;
+    const create = await ctx.post('/api/users', {
+      headers,
+      data: {
+        userId: ephemeralUserId,
+        userName,
+        displayName: `E2E recv UI ${stamp}`,
+        password,
+        isActive: true,
+        roleCodes: ['recepcion'],
+        branchIds: [branchId],
+      },
     });
-    await expandirMenu(page);
+    expect(create.status(), await create.text()).toBe(200);
 
-    await expect(page.getByTestId(sel.nav.group('administracion'))).toHaveCount(0);
-    await expect(page.getByTestId(sel.nav.group('seguridad'))).toHaveCount(0);
-    await expect(page.getByTestId(sel.nav.group('clinico'))).toHaveCount(0);
-    await expect(page.getByTestId(sel.nav.item('usuarios'))).toHaveCount(0);
-    await expect(page.getByTestId(sel.nav.item('consultas'))).toHaveCount(0);
-    await expect(page.getByTestId(sel.nav.group('finanzas'))).toHaveCount(0);
-    await expect(page.getByTestId(sel.nav.item('caja'))).toHaveCount(0);
+    try {
+      await loginUi(page, { userName, password });
+      await expandirMenu(page);
 
-    await expect(page.getByTestId(sel.nav.group('operacion'))).toBeVisible();
-    await expandirGrupo(page, 'operacion');
-    await expect(page.getByTestId(sel.nav.item('triage'))).toBeVisible();
-    await expect(page.getByTestId(sel.nav.item('urgencias'))).toHaveCount(0);
+      await expect(page.getByTestId(sel.nav.group('administracion'))).toHaveCount(0);
+      await expect(page.getByTestId(sel.nav.group('seguridad'))).toHaveCount(0);
+      await expect(page.getByTestId(sel.nav.group('clinico'))).toHaveCount(0);
+      await expect(page.getByTestId(sel.nav.item('usuarios'))).toHaveCount(0);
+      await expect(page.getByTestId(sel.nav.item('consultas'))).toHaveCount(0);
+      await expect(page.getByTestId(sel.nav.group('finanzas'))).toHaveCount(0);
+      await expect(page.getByTestId(sel.nav.item('caja'))).toHaveCount(0);
 
-    await page.goto('/app/administracion/usuarios');
-    await expect(page).toHaveURL(sel.app.dashboardPath, { timeout: 10_000 });
+      await expect(page.getByTestId(sel.nav.group('operacion'))).toBeVisible();
+      await expandirGrupo(page, 'operacion');
+      await expect(page.getByTestId(sel.nav.item('triage'))).toBeVisible();
+      await expect(page.getByTestId(sel.nav.item('urgencias'))).toHaveCount(0);
 
-    await page.goto('/app/urgencias');
-    await expect(page).toHaveURL(sel.app.dashboardPath, { timeout: 10_000 });
+      await page.goto('/app/administracion/usuarios');
+      await expect(page).toHaveURL(sel.app.dashboardPath, { timeout: 10_000 });
 
-    await page.goto('/app/consultas');
-    await expect(page).toHaveURL(sel.app.dashboardPath, { timeout: 10_000 });
+      await page.goto('/app/urgencias');
+      await expect(page).toHaveURL(sel.app.dashboardPath, { timeout: 10_000 });
 
-    await page.goto('/app/caja');
-    await expect(page).toHaveURL(sel.app.dashboardPath, { timeout: 10_000 });
+      await page.goto('/app/consultas');
+      await expect(page).toHaveURL(sel.app.dashboardPath, { timeout: 10_000 });
+
+      await page.goto('/app/caja');
+      await expect(page).toHaveURL(sel.app.dashboardPath, { timeout: 10_000 });
+    } finally {
+      await ctx.delete(`/api/users/${ephemeralUserId}`, { headers });
+      await ctx.dispose();
+    }
   });
 
   test('admin: Administración/Usuarios y Seguridad visibles; deep-link permitido', async ({

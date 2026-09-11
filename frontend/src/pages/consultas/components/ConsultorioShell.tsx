@@ -57,7 +57,7 @@ export default function ConsultorioShell({
         <div>
           <h1 className="font-heading text-2xl font-bold text-foreground-900">Consultorio</h1>
           <p className="text-sm text-foreground-500">
-            Nota SOAP, historia clínica y receta contra API. Cierre de episodio en urgencias (SC-04).
+            Nota SOAP, historia y receta (API). Sin estudios/certificados inventados en este shell.
           </p>
         </div>
         <Button variant="secondary" size="sm" onClick={onBack}>

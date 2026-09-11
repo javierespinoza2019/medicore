@@ -16,6 +16,10 @@ public sealed class AuditEventDto
     public DateTimeOffset RecordedAtUtc { get; init; }
     public Guid? DeviceId { get; init; }
     public string? IpAddress { get; init; }
+
+    /// <summary>DisplayName del actor (join User). Null si el usuario ya no existe.</summary>
+    public string? ActorDisplayName { get; init; }
+    public string? ActorUserName { get; init; }
 }
 
 public sealed class AppendAuditEventCommand

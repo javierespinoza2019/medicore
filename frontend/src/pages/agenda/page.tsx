@@ -42,11 +42,11 @@ function getAppsByDate(appointments: AgendaAppointment[], date: string) {
 export default function Agenda() {
   const [searchParams, setSearchParams] = useSearchParams();
   const today = getTodayLocal();
-  const todayDate = new Date(`${today}T00:00:00`);
+  const todayDate = useMemo(() => new Date(`${today}T00:00:00`), [today]);
   const [view, setView] = useState<ViewMode>('day');
   const [selectedDate, setSelectedDate] = useState(today);
-  const [currentYear, setCurrentYear] = useState(todayDate.getFullYear());
-  const [currentMonth, setCurrentMonth] = useState(todayDate.getMonth());
+  const [currentYear, setCurrentYear] = useState(() => todayDate.getFullYear());
+  const [currentMonth, setCurrentMonth] = useState(() => todayDate.getMonth());
   const [defaultScheduleTime, setDefaultScheduleTime] = useState<string | undefined>(undefined);
   const [lockDateTime, setLockDateTime] = useState(false);
   const [defaultConsultorioId, setDefaultConsultorioId] = useState<string | undefined>(undefined);
@@ -330,7 +330,7 @@ export default function Agenda() {
         : formatDateSpanish(selectedDate);
 
   return (
-    <div className="flex flex-col min-h-0 p-4 md:p-6" data-testid="page-agenda">
+    <div className="flex flex-col min-h-0" data-testid="page-agenda">
       <div className="flex flex-wrap items-center justify-between gap-3 mb-2 shrink-0">
         <div>
           <h1 className="font-heading text-2xl font-bold text-foreground-900">Agenda</h1>
@@ -355,6 +355,12 @@ export default function Agenda() {
           corregir el perfil.
         </div>
       )}
+
+      <div className="mb-2 rounded-lg border border-secondary-200 bg-secondary-50/60 px-3 py-2 text-xs text-foreground-600 shrink-0">
+        Estados `en_triage` / `llamando` del prototipo <strong>no</strong> tienen contrato API: no se
+        simulan overlays. Escala de triage en citas = la efectiva del establecimiento (no 4 colores
+        fijos de producto).
+      </div>
 
       <div className="flex-1 flex flex-col min-h-0">
         {/* ── Compact Header ── */}

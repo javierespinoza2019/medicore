@@ -47,6 +47,14 @@ Aprovisionamiento de tenants: script manual (`seeds/003_provision_tenant.sql`), 
   `InstitucionalLogo` consume `GET` (sucursal actual → fallback tenant → icono). Sin sesión =
   icono por defecto.
 
+## UI Sucursales (alineación Readdy)
+
+- Tarjetas expandibles con consultorios anidados vía `GET/PUT /api/consulting-rooms`
+  (mismo contrato que agenda; ver [`agenda.md`](agenda.md)).
+- Correo / horario / días de operación y piso/tipo de consultorio: **no capturados** (sin
+  columna); visibles deshabilitados. No se inventa schema.
+- `FacilityType` / urgencias: se preservan; edición tipológica bloqueada hasta doc 06 L.
+
 ## Pruebas de contrato
 
 `tests/e2e/specs/00-smoke/api-branches.spec.ts` (proyecto Playwright `contrato-api`), incluye

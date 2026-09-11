@@ -13,6 +13,7 @@ public interface IHealthcareProfessionalRepository
 {
     Task<HealthcareProfessionalRow?> GetByUserAsync(Guid tenantId, Guid userId, CancellationToken ct);
     Task<HealthcareProfessionalRow?> GetByIdAsync(Guid tenantId, Guid healthcareProfessionalId, CancellationToken ct);
+    Task<ProfessionalDto?> GetDtoByIdAsync(Guid tenantId, Guid healthcareProfessionalId, CancellationToken ct);
     Task<IReadOnlyList<ProfessionalDto>> ListAsync(
         Guid tenantId, bool onlyActive, string? search, CancellationToken ct);
     Task<ProfessionalDto?> CreateAsync(
@@ -51,6 +52,18 @@ public sealed class HealthcareProfessionalRepository(ISqlConnectionFactory conne
         return await conn.QuerySingleOrDefaultAsync<HealthcareProfessionalRow>(cmd);
     }
 
+    public async Task<ProfessionalDto?> GetDtoByIdAsync(
+        Guid tenantId, Guid healthcareProfessionalId, CancellationToken ct)
+    {
+        using var conn = connectionFactory.Create();
+        var cmd = new CommandDefinition(
+            "sp_HealthcareProfessional_GetById",
+            new { TenantId = tenantId, HealthcareProfessionalId = healthcareProfessionalId },
+            commandType: CommandType.StoredProcedure,
+            cancellationToken: ct);
+        return await conn.QuerySingleOrDefaultAsync<ProfessionalDto>(cmd);
+    }
+
     public async Task<IReadOnlyList<ProfessionalDto>> ListAsync(
         Guid tenantId, bool onlyActive, string? search, CancellationToken ct)
     {
@@ -82,13 +95,14 @@ public sealed class HealthcareProfessionalRepository(ISqlConnectionFactory conne
                     request.ProfessionalLicense,
                     request.SpecialtyId,
                     request.IsActive,
+                    request.RoomId,
                     ActorUserId = actorUserId
                 },
                 commandType: CommandType.StoredProcedure,
                 cancellationToken: ct);
             return await conn.QuerySingleOrDefaultAsync<ProfessionalDto>(cmd);
         }
-        catch (SqlException ex) when (ex.Number is 50030 or 50031 or 50032 or 50033)
+        catch (SqlException ex) when (ex.Number is 50030 or 50031 or 50032 or 50033 or 50035)
         {
             throw new ArgumentException(ex.Message, ex);
         }
@@ -119,13 +133,15 @@ public sealed class HealthcareProfessionalRepository(ISqlConnectionFactory conne
                     request.SpecialtyId,
                     request.ClearSpecialtyId,
                     request.IsActive,
+                    request.RoomId,
+                    request.ClearRoomAssignments,
                     ActorUserId = actorUserId
                 },
                 commandType: CommandType.StoredProcedure,
                 cancellationToken: ct);
             return await conn.QuerySingleOrDefaultAsync<ProfessionalDto>(cmd);
         }
-        catch (SqlException ex) when (ex.Number is 50030 or 50031 or 50032 or 50033)
+        catch (SqlException ex) when (ex.Number is 50030 or 50031 or 50032 or 50033 or 50035)
         {
             throw new ArgumentException(ex.Message, ex);
         }

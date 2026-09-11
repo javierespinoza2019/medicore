@@ -28,14 +28,18 @@ export interface TestUser {
   toAuthPayload: () => Record<string, unknown>;
 }
 
-const PASSWORD = process.env.MEDICORE_E2E_PASSWORD?.trim() || 'Admin123!';
+/**
+ * Password de usuarios por rol (seed 002): Admin123!.
+ * Distinto de `admin`/`Demo123!` del tenant (api.fixtures / MEDICORE_E2E_PASSWORD).
+ */
+const ROLE_PASSWORD = process.env.MEDICORE_E2E_ROLE_PASSWORD?.trim() || 'Admin123!';
 
 function makeUser(
   partial: Omit<TestUser, 'password' | 'toAuthPayload' | 'status'> & { status?: TestUser['status'] },
 ): TestUser {
   const user: TestUser = {
     ...partial,
-    password: PASSWORD,
+    password: ROLE_PASSWORD,
     status: partial.status ?? 'activo',
     toAuthPayload() {
       return {
@@ -114,7 +118,10 @@ export const users = {
     rolLabel: 'Caja y Cobros',
     sucursalIds: ['suc1', 'suc2'],
   }),
-  /** Estación Equipo2 — recepción otra sucursal (multi-context offline). */
+  /**
+   * Recepción NORTE — break-glass / multi-estación.
+   * No usar jose.ramirez aquí: UI de permisos y agenda asumen rol base sin grants.
+   */
   recepcionNorte: makeUser({
     id: 'u-r2',
     email: 'veronica.salinas@medicore.mx',

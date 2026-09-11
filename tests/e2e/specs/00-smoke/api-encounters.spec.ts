@@ -59,7 +59,10 @@ test.describe('00 — Contrato API · encounters', () => {
     expect(body.success).toBe(true);
     expect(body.data.branchId.toLowerCase()).toBe(BRANCH_DEMO);
     expect(Array.isArray(body.data.items)).toBe(true);
-    expect(body.data.allUnclassified).toBe(true);
+    // BD compartida: puede haber turnos ya clasificados; el flag debe coincidir con los ítems.
+    const items = body.data.items as Array<{ triageLevel: string | null }>;
+    const expectedAllUnclassified = items.every((i) => !i.triageLevel);
+    expect(body.data.allUnclassified).toBe(expectedAllUnclassified);
   });
 
   test('POST state cerrado sin triage responde 409', async ({ apiCtx }) => {

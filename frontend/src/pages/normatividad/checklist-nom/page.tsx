@@ -103,12 +103,12 @@ export default function ChecklistNOM() {
   };
 
   return (
-    <div className="p-4 md:p-6 space-y-5">
+    <div className="space-y-5" data-testid="page-checklist-nom">
       <div className="flex items-center justify-between flex-wrap gap-3">
         <div>
           <h1 className="text-xl font-bold text-foreground-900 font-heading">Checklist NOM-005/NOM-016</h1>
           <p className="text-sm text-foreground-500 mt-1">
-            Infraestructura, equipamiento y documentación por establecimiento
+            Ayuda operativa por sucursal (estados solo en esta sesión)
           </p>
         </div>
         <div className="flex items-center gap-2">
@@ -130,6 +130,12 @@ export default function ChecklistNOM() {
             Imprimir checklist
           </Button>
         </div>
+      </div>
+
+      <div className="rounded-lg border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-950">
+        Plantilla de referencia interna. Cambios de estado <strong>no persisten</strong> en API.
+        El % y los avisos de esta pantalla <strong>no certifican</strong> cumplimiento ante
+        COFEPRIS; las NOM citadas deben verificarse con fuente oficial vigente.
       </div>
 
       {/* Selector de sucursal */}
@@ -175,7 +181,8 @@ export default function ChecklistNOM() {
           <div className="mt-3 p-2.5 rounded-lg bg-red-50 border border-red-200">
             <p className="text-xs text-red-700 flex items-center gap-1.5">
               <i className="ri-error-warning-line"></i>
-              <strong>{stats.noCumple} requisito{stats.noCumple > 1 ? 's' : ''} no cumple{stats.noCumple > 1 ? 'n' : ''}</strong> — pueden representar incumplimiento ante una inspección de COFEPRIS.
+              <strong>{stats.noCumple} ítem{stats.noCumple > 1 ? 's' : ''} marcado{stats.noCumple > 1 ? 's' : ''} como «No cumple»</strong>
+              {' '}— revisar con el responsable sanitario del establecimiento (no es dictamen de inspección).
             </p>
           </div>
         )}

@@ -26,6 +26,7 @@ description: >-
 7. Prescribir/surtir estupefacientes: **fuera de alcance**; debe **impedirse** (doc 06 §64/68).
 8. Hardcodear escala de triage de **4 colores** (rojo/naranja/amarillo/verde) como escala de producto (doc 06 §63). Usar escala efectiva (API/config).
 9. Mostrar nombre/PHI en el **monitor de turnos** por omisión (doc 06 #21: solo número).
+10. Inventar promociones/campañas clínicas en el monitor u otras pantallas públicas.
 
 ## Identidad
 
@@ -58,3 +59,4 @@ description: >-
 ## Al revisar un PR clínico
 
 Verificar SC relevantes o dejar `test.skip` con ID hasta que exista API, pero no borrar el caso del mapa E2E.
+Mapa + plan de ejecución: `docs/operacion/pruebas.md`, `docs/operacion/plan-pruebas-ciclo-calidad.md`.

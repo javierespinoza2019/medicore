@@ -103,8 +103,19 @@ public static class EffectivePermissionAccess
     public static bool CanVerifyOrRectifySubject(bool isSuperAdmin, IReadOnlyDictionary<string, bool> permissions) =>
         isSuperAdmin || HasAny(permissions, "canDeletePatient", "canAdminUsers");
 
-    public static bool CanSearchSubjectByDescription(bool isSuperAdmin, IReadOnlyDictionary<string, bool> permissions) =>
-        isSuperAdmin || HasAny(permissions, "canEditPatient", "canAdminUsers");
+    /// <summary>
+    /// SC-23 / SubjectAccess: org = admin (canAdminUsers); sucursal = recepción/trabajo_social
+    /// (canEditPatient sin permisos de consulta clínica). Médico NO (tenía fuga vía canEditPatient).
+    /// </summary>
+    public static bool CanSearchSubjectByDescription(bool isSuperAdmin, IReadOnlyDictionary<string, bool> permissions)
+    {
+        if (isSuperAdmin || Has(permissions, "canAdminUsers"))
+            return true;
+
+        // Plantillas recepción / trabajo_social: editan paciente sin crear/editar consulta.
+        return Has(permissions, "canEditPatient")
+            && !HasAny(permissions, "canCreateConsulta", "canEditConsulta");
+    }
 
     public static bool CanReadTriage(bool isSuperAdmin, IReadOnlyDictionary<string, bool> permissions) =>
         isSuperAdmin || HasAny(permissions,

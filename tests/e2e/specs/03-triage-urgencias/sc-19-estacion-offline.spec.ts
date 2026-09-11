@@ -59,6 +59,46 @@ async function loginAdminUi(page: import('@playwright/test').Page) {
   await expect(page.getByRole('button', { name: /Central/i })).toBeVisible({ timeout: 10_000 });
 }
 
+/** Cola offline exige estación aprobada; sin eso el modal de ingreso falla al cortar el Core. */
+async function asegurarEstacionConColaOffline(page: import('@playwright/test').Page) {
+  const devicePublicId = await page.evaluate(() => {
+    const key = 'medicore_device_public_id';
+    let id = localStorage.getItem(key);
+    if (!id) {
+      id = crypto.randomUUID();
+      localStorage.setItem(key, id);
+    }
+    return id;
+  });
+  const ctx = await contextoLimpio();
+  try {
+    const login = await ctx.post('/api/auth/login', {
+      data: { tenantCode: 'demo', userName: 'admin', password: 'Demo123!' },
+    });
+    expect(login.status()).toBe(200);
+    const token = (await login.json()).data.accessToken as string;
+    const headers = { Authorization: `Bearer ${token}` };
+    await ctx.post('/api/devices/register', {
+      headers,
+      data: { devicePublicId, displayName: 'E2E SC-19 estación' },
+    });
+    const approve = await ctx.post(`/api/devices/${encodeURIComponent(devicePublicId)}/approve`, {
+      headers,
+      data: { allowsOfflineQueue: true },
+    });
+    expect(approve.status(), await approve.text()).toBe(200);
+  } finally {
+    await ctx.dispose();
+  }
+  await page.reload();
+  // Si un worker paralelo revocó sesiones de `admin`, re-autenticar.
+  if (page.url().includes('/login') || (await page.getByRole('heading', { name: /Iniciar Ses/i }).isVisible().catch(() => false))) {
+    await loginAdminUi(page);
+  } else {
+    await page.waitForURL(/\/app\//, { timeout: 20_000 });
+  }
+}
+
 test.describe('03 — Triage urgencias · SC-19 estación offline (Core caído)', () => {
   test.beforeEach(async () => {
     const upUi = await servidorDisponible(entorno.baseURL);
@@ -76,10 +116,15 @@ test.describe('03 — Triage urgencias · SC-19 estación offline (Core caído)'
     test.setTimeout(90_000);
 
     await loginAdminUi(page);
+    await asegurarEstacionConColaOffline(page);
     await page.goto(sel.urgencias.path);
+    if (await page.getByRole('heading', { name: /Iniciar Ses/i }).isVisible().catch(() => false)) {
+      await loginAdminUi(page);
+      await page.goto(sel.urgencias.path);
+    }
     await expect(page.getByTestId('page-urgencias')).toBeVisible({ timeout: 15_000 });
     // Precarga online: el botón de ingreso existe antes de la contingencia.
-    await expect(page.getByTestId('btn-nuevo-ingreso')).toBeVisible();
+    await expect(page.getByTestId('btn-nuevo-ingreso')).toBeVisible({ timeout: 15_000 });
 
     // Esperar resolución de sucursal (catálogo o fallback seed) antes de cortar el Core.
     // Evita carrera: listBranches abortado → branchId null → btn-confirmar disabled.

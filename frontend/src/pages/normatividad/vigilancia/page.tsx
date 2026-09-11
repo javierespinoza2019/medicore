@@ -4,10 +4,11 @@ export default function VigilanciaEpidemiologica() {
   return (
     <ModulePlaceholder
       testId="page-vigilancia"
-      title="Vigilancia epidemiológica"
+      title="Vigilancia Epidemiológica"
       icon="ri-virus-line"
-      description="Notificación epidemiológica se alinea a DGIS/SINBA (Fase 4 / outbox)."
-      reason="Sin casos simulados."
+      description="Notificación de enfermedades de notificación obligatoria / SUIVE (NOM-017), alineada a DGIS/SINBA."
+      reason="Sin casos simulados. Canal DGIS siempre en producto; destino y UI de vigilancia = Fase 4 / outbox."
+      designNote="Readdy: casos SUIVE con filtros estado/tipo, alta, impresión y stats."
     />
   );
 }

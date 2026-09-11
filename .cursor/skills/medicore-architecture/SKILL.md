@@ -49,6 +49,11 @@ Api → Business → DataAccess(SPs) → SQL. Worker separado para outbox.
 Shared = ventas. Dedicado antes de paciente real. Deploy escalonado de API solo en controlado.
 Proveedor/región de Production y QA: **aplazados** (doc 06 §2 / #70 / #71) — no inventar.
 
+Demo Site4Now: SPA `https://medi-core.app`, API `https://api.medi-core.app`. Tras republish SPA,
+si Workbox reporta `bad-precaching-response` 403 sobre `/assets/index-*.js`: asset hash desfasado
+o SW viejo — republicar `frontend/out/` completo + hard refresh / unregister SW
+(`docs/operacion/pwa-dispositivos.md`).
+
 ## Sesiones (auth)
 
 - Logout ordinario: **solo esta estación** (doc 06 #73).

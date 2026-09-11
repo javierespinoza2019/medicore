@@ -73,7 +73,7 @@ public sealed class TenantUserServiceTests
             throw new NotImplementedException();
 
         public Task<TenantUserRow> UpdateAsync(
-            Guid tenantId, Guid userId, string displayName, bool isActive,
+            Guid tenantId, Guid userId, string displayName, bool isActive, DateTime? lockoutUntilUtc,
             string? roleCodesCsv, string? branchIdsCsv, Guid? actorUserId, CancellationToken ct) =>
             throw new NotImplementedException();
 

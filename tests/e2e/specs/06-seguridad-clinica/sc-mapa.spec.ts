@@ -333,8 +333,12 @@ test.describe('06 — Seguridad clínica · mapa SC-01…SC-24', () => {
       const data = (await queue.json()).data;
       expect(Array.isArray(data.items)).toBe(true);
       expect(data.items.length).toBeGreaterThanOrEqual(2);
-      // Sin clasificar: el contrato marca allUnclassified; offline de orden se valida vía sync+cola.
-      expect(data.allUnclassified).toBe(true);
+      // Flag coherente con ítems (BD compartida puede tener clasificados previos).
+      // Offline de orden se valida vía sync+cola / UI.
+      const expectedAllUnclassified = (data.items as Array<{ triageLevel: string | null }>).every(
+        (i) => !i.triageLevel,
+      );
+      expect(data.allUnclassified).toBe(expectedAllUnclassified);
     });
 
     test('SC-08: Los signos vitales fuera de rango crítico se destacan y nunca se guardan silenciosamente como normales', async ({

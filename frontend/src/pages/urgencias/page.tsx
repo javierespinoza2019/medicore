@@ -172,29 +172,42 @@ export default function Urgencias() {
   }
 
   return (
-    <div className="space-y-5 p-4 md:p-6" data-testid="page-urgencias">
-      <div className="flex flex-wrap items-center justify-end gap-2">
-        <button
-          type="button"
-          onClick={handleExportExcel}
-          className="flex cursor-pointer items-center gap-2 whitespace-nowrap rounded-lg border border-secondary-200 bg-background-50 px-4 py-2 text-sm font-medium text-foreground-600 transition-base hover:bg-secondary-100"
-        >
-          <i className="ri-file-excel-line" aria-hidden />
-          Exportar Excel
-        </button>
-        <Button type="button" variant="ghost" size="sm" onClick={() => void refresh()}>
-          Actualizar
-        </Button>
-        <button
-          type="button"
-          aria-label="Registrar nuevo ingreso de urgencias"
-          onClick={() => setShowNuevo(true)}
-          data-testid="btn-nuevo-ingreso"
-          className="flex cursor-pointer items-center gap-2 whitespace-nowrap rounded-lg bg-red-500 px-5 py-2.5 text-sm font-semibold text-white shadow-sm transition-base hover:bg-red-600"
-        >
-          <i className="ri-add-line" aria-hidden />
-          Nuevo ingreso
-        </button>
+    <div className="space-y-5" data-testid="page-urgencias">
+      <div className="flex flex-wrap items-start justify-between gap-3">
+        <div>
+          <h1 className="font-heading text-xl font-bold text-foreground-900">Urgencias</h1>
+          <p className="text-sm text-foreground-500">
+            Ingreso sin bloqueo por CURP/pago · cola API (M4) · escala configurable
+          </p>
+        </div>
+        <div className="flex flex-wrap items-center justify-end gap-2">
+          <button
+            type="button"
+            onClick={handleExportExcel}
+            className="flex cursor-pointer items-center gap-2 whitespace-nowrap rounded-lg border border-secondary-200 bg-background-50 px-4 py-2 text-sm font-medium text-foreground-600 transition-base hover:bg-secondary-100"
+          >
+            <i className="ri-file-excel-line" aria-hidden />
+            Exportar Excel
+          </button>
+          <Button type="button" variant="ghost" size="sm" onClick={() => void refresh()}>
+            Actualizar
+          </Button>
+          <button
+            type="button"
+            aria-label="Registrar nuevo ingreso de urgencias"
+            onClick={() => setShowNuevo(true)}
+            data-testid="btn-nuevo-ingreso"
+            className="flex cursor-pointer items-center gap-2 whitespace-nowrap rounded-lg bg-red-500 px-5 py-2.5 text-sm font-semibold text-white shadow-sm transition-base hover:bg-red-600"
+          >
+            <i className="ri-add-line" aria-hidden />
+            Nuevo ingreso
+          </button>
+        </div>
+      </div>
+
+      <div className="rounded-lg border border-secondary-200 bg-secondary-50/60 px-4 py-2.5 text-xs text-foreground-600">
+        Atención no se detiene: el ingreso no exige nombre/CURP/consentimiento. SC-04 (alta con
+        recetas pendientes) en panel de atención. Sin inventar nivel de triage.
       </div>
 
       <QueueLiveBanner

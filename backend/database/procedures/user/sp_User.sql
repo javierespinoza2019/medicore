@@ -20,17 +20,32 @@ BEGIN
         u.DisplayName,
         u.IsActive,
         u.IsSuperAdmin,
+        u.LockoutUntilUtc,
+        IsLockedOut = CASE
+            WHEN u.LockoutUntilUtc IS NOT NULL AND u.LockoutUntilUtc > SYSUTCDATETIME()
+            THEN CAST(1 AS BIT) ELSE CAST(0 AS BIT)
+        END,
         u.CreatedAtUtc,
         u.UpdatedAtUtc,
+        LastAccessUtc = (
+            SELECT MAX(rt.CreatedAtUtc)
+            FROM dbo.RefreshToken rt
+            WHERE rt.TenantId = u.TenantId AND rt.UserId = u.UserId
+        ),
         RoleCodesCsv = STRING_AGG(CASE WHEN ur.IsDeleted = 0 THEN r.Code END, N',')
             WITHIN GROUP (ORDER BY r.Code),
         BranchIdsCsv = (
             SELECT STRING_AGG(CONVERT(NVARCHAR(36), ub.BranchId), N',')
+                WITHIN GROUP (ORDER BY b.Name)
             FROM dbo.UserBranch ub
+            INNER JOIN dbo.Branch b
+                ON b.BranchId = ub.BranchId AND b.TenantId = ub.TenantId
             WHERE ub.UserId = u.UserId AND ub.TenantId = u.TenantId AND ub.IsDeleted = 0
         ),
         HealthcareProfessionalId = hp.HealthcareProfessionalId,
-        ProfessionalDisplayName = hp.FullName
+        ProfessionalDisplayName = hp.FullName,
+        ProfessionalLicense = hp.ProfessionalLicense,
+        SpecialtyName = sp.Name
     FROM dbo.[User] u
     LEFT JOIN dbo.UserRole ur
         ON ur.UserId = u.UserId AND ur.TenantId = u.TenantId AND ur.IsDeleted = 0
@@ -38,6 +53,8 @@ BEGIN
         ON r.RoleId = ur.RoleId AND r.TenantId = u.TenantId
     LEFT JOIN dbo.HealthcareProfessional hp
         ON hp.UserId = u.UserId AND hp.TenantId = u.TenantId AND hp.IsDeleted = 0 AND hp.IsActive = 1
+    LEFT JOIN dbo.Specialty sp
+        ON sp.SpecialtyId = hp.SpecialtyId AND sp.TenantId = u.TenantId AND sp.IsDeleted = 0
     WHERE u.TenantId = @TenantId
       AND u.IsDeleted = 0
       AND (@OnlyActive = 0 OR u.IsActive = 1)
@@ -48,7 +65,8 @@ BEGIN
           )
     GROUP BY
         u.UserId, u.TenantId, u.UserName, u.DisplayName, u.IsActive, u.IsSuperAdmin,
-        u.CreatedAtUtc, u.UpdatedAtUtc, hp.HealthcareProfessionalId, hp.FullName
+        u.LockoutUntilUtc, u.CreatedAtUtc, u.UpdatedAtUtc,
+        hp.HealthcareProfessionalId, hp.FullName, hp.ProfessionalLicense, sp.Name
     ORDER BY u.DisplayName;
 END
 GO
@@ -67,17 +85,32 @@ BEGIN
         u.DisplayName,
         u.IsActive,
         u.IsSuperAdmin,
+        u.LockoutUntilUtc,
+        IsLockedOut = CASE
+            WHEN u.LockoutUntilUtc IS NOT NULL AND u.LockoutUntilUtc > SYSUTCDATETIME()
+            THEN CAST(1 AS BIT) ELSE CAST(0 AS BIT)
+        END,
         u.CreatedAtUtc,
         u.UpdatedAtUtc,
+        LastAccessUtc = (
+            SELECT MAX(rt.CreatedAtUtc)
+            FROM dbo.RefreshToken rt
+            WHERE rt.TenantId = u.TenantId AND rt.UserId = u.UserId
+        ),
         RoleCodesCsv = STRING_AGG(CASE WHEN ur.IsDeleted = 0 THEN r.Code END, N',')
             WITHIN GROUP (ORDER BY r.Code),
         BranchIdsCsv = (
             SELECT STRING_AGG(CONVERT(NVARCHAR(36), ub.BranchId), N',')
+                WITHIN GROUP (ORDER BY b.Name)
             FROM dbo.UserBranch ub
+            INNER JOIN dbo.Branch b
+                ON b.BranchId = ub.BranchId AND b.TenantId = ub.TenantId
             WHERE ub.UserId = u.UserId AND ub.TenantId = u.TenantId AND ub.IsDeleted = 0
         ),
         HealthcareProfessionalId = hp.HealthcareProfessionalId,
-        ProfessionalDisplayName = hp.FullName
+        ProfessionalDisplayName = hp.FullName,
+        ProfessionalLicense = hp.ProfessionalLicense,
+        SpecialtyName = sp.Name
     FROM dbo.[User] u
     LEFT JOIN dbo.UserRole ur
         ON ur.UserId = u.UserId AND ur.TenantId = u.TenantId AND ur.IsDeleted = 0
@@ -85,12 +118,15 @@ BEGIN
         ON r.RoleId = ur.RoleId AND r.TenantId = u.TenantId
     LEFT JOIN dbo.HealthcareProfessional hp
         ON hp.UserId = u.UserId AND hp.TenantId = u.TenantId AND hp.IsDeleted = 0 AND hp.IsActive = 1
+    LEFT JOIN dbo.Specialty sp
+        ON sp.SpecialtyId = hp.SpecialtyId AND sp.TenantId = u.TenantId AND sp.IsDeleted = 0
     WHERE u.TenantId = @TenantId
       AND u.UserId = @UserId
       AND u.IsDeleted = 0
     GROUP BY
         u.UserId, u.TenantId, u.UserName, u.DisplayName, u.IsActive, u.IsSuperAdmin,
-        u.CreatedAtUtc, u.UpdatedAtUtc, hp.HealthcareProfessionalId, hp.FullName;
+        u.LockoutUntilUtc, u.CreatedAtUtc, u.UpdatedAtUtc,
+        hp.HealthcareProfessionalId, hp.FullName, hp.ProfessionalLicense, sp.Name;
 END
 GO
 
@@ -188,13 +224,14 @@ END
 GO
 
 CREATE OR ALTER PROCEDURE dbo.sp_User_Update
-    @TenantId       UNIQUEIDENTIFIER,
-    @UserId         UNIQUEIDENTIFIER,
-    @DisplayName    NVARCHAR(200),
-    @IsActive       BIT,
-    @RoleCodesCsv   NVARCHAR(MAX) = NULL,
-    @BranchIdsCsv   NVARCHAR(MAX) = NULL,
-    @ActorUserId    UNIQUEIDENTIFIER = NULL
+    @TenantId         UNIQUEIDENTIFIER,
+    @UserId           UNIQUEIDENTIFIER,
+    @DisplayName      NVARCHAR(200),
+    @IsActive         BIT,
+    @LockoutUntilUtc  DATETIME2(3) = NULL,
+    @RoleCodesCsv     NVARCHAR(MAX) = NULL,
+    @BranchIdsCsv     NVARCHAR(MAX) = NULL,
+    @ActorUserId      UNIQUEIDENTIFIER = NULL
 AS
 BEGIN
     SET NOCOUNT ON;
@@ -257,6 +294,8 @@ BEGIN
     UPDATE dbo.[User]
     SET DisplayName = @DisplayName,
         IsActive = @IsActive,
+        LockoutUntilUtc = @LockoutUntilUtc,
+        FailedLoginCount = CASE WHEN @LockoutUntilUtc IS NULL THEN 0 ELSE FailedLoginCount END,
         UpdatedAtUtc = SYSUTCDATETIME()
     WHERE TenantId = @TenantId AND UserId = @UserId AND IsDeleted = 0;
 

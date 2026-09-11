@@ -78,6 +78,8 @@ export function DeviceProvider({ children }: { children: ReactNode }) {
   return <DeviceContext.Provider value={value}>{children}</DeviceContext.Provider>;
 }
 
+/** Hook de estación; convive con el Provider (react-refresh: OK en este archivo). */
+// eslint-disable-next-line react-refresh/only-export-components -- useDevice junto al Provider
 export function useDevice(): DeviceContextValue {
   const ctx = useContext(DeviceContext);
   if (!ctx) {

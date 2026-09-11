@@ -84,8 +84,7 @@ export const roleRoutes: Record<UserRole, string[]> = {
     '/app/pacientes',
     '/app/pacientes/nuevo',
     '/app/pacientes/',
-    '/app/caja',
-    '/app/caja/cortes',
+    // Sin caja: canCobrar/canCerrarCaja vienen del API; roleRoutes no debe abrir el deep-link.
   ],
   enfermeria: [
     '/app/dashboard',

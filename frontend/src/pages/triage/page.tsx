@@ -397,7 +397,7 @@ export default function TriagePage() {
   const canPrint = Boolean(printTriage);
 
   return (
-    <div className="space-y-5 p-4 md:p-6" data-testid="page-triage">
+    <div className="space-y-5" data-testid="page-triage">
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div>
           <h1 className="font-heading text-2xl font-bold text-foreground-900">Triage</h1>
@@ -410,6 +410,12 @@ export default function TriagePage() {
         <Button type="button" variant="ghost" size="sm" onClick={() => void refresh()}>
           Actualizar cola
         </Button>
+      </div>
+
+      <div className="rounded-lg border border-secondary-200 bg-secondary-50/60 px-4 py-2.5 text-xs text-foreground-600">
+        Escala <strong>configurable</strong> (doc 06 §63). El prototipo hardcodeaba 4 colores
+        (rojo/naranja/amarillo/verde): aquí se usan niveles de la escala efectiva. Sin nivel por
+        omisión; signos vitales opcionales.
       </div>
 
       <QueueLiveBanner

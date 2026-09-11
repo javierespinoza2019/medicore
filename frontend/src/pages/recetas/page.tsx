@@ -174,7 +174,7 @@ export default function Recetas() {
     selected && selected.signedAtUtc && !selected.cancelledAtUtc;
 
   return (
-    <div className="space-y-4 p-4 md:p-6" data-testid="page-recetas">
+    <div className="space-y-4" data-testid="page-recetas">
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div>
           <h1 className="font-heading text-2xl font-bold text-foreground-900">Recetas</h1>
@@ -191,10 +191,26 @@ export default function Recetas() {
       </div>
 
       {!pacienteParam && (
-        <Card padding="md">
-          <p className="text-sm text-foreground-600">
-            Indique el sujeto en la URL (`?paciente={'{subjectId}'}`) o emita desde consulta/urgencias.
+        <Card padding="md" className="border-dashed border-secondary-300">
+          <p className="text-sm text-foreground-700 font-medium">Listado por sujeto</p>
+          <p className="mt-1 text-sm text-foreground-600">
+            No hay listado global de recetas del tenant: la API es{' '}
+            <code className="text-xs">GET /api/subjects/{'{id}'}/prescriptions</code>. Abra un
+            paciente o emita desde Consultas / Urgencias.
           </p>
+          <p className="mt-3 text-xs text-foreground-500 border border-secondary-200 rounded-lg bg-background-50 px-3 py-2">
+            <span className="font-medium text-foreground-700">Diseño original (referencia): </span>
+            Readdy mostraba listado mock de todas las recetas con estados surtida/parcial/vencida.
+            El surtido es Farmacia (Fase 2); aquí solo emisión/consulta/cancelación M8.
+          </p>
+          <div className="mt-4 flex flex-wrap gap-2">
+            <Button variant="primary" size="sm" onClick={() => navigate('/app/pacientes')}>
+              Ir a pacientes
+            </Button>
+            <Button variant="secondary" size="sm" onClick={() => navigate('/app/consultas')}>
+              Ir a consultas
+            </Button>
+          </div>
         </Card>
       )}
 

@@ -6,8 +6,11 @@ export default function DerechosARCO() {
       testId="page-derechos-arco"
       title="Derechos ARCO"
       icon="ri-shield-keyhole-line"
-      description="Solicitudes ARCO se gestionarán con bitácora y plazos cuando exista API."
-      reason="Sin trámites inventados."
+      description="Solicitudes de Acceso, Rectificación, Cancelación y Oposición con bitácora y plazos legales."
+      reason="Sin trámites inventados. Requiere API de solicitudes + política del establecimiento."
+      designNote="Readdy: stats, filtros por tipo ARCO/estado, alta con medio de respuesta e impresión. No portar mocks."
+      ctaHref="/app/seguridad/auditoria"
+      ctaLabel="Ver Auditoría"
     />
   );
 }

@@ -39,7 +39,8 @@ test.describe('00 — Smoke · Login', () => {
     await expect(page).toHaveURL(/\/login/);
   });
 
-  test('inicia sesión con administrador del mock y llega al dashboard', async ({ page }) => {
+  test('inicia sesión con administrador del seed y llega al dashboard', async ({ page }) => {
+    // Tenant `demo`: admin de rol (laura) usa Admin123!; no confundir con admin/Demo123!.
     const admin = users.admin;
     await page.goto('/login');
     await page.locator(sel.login.email).fill(admin.email);

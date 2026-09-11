@@ -92,7 +92,7 @@ export default function SalaEspera() {
   });
 
   return (
-    <div className="space-y-5 p-4 md:p-6" data-testid="page-sala-espera">
+    <div className="space-y-5" data-testid="page-sala-espera">
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <div className="flex items-center gap-3">
           <div>
@@ -177,8 +177,9 @@ export default function SalaEspera() {
 
       <div className="rounded-xl border border-secondary-200/70 bg-background-50 p-3 text-xs text-foreground-500">
         <i className="ri-information-line mr-1" aria-hidden />
-        Flujo ambulatorio (llamar desde agenda, promover estados) se conectará con M9 en una
-        oleada posterior. Esta vista muestra la cola de <strong>urgencias</strong> en tiempo real.
+        Vista de <strong>urgencias</strong> en vivo (M4/M10). El prototipo Readdy mezclaba citas
+        ambulatorias «en sala» con mocks de agenda; esa mezcla <strong>no</strong> se inventa aquí.
+        Llamar/promover desde agenda (M9) se conecta en oleada posterior.
       </div>
 
       <div>

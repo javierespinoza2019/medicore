@@ -11,6 +11,7 @@
     "test:sc": "playwright test specs/06-seguridad-clinica",
     "test:offline": "playwright test specs/03-triage-urgencias/dos-estaciones-offline.spec.ts specs/03-triage-urgencias/sc-19-estacion-offline.spec.ts specs/09-offline",
     "test:a11y": "playwright test specs/07-accesibilidad",
+    "test:guided": "playwright test specs/guided --project=guided-qa",
     "test:headed": "playwright test --headed",
     "test:ui": "playwright test --ui",
     "report": "playwright show-report",

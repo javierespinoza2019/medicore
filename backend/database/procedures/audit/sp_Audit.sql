@@ -46,15 +46,19 @@ BEGIN
     SET NOCOUNT ON;
 
     SELECT
-        AuditEventId, TenantId, ActorUserId, ActorProfessionalId, BranchId,
-        EventType, EntityName, EntityId, SubjectId, DetailJson,
-        OccurredAtUtc, RecordedAtUtc, DeviceId, IpAddress
-    FROM dbo.AuditEvent
-    WHERE TenantId = @TenantId
-      AND SubjectId = @SubjectId
-      AND (@FromUtc IS NULL OR RecordedAtUtc >= @FromUtc)
-      AND (@ToUtc IS NULL OR RecordedAtUtc <= @ToUtc)
-    ORDER BY RecordedAtUtc DESC;
+        a.AuditEventId, a.TenantId, a.ActorUserId, a.ActorProfessionalId, a.BranchId,
+        a.EventType, a.EntityName, a.EntityId, a.SubjectId, a.DetailJson,
+        a.OccurredAtUtc, a.RecordedAtUtc, a.DeviceId, a.IpAddress,
+        ActorDisplayName = u.DisplayName,
+        ActorUserName = u.UserName
+    FROM dbo.AuditEvent a
+    LEFT JOIN dbo.[User] u
+        ON u.UserId = a.ActorUserId AND u.TenantId = a.TenantId AND u.IsDeleted = 0
+    WHERE a.TenantId = @TenantId
+      AND a.SubjectId = @SubjectId
+      AND (@FromUtc IS NULL OR a.RecordedAtUtc >= @FromUtc)
+      AND (@ToUtc IS NULL OR a.RecordedAtUtc <= @ToUtc)
+    ORDER BY a.RecordedAtUtc DESC;
 END
 GO
 
@@ -68,14 +72,18 @@ BEGIN
     SET NOCOUNT ON;
 
     SELECT
-        AuditEventId, TenantId, ActorUserId, ActorProfessionalId, BranchId,
-        EventType, EntityName, EntityId, SubjectId, DetailJson,
-        OccurredAtUtc, RecordedAtUtc, DeviceId, IpAddress
-    FROM dbo.AuditEvent
-    WHERE TenantId = @TenantId
-      AND ActorUserId = @ActorUserId
-      AND RecordedAtUtc >= @FromUtc
-      AND RecordedAtUtc <= @ToUtc
-    ORDER BY RecordedAtUtc DESC;
+        a.AuditEventId, a.TenantId, a.ActorUserId, a.ActorProfessionalId, a.BranchId,
+        a.EventType, a.EntityName, a.EntityId, a.SubjectId, a.DetailJson,
+        a.OccurredAtUtc, a.RecordedAtUtc, a.DeviceId, a.IpAddress,
+        ActorDisplayName = u.DisplayName,
+        ActorUserName = u.UserName
+    FROM dbo.AuditEvent a
+    LEFT JOIN dbo.[User] u
+        ON u.UserId = a.ActorUserId AND u.TenantId = a.TenantId AND u.IsDeleted = 0
+    WHERE a.TenantId = @TenantId
+      AND a.ActorUserId = @ActorUserId
+      AND a.RecordedAtUtc >= @FromUtc
+      AND a.RecordedAtUtc <= @ToUtc
+    ORDER BY a.RecordedAtUtc DESC;
 END
 GO

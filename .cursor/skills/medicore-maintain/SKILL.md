@@ -12,30 +12,56 @@ description: >-
 
 1. Leer `AGENTS.md` y `docs/analisis/12-propuesta-final.md`.
 2. Identificar fase (0/D/1–4) y no expandir alcance (hospital, Edge, estupefacientes).
-3. Revisar oleadas recientes en `docs/analisis/06-decisiones-abiertas.md` (arriba del doc).
+3. Revisar oleadas recientes en `docs/analisis/06-decisiones-abiertas.md` (arriba del doc)
+   y el board `docs/operacion/agent-coordination-board.md`.
 4. Elegir skill satélite si aplica:
-   - Arquitectura / sync / hospedaje → `medicore-architecture`
+   - Arquitectura / sync / hospedaje / PWA deploy → `medicore-architecture`
    - Triage, alergias, identidad, recetas, urgencias → `medicore-clinical-safety`
    - NOM, LFPDPPP, DGIS, privacidad → `medicore-regulatory`
 5. Confirmar estructura: código vivo en `backend/` y `frontend/`; prototipo de referencia en `docs/frontend`.
 
-## Estado (2026-08-30) — no reabrir sin el cliente
+## Estado de producto (2026-09-10)
 
-| Tema | Decisión | Pendiente de implementar |
+### Decisiones ratificadas (no reabrir sin el cliente)
+
+| Tema | Decisión | Pendiente |
 |---|---|---|
 | Firma (9/69) | A — integridad hash+sello; sin e.firma/NOM-151 en piloto | — |
 | Roles (19) | B — plantillas + permisos por tenant; +`trabajo_social`; SuperAdmin plataforma; audit=admin | — |
 | Controlados (64/68) | A — fuera de alcance; 422 = política | — |
 | Hospedaje (2/70/71) | **Aplazado** | Proveedor/región Prod+QA |
-| Establecimiento (10/L) | A — F1–4 ambulatorio+urgencias; demo Central urgencias | Domicilio/licencia/médico responsable concreto |
-| Triage (63) | A — configurable; demo 5 niveles; sin 4 colores de producto | Sacar mocks residuales de 4 colores |
+| Establecimiento (10/L) | A — F1–4 ambulatorio+urgencias | Domicilio/licencia/médico responsable concreto |
+| Triage (63) | A — configurable; demo 5 niveles | — |
 | Monitor (#21) | Solo número de turno | Opt-in nombre = futura |
-| Revocación global (#75) | A — política: password / baja admin / «cerrar todos»; no lockout | — |
-| Break-glass (#23) | Sí — justificación + alerta auditable | — |
-| SaMD (#8) | Fuera de alcance F1–4 — documental/admin | — |
-| Foto paciente (#44) | Sí — biométrico; licitud del establecimiento | Entregada (API/UI/files) |
+| Revocación global (#75) | A — política entregada (endpoints) | — |
+| Break-glass (#23) | Sí | — |
+| Foto paciente (#44) | Sí — entregada | — |
+| IVA / servicios (#7/#67) | Abierto | No inventar tasas en UI |
 
-Trabajo de producto reciente: **uno a uno** (sin enjambre). Suite: `docs/operacion/pruebas.md`.
+### Oleada UI vs Readdy (2026-09-08 → 09-10)
+
+Alineación menú completo con **API real + honestidad** (sin mocks). Docs de módulo en `docs/operacion/`:
+`usuarios`, `establecimiento`/`catalogos`, `roles-permisos`, `auditoria`, `normatividad`,
+`finanzas`, `clinico`, `pacientes`, `operacion`, `dashboard`.
+
+**Criterio de «alineado» (obligatorio — corrección 2026-09-10):**
+
+1. Leer el **JSX/return** de `docs/frontend/.../page.tsx` (no solo mocks/API).
+2. Checklist de **layout**: header/acciones, ribbon/stats, toolbar, filas/tabla, empty, acciones.
+3. Campos sin API → disabled / «No capturado» / N/D — **no omitir el chrome** del prototipo.
+4. «Done» = **layout + honestidad + API** (si hay contrato). Solo contrato ≠ alineado.
+
+Fallos ya corregidos con ese criterio: listado Pacientes; Auditoría (toolbar + orden columnas).
+
+Pendiente UX (decidido diferir): etiquetas ES de `eventType` en auditoría (`medication.upsert` etc.).
+
+### Ciclo de calidad
+
+Plan por módulos listo para ejecución: [`docs/operacion/plan-pruebas-ciclo-calidad.md`](../../docs/operacion/plan-pruebas-ciclo-calidad.md).
+Oleadas O1–O5; seguridad «pentest light» automatizable (IDOR/JWT/roles) — **sin** ataques ofensivos a demo/prod.
+Estado board: plan **ready** (aún sin ejecución completa al 2026-09-10).
+
+Trabajo: **uno a uno** (sin enjambre). Suite base: `docs/operacion/pruebas.md` + `tools/run-all-tests.ps1`.
 
 ## Checklist antes de mergear un cambio
 
@@ -47,28 +73,26 @@ Trabajo de producto reciente: **uno a uno** (sin enjambre). Suite: `docs/operaci
 - [ ] DGIS no se convierte en feature flag
 - [ ] Urgencias no quedan bloqueadas por campos admin
 - [ ] No reabre controlados, ni escala fija de triage, ni nombres en monitor, sin decisión escrita
-- [ ] Tests: el módulo deja sus pruebas en este mismo cambio (`docs/operacion/pruebas.md`);
-      aceptación solo contra stack real; sin `DELETE`/`TRUNCATE` para limpiar; IDs `SC-xx` intactos
-- [ ] Memoria viva actualizada según `.cursor/rules/medicore-cierre-de-tarea.mdc` (doc 12, AGENTS,
-      reglas, skills, `docs/operacion/**`, doc 06) — o declarar «sin cambios de memoria»
+- [ ] Si toca UI vs prototipo: criterio layout Readdy (arriba) aplicado o explícitamente N/A
+- [ ] Tests: el módulo deja sus pruebas (`pruebas.md` / plan ciclo); aceptación solo stack real
+- [ ] Memoria viva actualizada según `.cursor/rules/medicore-cierre-de-tarea.mdc` — o «sin cambios de memoria»
 
 ## Conflictos documentales
 
-Si `docs/analisis/05` o `07` mencionan Edge como vigente, **ignorar** y seguir el 12. Opcional: corregir el párrafo obsoleto en la misma PR si el usuario lo pide.
+Si `docs/analisis/05` o `07` mencionan Edge como vigente, **ignorar** y seguir el 12.
 
-## Hospedaje
+## Hospedaje / demo
 
-- Shared (SmarterASP): solo demo sintético.
-- No desplegar PHI a shared.
-- Worker/outbox durable: entorno dedicado.
-- Prod/QA concretos: **aplazados** (doc 06 §2 / #70 / #71).
+- Shared (Site4Now / SmarterASP): solo demo sintético — SPA `medi-core.app`, API `api.medi-core.app`.
+- Tras republicar SPA: hard refresh / clear SW si Workbox `bad-precaching-response` 403 (asset hash viejo).
+- Worker/outbox durable: entorno dedicado. Prod/QA concretos: **aplazados**.
 
 ## Suite completa
 
-`./tools/run-all-tests.ps1` corre build, pruebas .NET, tipos/lint del frontend y E2E/contrato.
-Usar `-Skip e2e` cuando el API no esté levantado. Nunca contra Production.
+`./tools/run-all-tests.ps1` → build → test → frontend → e2e.  
+`-Skip e2e` si API no está arriba. Nunca Production. Plan enriquecido: `plan-pruebas-ciclo-calidad.md`.
 
 ## Salida
 
-Resumir qué se cambió, qué fase afecta, qué documentos de memoria se actualizaron, qué etapas de la
-suite se corrieron realmente con su resultado, y si queda alguna decisión abierta del doc 06.
+Resumir qué se cambió, fase, documentos de memoria, etapas de suite **realmente** corridas con resultado,
+decisiones abiertas del doc 06 si aplica.

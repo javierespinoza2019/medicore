@@ -45,4 +45,21 @@ public sealed class EffectivePermissionAccessTests
         Assert.True(EffectivePermissionAccess.CanAccessPatients(true, perms));
         Assert.True(EffectivePermissionAccess.CanQueryAudit(true, perms));
     }
+
+    [Fact]
+    public void SearchByDescription_denies_medico_allows_admin_and_recepcion()
+    {
+        var medico = RolePermissionDefaults.ForRole("medico");
+        var admin = RolePermissionDefaults.ForRole("admin");
+        var recepcion = RolePermissionDefaults.ForRole("recepcion");
+        var trabajoSocial = RolePermissionDefaults.ForRole("trabajo_social");
+        var enfermeria = RolePermissionDefaults.ForRole("enfermeria");
+
+        Assert.False(EffectivePermissionAccess.CanSearchSubjectByDescription(false, medico));
+        Assert.True(EffectivePermissionAccess.CanSearchSubjectByDescription(false, admin));
+        Assert.True(EffectivePermissionAccess.CanSearchSubjectByDescription(false, recepcion));
+        Assert.True(EffectivePermissionAccess.CanSearchSubjectByDescription(false, trabajoSocial));
+        Assert.False(EffectivePermissionAccess.CanSearchSubjectByDescription(false, enfermeria));
+        Assert.True(EffectivePermissionAccess.CanSearchSubjectByDescription(true, medico));
+    }
 }

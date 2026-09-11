@@ -117,7 +117,7 @@ export default function PacienteNuevo() {
   }
 
   return (
-    <div className="mx-auto max-w-3xl space-y-5 p-4 md:p-6">
+    <div className="mx-auto max-w-3xl space-y-5" data-testid="page-paciente-nuevo">
       <div className="flex items-center justify-between gap-3">
         <div>
           <h1 className="font-heading text-2xl font-bold text-foreground-900">Nuevo sujeto</h1>
@@ -128,6 +128,11 @@ export default function PacienteNuevo() {
         <Button variant="ghost" size="sm" onClick={() => navigate('/app/pacientes')}>
           Volver
         </Button>
+      </div>
+
+      <div className="rounded-lg border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-950">
+        Identidad progresiva: nombre, CURP, sexo y fecha son opcionales. No se fabrican valores por
+        omisión. Alta como no identificado = etiqueta operativa (doc 08), no bloquea atención.
       </div>
 
       <nav aria-label="Pasos de registro" className="flex flex-wrap gap-2">

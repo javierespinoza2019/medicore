@@ -56,22 +56,22 @@ const itemsDocSeg: ItemDocSeg[] = [
   {
     id: 'ds8', seccion: 'Medidas de seguridad - Técnicas', requisito: 'Control de acceso al sistema',
     descripcion: 'Mecanismos de autenticación (usuario/contraseña, 2FA) y autorización basada en roles para el acceso al sistema.',
-    estado: 'cumplido', norma: 'Art. 57 Reglamento LFPDPPP', notas: 'RBAC implementado en MediCore.',
+    estado: 'cumplido', norma: 'Art. 57 Reglamento LFPDPPP', notas: 'RBAC de producto existe; el cumplimiento operativo lo valida el establecimiento.',
   },
   {
     id: 'ds9', seccion: 'Medidas de seguridad - Técnicas', requisito: 'Registro de actividad (Bitácora)',
     descripcion: 'Pista de auditoría que registra accesos, modificaciones y eliminaciones de datos personales.',
-    estado: 'cumplido', norma: 'Art. 57 Reglamento LFPDPPP', notas: 'Módulo de Auditoría activo en MediCore.',
+    estado: 'cumplido', norma: 'Art. 57 Reglamento LFPDPPP', notas: 'Consulta de AuditEvent disponible en Seguridad → Auditoría (no implica certificación).',
   },
   {
     id: 'ds10', seccion: 'Medidas de seguridad - Técnicas', requisito: 'Cifrado en tránsito y en reposo',
     descripcion: 'Cifrado de datos sensibles durante transmisión (TLS/HTTPS) y almacenamiento (AES-256).',
-    estado: 'pendiente', norma: 'Art. 57 Reglamento LFPDPPP', notas: 'Requiere backend real. Actualmente sistema sin persistencia.',
+    estado: 'pendiente', norma: 'Art. 57 Reglamento LFPDPPP', notas: 'Depende del hospedaje y política del establecimiento; no afirmar AES-256 desde la UI.',
   },
   {
     id: 'ds11', seccion: 'Medidas de seguridad - Técnicas', requisito: 'Política de respaldo (Backup)',
     descripcion: 'Procedimiento documentado para respaldo periódico de datos personales y plan de recuperación ante desastres.',
-    estado: 'pendiente', norma: 'Art. 57, 58 Reglamento LFPDPPP', notas: 'Requiere backend real.',
+    estado: 'pendiente', norma: 'Art. 57, 58 Reglamento LFPDPPP', notas: 'Operación de infraestructura; fuera de esta pantalla.',
   },
   {
     id: 'ds12', seccion: 'Medidas de seguridad - Físicas', requisito: 'Control de acceso físico a instalaciones',
@@ -91,7 +91,7 @@ const itemsDocSeg: ItemDocSeg[] = [
   {
     id: 'ds15', seccion: 'Derechos ARCO', requisito: 'Procedimiento de atención de Derechos ARCO',
     descripcion: 'Procedimiento documentado para recibir, tramitar y responder solicitudes ARCO dentro de 20 días hábiles.',
-    estado: 'cumplido', norma: 'Art. 29 LFPDPPP', notas: 'Módulo ARCO activo en MediCore.',
+    estado: 'pendiente', norma: 'Art. 29 LFPDPPP', notas: 'Pantalla Derechos ARCO aún sin API de trámites.',
   },
   {
     id: 'ds16', seccion: 'Transferencias', requisito: 'Contratos con encargados / terceros',
@@ -135,12 +135,12 @@ export default function DocumentoSeguridad() {
   };
 
   return (
-    <div className="p-4 md:p-6 space-y-5">
+    <div className="space-y-5" data-testid="page-documento-seguridad">
       <div className="flex items-center justify-between flex-wrap gap-3">
         <div>
           <h1 className="text-xl font-bold text-foreground-900 font-heading">Documento de Seguridad</h1>
           <p className="text-sm text-foreground-500 mt-1">
-            Medidas de seguridad conforme a LFPDPPP y su Reglamento
+            Checklist operativo de referencia (estados solo en esta sesión)
           </p>
         </div>
         <div className="flex items-center gap-2">
@@ -148,6 +148,11 @@ export default function DocumentoSeguridad() {
             Imprimir
           </Button>
         </div>
+      </div>
+
+      <div className="rounded-lg border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-950">
+        Los cambios de estado <strong>no se guardan</strong> en servidor. El porcentaje es una ayuda
+        de trabajo, <strong>no una certificación</strong> LFPDPPP ni evidencia ante autoridad.
       </div>
 
       {/* Progreso */}

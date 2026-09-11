@@ -81,7 +81,9 @@ test.describe('00 — Contrato API · clinical notes (consulta/firma)', () => {
     expect(signed.contentHash).toMatch(/^[a-f0-9]{64}$/i);
     expect(signed.authorLicenseSnapshot).toBeTruthy();
     expect(signed.firmaDescripcionLegible.toLowerCase()).not.toContain('e.firma sat con validez');
-    expect(signed.firmaDescripcionLegible.toLowerCase()).toContain('dictamen pendiente');
+    expect(signed.firmaDescripcionLegible.toLowerCase()).toContain('integridad');
+    expect(signed.firmaDescripcionLegible.toLowerCase()).not.toContain('cumplimiento nom-004 5.10 afirmado');
+    expect(signed.firmaDescripcionLegible.toLowerCase()).toMatch(/sin e\.firma sat|no se afirma cumplimiento/);
 
     const again = await apiCtx.post(`/api/notes/${note.noteId}/sign`, {
       headers,

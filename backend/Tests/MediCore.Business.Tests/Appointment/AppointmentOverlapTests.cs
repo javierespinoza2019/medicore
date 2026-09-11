@@ -160,5 +160,16 @@ public sealed class AppointmentOverlapTests
         public Task<IReadOnlyList<AppointmentDto>> ListBySubjectAsync(
             Guid tenantId, Guid subjectId, CancellationToken ct) =>
             Task.FromResult<IReadOnlyList<AppointmentDto>>(Array.Empty<AppointmentDto>());
+
+        public Task<IReadOnlyList<ScheduleBlockDto>> ListBlocksAsync(
+            Guid tenantId, Guid branchId, DateTimeOffset fromUtc, DateTimeOffset toUtc, CancellationToken ct) =>
+            Task.FromResult<IReadOnlyList<ScheduleBlockDto>>(Array.Empty<ScheduleBlockDto>());
+
+        public Task<ScheduleBlockDto?> UpsertBlockAsync(
+            Guid tenantId, Guid blockId, Guid actorUserId, UpsertScheduleBlockRequest request, CancellationToken ct) =>
+            Task.FromResult<ScheduleBlockDto?>(null);
+
+        public Task SoftDeleteBlockAsync(Guid tenantId, Guid blockId, Guid actorUserId, CancellationToken ct) =>
+            Task.CompletedTask;
     }
 }

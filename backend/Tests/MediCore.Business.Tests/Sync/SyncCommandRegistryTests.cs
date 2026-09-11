@@ -226,6 +226,10 @@ public sealed class SyncCommandRegistryTests
                 IsActive = true
             });
 
+        public Task<MediCore.Models.Professional.ProfessionalDto?> GetDtoByIdAsync(
+            Guid tenantId, Guid healthcareProfessionalId, CancellationToken ct) =>
+            Task.FromResult<MediCore.Models.Professional.ProfessionalDto?>(null);
+
         public Task<IReadOnlyList<MediCore.Models.Professional.ProfessionalDto>> ListAsync(
             Guid tenantId, bool onlyActive, string? search, CancellationToken ct) =>
             Task.FromResult<IReadOnlyList<MediCore.Models.Professional.ProfessionalDto>>([]);

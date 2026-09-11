@@ -123,7 +123,7 @@ export default function PacienteDetalle() {
   };
 
   return (
-    <div className="space-y-5 p-4 md:p-6" data-testid="paciente-detalle">
+    <div className="space-y-5" data-testid="paciente-detalle">
       <div className="flex items-center gap-2 text-sm">
         <button
           type="button"
@@ -217,6 +217,12 @@ export default function PacienteDetalle() {
       </Card>
 
       <IdentityHeader subject={subject} />
+
+      <div className="rounded-lg border border-secondary-200 bg-secondary-50/60 px-4 py-2.5 text-xs text-foreground-600">
+        Tabs Consultas/Recetas = API. Estudios = placeholder (Fase 2). Expediente = timeline real
+        M4–M8; sin certificados ni consentimientos inventados. Foto #44 = biométrico (licitud del
+        establecimiento).
+      </div>
 
       <SubjectVinculacionPanel
         survivingSubjectId={subject.subjectId}

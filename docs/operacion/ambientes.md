@@ -44,7 +44,9 @@ Es intencional: un ambiente mal configurado debe fallar al inicio, no a medias.
 En el frontend toda variable `VITE_*` termina embebida en el bundle, por eso los archivos
 `.env.development`, `.env.qa` y `.env.production` sí se versionan y **no** admiten secretos.
 
-PWA / estaciones: ver [`pwa-dispositivos.md`](pwa-dispositivos.md).
+PWA instalable en demo Site4Now (`medi-core.app`): manifest + service worker + iconos 192/512
+en el build (`frontend/out/`). `/api/*` = NetworkOnly (no cachear PHI). Offline clínico completo
+sigue pendiente. Guion de instalación y dispositivos: [`pwa-dispositivos.md`](pwa-dispositivos.md).
 
 ### Tenant piloto Clínicas del Valle
 

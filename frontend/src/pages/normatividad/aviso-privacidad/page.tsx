@@ -23,12 +23,12 @@ export default function AvisoPrivacidad() {
   ];
 
   return (
-    <div className="p-4 md:p-6 space-y-5 max-w-5xl mx-auto">
+    <div className="space-y-5 max-w-5xl mx-auto" data-testid="page-aviso-privacidad">
       <div className="flex items-center justify-between flex-wrap gap-3">
         <div>
           <h1 className="text-xl font-bold text-foreground-900 font-heading">Aviso de Privacidad</h1>
           <p className="text-sm text-foreground-500 mt-1">
-            MediCore Clínica — Con fundamento en la LFPDPPP y la NOM-004-SSA3-2012
+            Plantilla de referencia del producto (no es el aviso oficial del establecimiento)
           </p>
         </div>
         <div className="flex items-center gap-2">
@@ -39,6 +39,12 @@ export default function AvisoPrivacidad() {
             Descargar PDF
           </Button>
         </div>
+      </div>
+
+      <div className="rounded-lg border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-950">
+        Texto estático de demostración. Domicilio, razón social y contacto deben sustituirse por los
+        del <strong>responsable del tratamiento</strong> del tenant (white-label pendiente). Esta
+        pantalla <strong>no afirma</strong> cumplimiento LFPDPPP ni sustituye asesoría jurídica.
       </div>
 
       {/* Tabs */}

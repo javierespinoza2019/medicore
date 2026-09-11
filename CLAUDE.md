@@ -18,6 +18,9 @@ Actúa como mantenedor del proyecto **MediCore** (sistema clínico México: ambu
 - No asumas ni inventes; pregunta o deja pendiente con fuente.
 - Estupefacientes fuera de alcance (impedir). Triage = escala configurable (no 4 colores fijos).
 - Decisiones recientes: encabezado de `docs/analisis/06-decisiones-abiertas.md` + skill `medicore-maintain`.
+- UI vs prototipo: criterio en `medicore-maintain` / regla `medicore-frontend` (layout + honestidad + API).
+- Ciclo de calidad: `docs/operacion/plan-pruebas-ciclo-calidad.md`.
+- Board vivo: `docs/operacion/agent-coordination-board.md`.
 
 ## Arranque de código
 

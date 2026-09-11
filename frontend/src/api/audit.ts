@@ -18,6 +18,8 @@ export type AuditEventDto = {
   recordedAtUtc: string;
   deviceId: string | null;
   ipAddress: string | null;
+  actorDisplayName: string | null;
+  actorUserName: string | null;
 };
 
 export async function listAuditBySubject(
@@ -46,4 +48,14 @@ export async function listAuditByActor(
   return apiFetch<AuditEventDto[]>(
     `/api/audit/actor/${encodeURIComponent(userId)}${qs ? `?${qs}` : ''}`,
   );
+}
+
+/** Etiqueta corta para eventType conocidos. */
+export function labelEventType(eventType: string): string {
+  const map: Record<string, string> = {
+    'record.read': 'Lectura de expediente',
+    'clinical_exception.discharge_with_pending_prescriptions': 'Alta con Rx pendiente',
+    'security.break_glass.started': 'Break-glass',
+  };
+  return map[eventType] ?? eventType;
 }

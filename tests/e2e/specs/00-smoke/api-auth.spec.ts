@@ -6,6 +6,7 @@ import {
   claimsDe,
   contextoLimpio,
   cookieRefresh,
+  idE2E,
   iniciarSesion,
   sesionValida,
   COOKIE_REFRESH,
@@ -219,17 +220,50 @@ test.describe('00 — Contrato API · autenticación', () => {
   });
 
   test('sessions/revoke-all cierra todas las sesiones del usuario', async () => {
+    // Usuario efímero: no revocar `admin` compartido (mataría UI/E2E en paralelo).
+    const adminCtx = await contextoLimpio();
+    const adminSesion = await sesionValida(adminCtx);
+    const adminHeaders = autorizacion(adminSesion);
+    const stamp = idE2E('rev');
+    const userId = crypto.randomUUID();
+    const userName = `e2e.revoke.${stamp}@medicore.mx`.slice(0, 128);
+    const password = 'RevokeAll123!';
+
+    const branches = await adminCtx.get('/api/branches?onlyActive=true', { headers: adminHeaders });
+    expect(branches.status(), await branches.text()).toBe(200);
+    const branchId = ((await branches.json()).data as Array<{ branchId: string }>)[0].branchId;
+
+    const create = await adminCtx.post('/api/users', {
+      headers: adminHeaders,
+      data: {
+        userId,
+        userName,
+        displayName: `E2E revoke ${stamp}`,
+        password,
+        isActive: true,
+        roleCodes: ['recepcion'],
+        branchIds: [branchId],
+      },
+    });
+    expect(create.status(), await create.text()).toBe(200);
+
     const estacionA = await contextoLimpio();
     const estacionB = await contextoLimpio();
-
-    const sesionA = await sesionValida(estacionA);
-    const sesionB = await sesionValida(estacionB);
-    expect(sesionB.refresh).not.toBe(sesionA.refresh);
+    const loginA = await iniciarSesion(estacionA, { userName, password });
+    const loginB = await iniciarSesion(estacionB, { userName, password });
+    expect(loginA.status()).toBe(200);
+    expect(loginB.status()).toBe(200);
+    const bodyA = await loginA.json();
+    const cookieA = cookieRefresh(loginA);
+    const cookieB = cookieRefresh(loginB);
+    expect(cookieA, 'estación A debe emitir mc_refresh').not.toBeNull();
+    expect(cookieB, 'estación B debe emitir mc_refresh').not.toBeNull();
+    expect(cookieB!.valor).not.toBe(cookieA!.valor);
 
     const cierre = await estacionA.post('/api/auth/sessions/revoke-all', {
       headers: {
-        ...autorizacion(sesionA),
-        Cookie: `${COOKIE_REFRESH}=${sesionA.refresh}`,
+        Authorization: `Bearer ${bodyA.data.accessToken}`,
+        Cookie: `${COOKIE_REFRESH}=${cookieA!.valor}`,
       },
     });
     expect(cierre.status()).toBe(200);
@@ -237,12 +271,14 @@ test.describe('00 — Contrato API · autenticación', () => {
     const ctxA = await contextoLimpio();
     const ctxB = await contextoLimpio();
     expect(
-      (await ctxA.post('/api/auth/refresh', { headers: { Cookie: `${COOKIE_REFRESH}=${sesionA.refresh}` } })).status(),
+      (await ctxA.post('/api/auth/refresh', { headers: { Cookie: `${COOKIE_REFRESH}=${cookieA!.valor}` } })).status(),
     ).toBe(401);
     expect(
-      (await ctxB.post('/api/auth/refresh', { headers: { Cookie: `${COOKIE_REFRESH}=${sesionB.refresh}` } })).status(),
+      (await ctxB.post('/api/auth/refresh', { headers: { Cookie: `${COOKIE_REFRESH}=${cookieB!.valor}` } })).status(),
     ).toBe(401);
 
+    await adminCtx.delete(`/api/users/${userId}`, { headers: adminHeaders });
+    await adminCtx.dispose();
     await estacionA.dispose();
     await estacionB.dispose();
     await ctxA.dispose();

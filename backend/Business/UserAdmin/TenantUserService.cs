@@ -70,6 +70,7 @@ public sealed class TenantUserService(
         var displayName = RequireDisplayName(request.DisplayName);
         var roles = NormalizeRoles(request.RoleCodes);
         var branches = NormalizeBranches(request.BranchIds);
+        var (isActive, lockoutUntilUtc) = ResolveStatus(request);
 
         try
         {
@@ -77,13 +78,14 @@ public sealed class TenantUserService(
                 tenantId,
                 userId,
                 displayName,
-                request.IsActive,
+                isActive,
+                lockoutUntilUtc,
                 ToCsv(roles),
                 ToCsv(branches),
                 actorUserId,
                 ct);
 
-            if (!request.IsActive)
+            if (!isActive || lockoutUntilUtc is not null)
                 await authRepository.RevokeAllRefreshTokensForUserAsync(tenantId, userId, ct);
 
             return Map(row);
@@ -109,23 +111,58 @@ public sealed class TenantUserService(
         await authRepository.RevokeAllRefreshTokensForUserAsync(tenantId, userId, ct);
     }
 
-    private static TenantUserDto Map(TenantUserRow row) => new()
+    private static TenantUserDto Map(TenantUserRow row)
     {
-        UserId = row.UserId,
-        TenantId = row.TenantId,
-        UserName = row.UserName,
-        DisplayName = row.DisplayName,
-        IsActive = row.IsActive,
-        IsSuperAdmin = row.IsSuperAdmin,
-        RoleCodes = SplitCsv(row.RoleCodesCsv),
-        BranchIds = SplitGuids(row.BranchIdsCsv),
-        HealthcareProfessionalId = row.HealthcareProfessionalId,
-        ProfessionalDisplayName = string.IsNullOrWhiteSpace(row.ProfessionalDisplayName)
-            ? null
-            : row.ProfessionalDisplayName.Trim(),
-        CreatedAtUtc = row.CreatedAtUtc,
-        UpdatedAtUtc = row.UpdatedAtUtc
-    };
+        var locked = row.IsLockedOut
+            || (row.LockoutUntilUtc is { } until && until > DateTime.UtcNow);
+        var status = locked
+            ? TenantUserStatuses.Bloqueado
+            : row.IsActive
+                ? TenantUserStatuses.Activo
+                : TenantUserStatuses.Inactivo;
+
+        return new TenantUserDto
+        {
+            UserId = row.UserId,
+            TenantId = row.TenantId,
+            UserName = row.UserName,
+            DisplayName = row.DisplayName,
+            IsActive = row.IsActive,
+            IsSuperAdmin = row.IsSuperAdmin,
+            IsLockedOut = locked,
+            Status = status,
+            RoleCodes = SplitCsv(row.RoleCodesCsv),
+            BranchIds = SplitGuids(row.BranchIdsCsv),
+            HealthcareProfessionalId = row.HealthcareProfessionalId,
+            ProfessionalDisplayName = Norm(row.ProfessionalDisplayName),
+            ProfessionalLicense = Norm(row.ProfessionalLicense),
+            SpecialtyName = Norm(row.SpecialtyName),
+            LastAccessUtc = row.LastAccessUtc,
+            LockoutUntilUtc = row.LockoutUntilUtc,
+            CreatedAtUtc = row.CreatedAtUtc,
+            UpdatedAtUtc = row.UpdatedAtUtc
+        };
+    }
+
+    private static (bool IsActive, DateTime? LockoutUntilUtc) ResolveStatus(UpdateTenantUserRequest request)
+    {
+        var raw = (request.Status ?? "").Trim().ToLowerInvariant();
+        if (string.IsNullOrEmpty(raw))
+        {
+            return request.IsActive ? (true, null) : (false, null);
+        }
+
+        return raw switch
+        {
+            TenantUserStatuses.Activo => (true, null),
+            TenantUserStatuses.Inactivo => (false, null),
+            TenantUserStatuses.Bloqueado => (true, new DateTime(2099, 1, 1, 0, 0, 0, DateTimeKind.Utc)),
+            _ => throw new ArgumentException("Estado de usuario no reconocido (activo|inactivo|bloqueado).")
+        };
+    }
+
+    private static string? Norm(string? value) =>
+        string.IsNullOrWhiteSpace(value) ? null : value.Trim();
 
     private static string RequireUserName(string? value)
     {

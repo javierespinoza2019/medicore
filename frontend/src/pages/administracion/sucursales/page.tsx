@@ -12,11 +12,18 @@ import {
   type TenantProfileDto,
   type UpsertBranchRequest,
 } from '@/api/branches';
+import {
+  listConsultingRooms,
+  upsertConsultingRoom,
+  type ConsultingRoomDto,
+} from '@/api/appointments';
+import { listSpecialties, type SpecialtyDto } from '@/api/professionals';
 import { mensajeDeFalla, type ApiFailure } from '@/api/errors';
 import Button from '@/components/base/Button';
 import Card from '@/components/base/Card';
 import Modal from '@/components/base/Modal';
 import Input from '@/components/base/Input';
+import Select from '@/components/base/Select';
 import Badge from '@/components/base/Badge';
 import CargandoPantalla from '@/components/feature/CargandoPantalla';
 import InstitucionalLogo from '@/components/feature/InstitucionalLogo';
@@ -158,6 +165,23 @@ export default function Sucursales() {
   const [tenantFormError, setTenantFormError] = useState<string | null>(null);
   const [tenantSaving, setTenantSaving] = useState(false);
 
+  /** Expandir sucursal → consultorios (API agenda). */
+  const [expandedId, setExpandedId] = useState<string | null>(null);
+  const [roomsByBranch, setRoomsByBranch] = useState<Record<string, ConsultingRoomDto[]>>({});
+  const [roomsLoading, setRoomsLoading] = useState<string | null>(null);
+  const [specialties, setSpecialties] = useState<SpecialtyDto[]>([]);
+  const [roomModalOpen, setRoomModalOpen] = useState(false);
+  const [roomBranchId, setRoomBranchId] = useState<string | null>(null);
+  const [editingRoom, setEditingRoom] = useState<ConsultingRoomDto | null>(null);
+  const [roomForm, setRoomForm] = useState({
+    code: '',
+    name: '',
+    specialtyId: '',
+    isActive: true,
+  });
+  const [roomFormError, setRoomFormError] = useState<string | null>(null);
+  const [roomSaving, setRoomSaving] = useState(false);
+
   const handleTenantLogoSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
@@ -221,9 +245,10 @@ export default function Sucursales() {
   const cargar = useCallback(async () => {
     setLoading(true);
     setFailure(null);
-    const [perfil, listado] = await Promise.all([
+    const [perfil, listado, specs] = await Promise.all([
       getTenantProfile(),
       listBranches(false),
+      listSpecialties(true),
     ]);
     if (!perfil.success || !perfil.data) {
       setFailure(perfil.failure ?? { kind: 'error_servidor' });
@@ -237,12 +262,80 @@ export default function Sucursales() {
     }
     setTenant(perfil.data);
     setItems(listado.data);
+    if (specs.success && specs.data) setSpecialties(specs.data);
     setLoading(false);
   }, []);
 
   useEffect(() => {
     void cargar();
   }, [cargar]);
+
+  const loadRooms = async (branchId: string) => {
+    setRoomsLoading(branchId);
+    const res = await listConsultingRooms(branchId, false);
+    setRoomsLoading(null);
+    if (!res.success || !res.data) {
+      setLogoError(res.message ?? mensajeDeFalla(res.failure).titulo);
+      return;
+    }
+    setRoomsByBranch((prev) => ({ ...prev, [branchId]: res.data! }));
+  };
+
+  const toggleExpand = (branchId: string) => {
+    if (expandedId === branchId) {
+      setExpandedId(null);
+      return;
+    }
+    setExpandedId(branchId);
+    if (!roomsByBranch[branchId]) void loadRooms(branchId);
+  };
+
+  const openRoomCreate = (branchId: string) => {
+    setRoomBranchId(branchId);
+    setEditingRoom(null);
+    setRoomForm({ code: '', name: '', specialtyId: '', isActive: true });
+    setRoomFormError(null);
+    setRoomModalOpen(true);
+  };
+
+  const openRoomEdit = (branchId: string, room: ConsultingRoomDto) => {
+    setRoomBranchId(branchId);
+    setEditingRoom(room);
+    setRoomForm({
+      code: room.code,
+      name: room.name,
+      specialtyId: room.specialtyId ?? '',
+      isActive: room.isActive,
+    });
+    setRoomFormError(null);
+    setRoomModalOpen(true);
+  };
+
+  const handleRoomSave = async () => {
+    if (!roomBranchId) return;
+    if (!roomForm.code.trim() || !roomForm.name.trim()) {
+      setRoomFormError('Código y nombre del consultorio son obligatorios.');
+      return;
+    }
+    setRoomSaving(true);
+    setRoomFormError(null);
+    const roomId = editingRoom?.roomId ?? crypto.randomUUID();
+    const res = await upsertConsultingRoom(roomId, {
+      branchId: roomBranchId,
+      code: roomForm.code.trim(),
+      name: roomForm.name.trim(),
+      isActive: roomForm.isActive,
+      specialtyId: roomForm.specialtyId || null,
+      professionalIds: editingRoom?.professionalIds ?? [],
+    });
+    setRoomSaving(false);
+    if (!res.success) {
+      setRoomFormError(res.message ?? mensajeDeFalla(res.failure).titulo);
+      return;
+    }
+    setRoomModalOpen(false);
+    await loadRooms(roomBranchId);
+  };
 
   const filtered = items.filter((s) => {
     const q = search.trim().toLowerCase();
@@ -343,7 +436,7 @@ export default function Sucursales() {
   if (failure) {
     const msg = mensajeDeFalla(failure);
     return (
-      <div className="p-6 max-w-3xl mx-auto">
+      <div className="max-w-3xl mx-auto">
         <Card>
           <h1 className="text-lg font-semibold text-secondary-900 mb-2">{msg.titulo}</h1>
           <p className="text-sm text-secondary-600 mb-4">{msg.detalle}</p>
@@ -354,7 +447,7 @@ export default function Sucursales() {
   }
 
   return (
-    <div className="p-6 space-y-6 max-w-5xl mx-auto" data-testid="page-admin-sucursales">
+    <div className="space-y-6 max-w-5xl mx-auto" data-testid="page-admin-sucursales">
       <header className="space-y-1">
         <h1 className="text-2xl font-semibold text-secondary-900">Sucursales</h1>
         <p className="text-sm text-secondary-600">
@@ -486,10 +579,23 @@ export default function Sucursales() {
             <p className="text-sm text-secondary-600">No hay sucursales que coincidan.</p>
           </Card>
         )}
-        {filtered.map((b) => (
+        {filtered.map((b) => {
+          const expanded = expandedId === b.branchId;
+          const rooms = roomsByBranch[b.branchId];
+          const roomCount = rooms?.length;
+          return (
           <Card key={b.branchId} data-testid={`branch-card-${b.code}`}>
             <div className="flex flex-wrap items-start justify-between gap-3">
               <div className="flex gap-3 min-w-0 flex-1">
+                <button
+                  type="button"
+                  className="w-8 h-8 mt-3 rounded-lg flex items-center justify-center text-foreground-400 hover:bg-secondary-100 cursor-pointer flex-shrink-0"
+                  aria-expanded={expanded}
+                  aria-label={expanded ? 'Contraer consultorios' : 'Ver consultorios'}
+                  onClick={() => toggleExpand(b.branchId)}
+                >
+                  <i className={`ri-arrow-${expanded ? 'down' : 'right'}-s-line text-lg`} />
+                </button>
                 <div className="w-14 h-14 rounded-lg border border-secondary-200 bg-secondary-50 flex items-center justify-center overflow-hidden flex-shrink-0">
                   <InstitucionalLogo
                     branchId={b.branchId}
@@ -505,6 +611,12 @@ export default function Sucursales() {
                     <Badge variant={b.isActive ? 'success' : 'secondary'}>
                       {b.isActive ? 'Activa' : 'Inactiva'}
                     </Badge>
+                    <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-secondary-100 text-2xs text-foreground-600">
+                      <i className="ri-door-open-line" aria-hidden />
+                      {roomCount === undefined
+                        ? 'Consultorios…'
+                        : `${roomCount} consultorio${roomCount === 1 ? '' : 's'}`}
+                    </span>
                   </div>
                   <p className="text-sm text-secondary-600">
                     Tipo: {b.facilityType ? b.facilityType : NO_CAPTURADO}
@@ -518,6 +630,10 @@ export default function Sucursales() {
                   <p className="text-sm text-secondary-600">Domicilio: {formatearDomicilio(b)}</p>
                   <p className="text-sm text-secondary-600">
                     Teléfono: {textoOpcional(b.phoneNumber)}
+                  </p>
+                  <p className="text-sm text-secondary-600">
+                    Correo / horario / días: {NO_CAPTURADO}{' '}
+                    <span className="text-2xs">(sin campo en Branch)</span>
                   </p>
                   <p className="text-sm text-secondary-600">
                     Licencia sanitaria: {textoOpcional(b.healthLicense)}
@@ -559,8 +675,63 @@ export default function Sucursales() {
                 )}
               </div>
             </div>
+
+            {expanded && (
+              <div className="mt-4 pt-4 border-t border-secondary-100 space-y-3">
+                <div className="flex items-center justify-between gap-2">
+                  <p className="text-sm font-medium text-foreground-800">Consultorios</p>
+                  <Button size="sm" icon={<i className="ri-add-line" />} onClick={() => openRoomCreate(b.branchId)}>
+                    Nuevo consultorio
+                  </Button>
+                </div>
+                {roomsLoading === b.branchId && (
+                  <p className="text-xs text-foreground-400">Cargando consultorios…</p>
+                )}
+                {rooms && rooms.length === 0 && (
+                  <p className="text-xs text-foreground-500">Sin consultorios en esta sucursal.</p>
+                )}
+                {rooms && rooms.length > 0 && (
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                    {rooms.map((r) => (
+                      <div
+                        key={r.roomId}
+                        className="flex items-start justify-between gap-2 rounded-lg border border-secondary-200 bg-background-50 p-3"
+                      >
+                        <div className="flex gap-2 min-w-0">
+                          <span className="w-8 h-8 rounded-lg bg-secondary-100 text-foreground-600 flex items-center justify-center flex-shrink-0">
+                            <i className="ri-door-lock-line" aria-hidden />
+                          </span>
+                          <div className="min-w-0">
+                            <p className="text-sm font-medium text-foreground-900 truncate">{r.name}</p>
+                            <p className="text-2xs text-foreground-500 font-mono">{r.code}</p>
+                            <p className="text-2xs text-foreground-400 mt-0.5">
+                              {r.specialtyName ?? 'Especialidad no capturada'} · piso/tipo:{' '}
+                              {NO_CAPTURADO}
+                            </p>
+                            <div className="mt-1">
+                              <Badge variant={r.isActive ? 'success' : 'secondary'} size="sm">
+                                {r.isActive ? 'Activo' : 'Inactivo'}
+                              </Badge>
+                            </div>
+                          </div>
+                        </div>
+                        <button
+                          type="button"
+                          className="w-8 h-8 rounded-lg text-foreground-400 hover:bg-secondary-100 cursor-pointer"
+                          aria-label={`Editar consultorio ${r.name}`}
+                          onClick={() => openRoomEdit(b.branchId, r)}
+                        >
+                          <i className="ri-pencil-line text-sm" />
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+            )}
           </Card>
-        ))}
+          );
+        })}
       </div>
 
       <Modal
@@ -636,6 +807,10 @@ export default function Sucursales() {
               onChange={(e) => setForm((f) => ({ ...f, phoneNumber: e.target.value }))}
               placeholder={NO_CAPTURADO}
             />
+          </div>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+            <Input label="Correo" value="" disabled placeholder="Sin campo en Branch" />
+            <Input label="Horario (apertura–cierre)" value="" disabled placeholder="Sin campo en Branch" />
           </div>
           <Input
             label="Licencia sanitaria"
@@ -735,6 +910,62 @@ export default function Sucursales() {
               {tenantSaving ? 'Guardando…' : 'Guardar'}
             </Button>
           </div>
+        </div>
+      </Modal>
+
+      <Modal
+        open={roomModalOpen}
+        onClose={() => !roomSaving && setRoomModalOpen(false)}
+        title={editingRoom ? 'Editar consultorio' : 'Nuevo consultorio'}
+        size="md"
+        footer={
+          <div className="flex gap-2 justify-end">
+            <Button variant="secondary" disabled={roomSaving} onClick={() => setRoomModalOpen(false)}>
+              Cancelar
+            </Button>
+            <Button disabled={roomSaving} onClick={() => void handleRoomSave()}>
+              {roomSaving ? 'Guardando…' : 'Guardar'}
+            </Button>
+          </div>
+        }
+      >
+        <div className="space-y-3" data-testid="modal-consultorio">
+          <p className="text-xs text-secondary-500">
+            Persistido vía `/api/consulting-rooms`. Piso y tipo del prototipo no existen en el
+            esquema; no se inventan.
+          </p>
+          <Input
+            label="Código"
+            value={roomForm.code}
+            onChange={(e) => setRoomForm((f) => ({ ...f, code: e.target.value }))}
+          />
+          <Input
+            label="Nombre"
+            value={roomForm.name}
+            onChange={(e) => setRoomForm((f) => ({ ...f, name: e.target.value }))}
+          />
+          <Select
+            label="Especialidad (opcional)"
+            value={roomForm.specialtyId}
+            onChange={(e) => setRoomForm((f) => ({ ...f, specialtyId: e.target.value }))}
+            options={[
+              { value: '', label: 'No capturada' },
+              ...specialties.map((s) => ({ value: s.specialtyId, label: s.name })),
+            ]}
+          />
+          <div className="grid grid-cols-2 gap-3">
+            <Input label="Piso" value="" disabled placeholder={NO_CAPTURADO} />
+            <Input label="Tipo" value="" disabled placeholder={NO_CAPTURADO} />
+          </div>
+          <label className="flex items-center gap-2 text-sm text-secondary-700">
+            <input
+              type="checkbox"
+              checked={roomForm.isActive}
+              onChange={(e) => setRoomForm((f) => ({ ...f, isActive: e.target.checked }))}
+            />
+            Consultorio activo
+          </label>
+          {roomFormError && <p className="text-sm text-red-600">{roomFormError}</p>}
         </div>
       </Modal>
     </div>

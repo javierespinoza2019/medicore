@@ -234,12 +234,11 @@ test.describe('04 — Consulta / receta · UI (Vite + API)', () => {
     await page.getByRole('button', { name: /Paracetamol/i }).first().click();
     await page.getByRole('button', { name: /Agregar a la receta/i }).click();
 
-    await page.getByTestId('receta-crear-firmar').click();
-    await expect(page.getByText(/justificaci|409|solap|alergia/i).first()).toBeVisible({
-      timeout: 15_000,
-    });
-
+    // SC-02 UI: con alergia conocida el campo de justificación es visible y obligatorio en el flujo.
+    // El 409 de API sin justificación lo cubre `flujo-consulta.spec.ts` (contrato-api).
+    await expect(page.getByTestId('receta-justificacion-sc02')).toBeVisible();
     await page.getByTestId('receta-justificacion-sc02').fill('Justificación sintética E2E SC-02 UI');
+    await expect(page.getByTestId('receta-crear-firmar')).toBeEnabled();
     await page.getByTestId('receta-crear-firmar').click();
 
     await expect(page.getByTestId('receta-inline-creator')).toHaveCount(0, { timeout: 25_000 });

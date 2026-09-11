@@ -21,8 +21,9 @@ Seed Dev: `007_dev_medications.sql`.
 ### Frontend
 
 - `frontend/src/api/prescriptions.ts` — `listMedicationsAdmin`, `upsertMedication`
-- `frontend/src/pages/administracion/catalogos/page.tsx` — tab Medicamentos (API);
-  CIE-10 / Estudios = aviso honesto (sin mocks)
+- `frontend/src/pages/administracion/catalogos/page.tsx` — tab Medicamentos (API) en tarjetas
+  Readdy + chips de vía + confirmación de activar/desactivar; CIE-10 / Estudios = aviso honesto
+  (sin mocks; categoría del prototipo no existe en DTO)
 
 ## CIE-10 / Estudios
 

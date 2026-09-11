@@ -13,7 +13,9 @@ Mantener y construir MediCore: sistema clínico web (ambulatorio + urgencias) pa
 2. Si el cambio es clínico/normativo: cargar skill `medicore-regulatory` y/o `docs/claude-mx-health-expert`.
 3. Si toca triage, alergias, identidad, recetas, urgencias: cargar skill `medicore-clinical-safety`.
 4. Si toca arquitectura, sync, hospedaje, SPs: cargar skill `medicore-architecture`.
-5. Flujo general de mantenimiento: skill `medicore-maintain`.
+5. Flujo general de mantenimiento: skill `medicore-maintain` (incluye criterio UI Readdy + ciclo calidad).
+6. Si alinea pantallas al prototipo: **layout JSX de `docs/frontend` + honestidad + API**; no marcar
+   «done» solo por cablear contrato. Detalle en skill `medicore-maintain` y regla frontend.
 
 ## Al cerrar la tarea
 
@@ -21,7 +23,8 @@ Actualizar la memoria viva del repo (doc 12, este archivo, reglas, skills, `docs
 `docs/analisis/06-decisiones-abiertas.md`) **cuando el cambio lo amerite**, y dejar las pruebas del
 módulo tocado. Qué se actualiza en cada caso: [`.cursor/rules/medicore-cierre-de-tarea.mdc`](.cursor/rules/medicore-cierre-de-tarea.mdc).
 Estrategia y suite: [`docs/operacion/pruebas.md`](docs/operacion/pruebas.md) — se corre completa con
-`./tools/run-all-tests.ps1`.
+`./tools/run-all-tests.ps1`. Ciclo de calidad por módulos:
+[`docs/operacion/plan-pruebas-ciclo-calidad.md`](docs/operacion/plan-pruebas-ciclo-calidad.md).
 
 ## No negociables
 

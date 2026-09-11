@@ -48,6 +48,38 @@ export function formatSubjectDate(iso: string | null | undefined): string {
   }
 }
 
+/** Edad en años cumplidos a partir de fecha de nacimiento; null si no capturada. */
+export function ageFromBirthDate(birthDate: string | null | undefined): number | null {
+  if (!birthDate?.trim()) return null;
+  try {
+    const born = new Date(birthDate.includes('T') ? birthDate : `${birthDate}T12:00:00`);
+    if (Number.isNaN(born.getTime())) return null;
+    const now = new Date();
+    let age = now.getFullYear() - born.getFullYear();
+    const m = now.getMonth() - born.getMonth();
+    if (m < 0 || (m === 0 && now.getDate() < born.getDate())) age -= 1;
+    return age >= 0 && age < 140 ? age : null;
+  } catch {
+    return null;
+  }
+}
+
+/** Etiqueta corta de sexo biológico para badge; null = no capturado (no inventar F/M). */
+export function biologicalSexShortLabel(sex: string | null | undefined): string | null {
+  switch (sex) {
+    case 'femenino':
+      return 'F';
+    case 'masculino':
+      return 'M';
+    case 'no_determinado':
+      return 'ND';
+    case 'no_especificado':
+      return 'NE';
+    default:
+      return null;
+  }
+}
+
 export function computeSubjectListStats(items: SubjectListItemDto[]) {
   const noIdentificados = items.filter((s) => s.identificationState === 'no_identificado').length;
   const conCurp = items.filter((s) => s.curp?.trim()).length;

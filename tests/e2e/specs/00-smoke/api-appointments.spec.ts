@@ -146,8 +146,9 @@ test.describe('00 — Contrato API · appointments', () => {
     expect(subject.status()).toBe(200);
     const subjectId = (await subject.json()).data.subjectId as string;
 
-    const start = new Date(Date.now() + 4 * 3600_000);
-    start.setMinutes(0, 0, 0);
+    // Slot propio en BD compartida: evita 409 por citas residuales de corridas anteriores.
+    const start = new Date(Date.now() + (12 + (Date.now() % 48)) * 3600_000);
+    start.setSeconds(0, 0);
     const end = new Date(start.getTime() + 30 * 60_000);
 
     const create = await apiCtx.post('/api/appointments', {

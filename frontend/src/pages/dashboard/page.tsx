@@ -101,6 +101,7 @@ export default function Dashboard() {
     })();
   }, [branchId]);
 
+  const calendarDay = now.getDate();
   useEffect(() => {
     if (!branchId) {
       setAppointments([]);
@@ -109,7 +110,7 @@ export default function Dashboard() {
     let cancelled = false;
     void (async () => {
       setAppointmentsLoading(true);
-      const bounds = dayBoundsUtc(now);
+      const bounds = dayBoundsUtc(new Date());
       const res = await listAppointments({
         branchId,
         from: bounds.from,
@@ -123,7 +124,7 @@ export default function Dashboard() {
     return () => {
       cancelled = true;
     };
-  }, [branchId, now.getDate()]);
+  }, [branchId, calendarDay]);
 
   const urgencias = useMemo(
     () => items.filter((e) => e.encounterType === 'urgencias'),
@@ -184,13 +185,19 @@ export default function Dashboard() {
   });
 
   return (
-    <div className="space-y-6 p-4 md:p-6" data-testid="page-dashboard">
+    <div className="space-y-6" data-testid="page-dashboard">
       <div>
         <h1 className="font-heading text-2xl font-bold text-foreground-900">Panel operativo</h1>
         <p className="text-sm capitalize text-foreground-500">{todayLabel}</p>
         <p className="mt-1 text-xs text-foreground-400">
           Indicadores en vivo desde cola clínica y agenda. Agregados financieros/BI: pendiente de API.
         </p>
+      </div>
+
+      <div className="rounded-lg border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-950">
+        Sin tendencias inventadas («vs ayer», ingresos del día del prototipo Readdy). KPIs =
+        cola M4/M10 + citas M9 del día. BI = módulo futuro en la app (doc 12); ruta Reportes oculta
+        en menú.
       </div>
 
       <QueueLiveBanner
@@ -303,7 +310,9 @@ export default function Dashboard() {
             <span className="text-2xs uppercase tracking-wider text-foreground-400">BI / ingresos</span>
           </div>
           <p className="text-sm font-medium text-foreground-700">Pendiente</p>
-          <p className="mt-1 text-xs text-foreground-500">API de agregados (Fase 3)</p>
+          <p className="mt-1 text-xs text-foreground-500">
+            Sin monto inventado. Agregados = Fase 3 / `features/bi` (solo lectura).
+          </p>
         </Card>
       </div>
 

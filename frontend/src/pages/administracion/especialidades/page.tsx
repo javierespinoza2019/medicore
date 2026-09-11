@@ -1,3 +1,7 @@
+/**
+ * Especialidades — UI alineada a Readdy / docs/frontend.
+ * Persistido: code, name, isActive. Descripción / icono / color: sin columna en BD (honestos).
+ */
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useSort } from '@/hooks/useSort';
 import SortableTh from '@/components/feature/SortableTh';
@@ -74,6 +78,7 @@ export default function Especialidades() {
     () => ({
       especialidad: (a: SpecialtyDto, b: SpecialtyDto) => a.name.localeCompare(b.name),
       codigo: (a: SpecialtyDto, b: SpecialtyDto) => a.code.localeCompare(b.code),
+      estado: (a: SpecialtyDto, b: SpecialtyDto) => Number(b.isActive) - Number(a.isActive),
     }),
     [],
   );
@@ -156,7 +161,7 @@ export default function Especialidades() {
 
       <div className="flex items-center justify-end">
         <Button icon={<i className="ri-add-line" />} onClick={openCreate} data-testid="btn-nueva-especialidad">
-          Nueva especialidad
+          Nueva Especialidad
         </Button>
       </div>
 
@@ -167,7 +172,7 @@ export default function Especialidades() {
         <input
           type="search"
           aria-label="Buscar especialidad"
-          placeholder="Buscar especialidad…"
+          placeholder="Buscar especialidad..."
           value={search}
           onChange={(e) => setSearch(e.target.value)}
           data-testid="search-especialidades"
@@ -188,9 +193,14 @@ export default function Especialidades() {
                   onSort={toggleSort}
                 />
                 <SortableTh label="Código" sortKey="codigo" activeKey={sortKey} direction={direction} onSort={toggleSort} />
-                <th className="px-5 py-2 text-xs font-semibold text-foreground-500 uppercase tracking-wider text-center">
-                  Estado
-                </th>
+                <SortableTh
+                  label="Estado"
+                  sortKey="estado"
+                  activeKey={sortKey}
+                  direction={direction}
+                  onSort={toggleSort}
+                  align="center"
+                />
                 <th className="px-5 py-2 text-xs font-semibold text-foreground-500 uppercase tracking-wider w-24 text-center">
                   Acciones
                 </th>
@@ -204,7 +214,21 @@ export default function Especialidades() {
                     className="px-5 py-12 text-center text-foreground-400"
                     data-testid="tabla-especialidades-vacia"
                   >
-                    No se encontraron especialidades
+                    <div className="flex flex-col items-center gap-2">
+                      <span className="w-10 h-10 flex items-center justify-center">
+                        <i className="ri-hospital-line text-2xl" />
+                      </span>
+                      <p className="text-sm">No se encontraron especialidades</p>
+                      {search && (
+                        <button
+                          type="button"
+                          onClick={() => setSearch('')}
+                          className="text-xs text-primary-500 hover:text-primary-600 cursor-pointer"
+                        >
+                          Limpiar búsqueda
+                        </button>
+                      )}
+                    </div>
                   </td>
                 </tr>
               ) : (
@@ -214,7 +238,14 @@ export default function Especialidades() {
                     className="hover:bg-secondary-50/50 transition-base group"
                     data-testid={`admin-especialidad-row-${s.specialtyId}`}
                   >
-                    <td className="px-5 py-2 font-medium text-foreground-900">{s.name}</td>
+                    <td className="px-5 py-2">
+                      <div className="flex items-center gap-3">
+                        <span className="w-9 h-9 rounded-lg bg-primary-100 text-primary-700 flex items-center justify-center flex-shrink-0">
+                          <i className="ri-stethoscope-line text-base" aria-hidden />
+                        </span>
+                        <p className="font-medium text-foreground-900">{s.name}</p>
+                      </div>
+                    </td>
                     <td className="px-5 py-2 font-mono text-xs text-foreground-600">{s.code}</td>
                     <td className="px-5 py-2 text-center">
                       <Badge variant={s.isActive ? 'success' : 'danger'} dot>
@@ -256,7 +287,7 @@ export default function Especialidades() {
       <Modal
         open={modalOpen}
         onClose={() => setModalOpen(false)}
-        title={editingId ? 'Editar especialidad' : 'Nueva especialidad'}
+        title={editingId ? 'Editar Especialidad' : 'Nueva Especialidad'}
         size="md"
         footer={
           <div className="flex gap-3">
@@ -268,7 +299,7 @@ export default function Especialidades() {
               disabled={saving}
               data-testid="btn-guardar-especialidad"
             >
-              {editingId ? 'Guardar cambios' : 'Crear especialidad'}
+              {editingId ? 'Guardar Cambios' : 'Crear Especialidad'}
             </Button>
           </div>
         }
@@ -304,13 +335,32 @@ export default function Especialidades() {
             ]}
             data-testid="select-especialidad-estado"
           />
+
+          <div className="rounded-lg border border-dashed border-secondary-200 bg-background-50 p-3 space-y-3">
+            <p className="text-xs text-foreground-500">
+              Descripción, icono y color del prototipo aún no tienen columna en el catálogo; no se
+              inventan.
+            </p>
+            <Input label="Descripción" placeholder="Sin campo en API" value="" disabled />
+            <div className="flex items-center gap-3">
+              <span className="w-10 h-10 rounded-lg bg-primary-100 text-primary-700 flex items-center justify-center">
+                <i className="ri-stethoscope-line" aria-hidden />
+              </span>
+              <div>
+                <p className="text-sm font-medium text-foreground-800">
+                  {form.name.trim() || 'Vista previa'}
+                </p>
+                <p className="text-2xs text-foreground-400">Icono/color decorativos fijos</p>
+              </div>
+            </div>
+          </div>
         </div>
       </Modal>
 
       <Modal
         open={!!deleteTarget}
         onClose={() => setDeleteTarget(null)}
-        title="Baja de especialidad"
+        title="Eliminar Especialidad"
         size="sm"
         footer={
           <div className="flex gap-3">
@@ -329,10 +379,29 @@ export default function Especialidades() {
         }
       >
         {deleteTarget && (
-          <p className="text-sm text-foreground-700" data-testid="modal-baja-especialidad">
-            Baja lógica de <strong>{deleteTarget.name}</strong> ({deleteTarget.code}). Los profesionales ligados
-            conservan el SpecialtyId; el nombre puede dejar de resolverse en listados.
-          </p>
+          <div className="space-y-4" data-testid="modal-baja-especialidad">
+            <div className="flex items-center gap-3 p-3 bg-red-500/10 rounded-lg border border-red-500/20">
+              <span className="w-10 h-10 flex items-center justify-center rounded-full bg-red-100 text-red-600">
+                <i className="ri-error-warning-line text-lg" />
+              </span>
+              <div>
+                <p className="text-sm font-medium text-red-800">¿Dar de baja esta especialidad?</p>
+                <p className="text-xs text-red-600 mt-0.5">
+                  Baja lógica: no se borra el registro. Los profesionales ligados conservan el
+                  SpecialtyId.
+                </p>
+              </div>
+            </div>
+            <div className="flex items-center gap-3 p-3 bg-background-50 rounded-lg border border-secondary-200">
+              <span className="w-9 h-9 rounded-lg bg-primary-100 text-primary-700 flex items-center justify-center">
+                <i className="ri-stethoscope-line" aria-hidden />
+              </span>
+              <div>
+                <p className="text-sm font-medium text-foreground-900">{deleteTarget.name}</p>
+                <p className="text-xs text-foreground-500 font-mono">{deleteTarget.code}</p>
+              </div>
+            </div>
+          </div>
         )}
       </Modal>
     </div>

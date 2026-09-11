@@ -25,11 +25,15 @@ if (
 const CONTRATO_API =
   /\/(api-.*|06-seguridad-clinica[/\\]sc-mapa|01-auth-seguridad[/\\]permisos-por-rol|01-auth-seguridad[/\\]api-break-glass|02-pacientes[/\\]no-identificado|03-triage-urgencias[/\\]triage-sin-bloqueo|04-consulta-receta[/\\]flujo-consulta|08-multi-tenant[/\\]aislamiento|09-offline[/\\]cola-idempotencia)\.spec\.ts$/;
 
+/** Ciclos guiados QA (overlay); solo con MEDICORE_E2E_GUIDED=1. */
+const GUIDED = /[/\\]guided[/\\].*\.spec\.ts$/;
+const guidedEnabled = process.env.MEDICORE_E2E_GUIDED === '1';
+
 export default defineConfig({
   testDir: './specs',
   fullyParallel: true,
   forbidOnly: !!process.env.CI,
-  retries: process.env.CI ? 2 : 0,
+  retries: process.env.CI ? 2 : 1,
   workers: process.env.CI ? 1 : undefined,
   timeout: Number(process.env.MEDICORE_TIMEOUT ?? '45000'),
   expect: { timeout: 10_000 },
@@ -56,13 +60,34 @@ export default defineConfig({
       use: { baseURL: apiURL },
     },
     {
+      // Después del contrato: logout/revoke/break-glass no deben tumbar la UI en paralelo.
       name: 'chromium',
-      testIgnore: CONTRATO_API,
+      dependencies: ['contrato-api'],
+      testIgnore: [CONTRATO_API, GUIDED],
       use: {
         ...devices['Desktop Chrome'],
         ...(slowMo ? { launchOptions: { slowMo } } : {}),
       },
     },
+    ...(guidedEnabled
+      ? [
+          {
+            name: 'guided-qa',
+            testMatch: GUIDED,
+            fullyParallel: false,
+            workers: 1,
+            use: {
+              ...devices['Desktop Chrome'],
+              headless: process.env.MEDICORE_E2E_GUIDED_HEADLESS === '1',
+              launchOptions: {
+                slowMo: Number(process.env.MEDICORE_SLOW_MO ?? '250') || 250,
+              },
+              video: 'on' as const,
+              screenshot: 'on' as const,
+            },
+          },
+        ]
+      : []),
   ],
   /* No arranca el frontend: el operador debe tener `npm run dev` en docs/frontend. */
 });

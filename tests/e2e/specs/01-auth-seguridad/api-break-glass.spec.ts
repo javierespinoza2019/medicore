@@ -2,12 +2,14 @@ import {
   test,
   expect,
   autorizacion,
+  idE2E,
   iniciarSesion,
   sesionValida,
 } from '../../fixtures/api';
 
 /**
  * Break-glass (#23) y permisos efectivos en sesión contra API real.
+ * Usa recepción NORTE / usuarios efímeros para no contaminar jose.ramirez (UI permisos).
  */
 
 const BRANCH_DEMO = '22222222-2222-2222-2222-222222222222';
@@ -15,6 +17,36 @@ const JUSTIFICACION =
   'Paciente crítico sin médico de guardia; continuidad de atención en urgencias.';
 
 test.describe.configure({ mode: 'serial' });
+
+async function crearRecepcionEfimera(
+  apiCtx: import('@playwright/test').APIRequestContext,
+): Promise<{ userName: string; password: string; userId: string }> {
+  const admin = await sesionValida(apiCtx);
+  const headers = autorizacion(admin);
+  const stamp = idE2E('bg');
+  const userId = crypto.randomUUID();
+  const userName = `e2e.bg.${stamp}@medicore.mx`.slice(0, 128);
+  const password = 'BreakGlass123!';
+
+  const branches = await apiCtx.get('/api/branches?onlyActive=true', { headers });
+  expect(branches.status(), await branches.text()).toBe(200);
+  const branchId = ((await branches.json()).data as Array<{ branchId: string }>)[0].branchId;
+
+  const create = await apiCtx.post('/api/users', {
+    headers,
+    data: {
+      userId,
+      userName,
+      displayName: `E2E BG ${stamp}`,
+      password,
+      isActive: true,
+      roleCodes: ['recepcion'],
+      branchIds: [branchId],
+    },
+  });
+  expect(create.status(), await create.text()).toBe(200);
+  return { userName, password, userId };
+}
 
 test.describe('01 — Auth / seguridad · break-glass (API)', () => {
   test('login y /me exponen permissions efectivos', async ({ apiCtx }) => {
@@ -48,10 +80,8 @@ test.describe('01 — Auth / seguridad · break-glass (API)', () => {
     expect(subj.status()).toBe(200);
     const subjectId = (await subj.json()).data.subjectId as string;
 
-    const login = await iniciarSesion(apiCtx, {
-      userName: 'jose.ramirez@medicore.mx',
-      password: 'Admin123!',
-    });
+    const { userName, password, userId } = await crearRecepcionEfimera(apiCtx);
+    const login = await iniciarSesion(apiCtx, { userName, password });
     expect(login.status()).toBe(200);
     const loginBody = await login.json();
     const token = loginBody.data.accessToken as string;
@@ -74,13 +104,13 @@ test.describe('01 — Auth / seguridad · break-glass (API)', () => {
 
     const despues = await apiCtx.get(`/api/subjects/${subjectId}/record`, { headers });
     expect(despues.status(), await despues.text()).toBe(200);
+
+    await apiCtx.delete(`/api/users/${userId}`, { headers: headersAdmin });
   });
 
   test('break-glass rechaza permisos administrativos', async ({ apiCtx }) => {
-    const login = await iniciarSesion(apiCtx, {
-      userName: 'jose.ramirez@medicore.mx',
-      password: 'Admin123!',
-    });
+    const { userName, password, userId } = await crearRecepcionEfimera(apiCtx);
+    const login = await iniciarSesion(apiCtx, { userName, password });
     expect(login.status()).toBe(200);
     const token = (await login.json()).data.accessToken as string;
 
@@ -92,5 +122,8 @@ test.describe('01 — Auth / seguridad · break-glass (API)', () => {
       },
     });
     expect(bg.status()).toBe(400);
+
+    const admin = await sesionValida(apiCtx);
+    await apiCtx.delete(`/api/users/${userId}`, { headers: autorizacion(admin) });
   });
 });

@@ -205,7 +205,7 @@ export default function Consultas() {
   if (encuentroParam) {
     if (authLoading || !isAuthenticated) {
       return (
-        <div className="space-y-4 p-4 md:p-6" data-testid="page-consultas">
+        <div className="space-y-4" data-testid="page-consultas">
           <p className="text-sm text-foreground-500">Preparando sesión clínica…</p>
         </div>
       );
@@ -213,7 +213,7 @@ export default function Consultas() {
 
     if (loadingDetalle) {
       return (
-        <div className="space-y-4 p-4 md:p-6" data-testid="page-consultas">
+        <div className="space-y-4" data-testid="page-consultas">
           <p className="text-sm text-foreground-500">Cargando episodio…</p>
         </div>
       );
@@ -221,7 +221,7 @@ export default function Consultas() {
 
     if (loadError || !encounter || !subject) {
       return (
-        <div className="space-y-4 p-4 md:p-6" data-testid="page-consultas">
+        <div className="space-y-4" data-testid="page-consultas">
           <p className="rounded border border-amber-200 bg-amber-50 px-3 py-2 text-sm text-amber-800" role="alert">
             {loadError || 'Episodio o sujeto no disponible.'}
           </p>
@@ -233,7 +233,7 @@ export default function Consultas() {
     }
 
     return (
-      <div className="space-y-4 p-4 md:p-6" data-testid="page-consultas">
+      <div className="space-y-4" data-testid="page-consultas">
         <ConsultorioShell
           encounter={encounter}
           subject={subject}
@@ -254,7 +254,7 @@ export default function Consultas() {
     : [];
 
   return (
-    <div className="space-y-4 p-4 md:p-6" data-testid="page-consultas">
+    <div className="space-y-4" data-testid="page-consultas">
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div>
           <h1 className="font-heading text-2xl font-bold text-foreground-900">Consultas</h1>
@@ -262,9 +262,20 @@ export default function Consultas() {
             Cola de consulta externa (API). Abra un episodio para capturar nota, historia y receta.
           </p>
         </div>
-        <Button variant="secondary" size="sm" onClick={() => void refresh()} disabled={loading}>
-          Actualizar cola
-        </Button>
+        <div className="flex flex-wrap gap-2">
+          <Button variant="secondary" size="sm" onClick={() => navigate('/app/pacientes')}>
+            Pacientes
+          </Button>
+          <Button variant="secondary" size="sm" onClick={() => void refresh()} disabled={loading}>
+            Actualizar cola
+          </Button>
+        </div>
+      </div>
+
+      <div className="rounded-lg border border-secondary-200 bg-secondary-50/60 px-4 py-2.5 text-xs text-foreground-600">
+        En el episodio: nota SOAP, historia y receta (M6–M8). Solicitud de estudios y certificados
+        del prototipo Readdy <strong>no</strong> están portados (estudios = Fase 2; sin API de
+        certificados).
       </div>
 
       {filterSubject && (

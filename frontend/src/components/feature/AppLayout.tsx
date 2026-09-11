@@ -609,10 +609,10 @@ export default function AppLayout({ children }: AppLayoutProps) {
           </Dropdown>
         </header>
 
-        {/* Page Content */}
-        <main className="flex-1 overflow-y-auto scrollbar-thin bg-background-100/50">
+        {/* Page Content — padding del lienzo (páginas no deben pegarse al sidebar/borde). */}
+        <main className="flex-1 overflow-y-auto scrollbar-thin bg-background-100/50 p-4 md:p-6">
           {isPendingApproval && (
-            <div className="mx-4 mt-4 rounded-md border border-amber-200 bg-amber-50 px-3 py-2 text-sm text-amber-900">
+            <div className="mb-4 rounded-md border border-amber-200 bg-amber-50 px-3 py-2 text-sm text-amber-900">
               Esta estación está <strong>pendiente de aprobación</strong>. Opera solo en línea
               (sin cola offline ni caché clínica). Un administrador puede aprobarla en{' '}
               <button
@@ -626,7 +626,7 @@ export default function AppLayout({ children }: AppLayoutProps) {
             </div>
           )}
           {device && !isPendingApproval && !allowsClinicalCache && (
-            <div className="mx-4 mt-4 rounded-md border border-slate-200 bg-slate-50 px-3 py-2 text-sm text-slate-700">
+            <div className="mb-4 rounded-md border border-slate-200 bg-slate-50 px-3 py-2 text-sm text-slate-700">
               Cola offline deshabilitada en este dispositivo. La captura sin enlace no está disponible.
             </div>
           )}

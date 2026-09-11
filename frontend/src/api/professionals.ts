@@ -13,6 +13,15 @@ export type ProfessionalDto = {
   isActive: boolean;
   createdAtUtc: string;
   updatedAtUtc: string | null;
+  /** UserName de cuenta ligada (correo/acceso). */
+  linkedUserName: string | null;
+  linkedUserDisplayName: string | null;
+  primaryRoomId: string | null;
+  primaryBranchId: string | null;
+  primaryBranchName: string | null;
+  primaryRoomLabel: string | null;
+  branchNames: string | null;
+  roomLabels: string | null;
 };
 
 export type CreateProfessionalRequest = {
@@ -22,6 +31,7 @@ export type CreateProfessionalRequest = {
   professionalLicense?: string | null;
   specialtyId?: string | null;
   isActive?: boolean;
+  roomId?: string | null;
 };
 
 export type UpdateProfessionalRequest = {
@@ -33,6 +43,8 @@ export type UpdateProfessionalRequest = {
   specialtyId?: string | null;
   clearSpecialtyId?: boolean;
   isActive: boolean;
+  roomId?: string | null;
+  clearRoomAssignments?: boolean;
 };
 
 export type SpecialtyDto = {
@@ -50,6 +62,13 @@ export type UpsertSpecialtyRequest = {
   name: string;
   isActive: boolean;
 };
+
+export function professionalInitials(fullName: string): string {
+  const parts = fullName.trim().split(/\s+/).filter(Boolean);
+  if (parts.length === 0) return '?';
+  if (parts.length === 1) return parts[0].slice(0, 2).toUpperCase();
+  return `${parts[0][0] ?? ''}${parts[1][0] ?? ''}`.toUpperCase();
+}
 
 export async function listProfessionals(
   onlyActive = false,

@@ -49,7 +49,7 @@ export default function AdminDispositivosPage() {
   }
 
   return (
-    <div className="p-6 max-w-5xl mx-auto space-y-4">
+    <div className="max-w-5xl mx-auto space-y-4">
       <div>
         <h1 className="text-2xl font-semibold text-slate-900">Dispositivos / estaciones</h1>
         <p className="text-sm text-slate-600 mt-1">

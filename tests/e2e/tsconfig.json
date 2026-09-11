@@ -27,6 +27,7 @@
     "helpers/**/*.ts",
     "data/**/*.ts",
     "utils/**/*.ts",
+    "guided/**/*.ts",
     "playwright.config.ts"
   ]
 }

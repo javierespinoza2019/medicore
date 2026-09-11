@@ -57,6 +57,10 @@ public sealed class ProfessionalAccessTests
             Guid tenantId, Guid healthcareProfessionalId, CancellationToken ct) =>
             Task.FromResult<Models.Auth.HealthcareProfessionalRow?>(null);
 
+        public Task<Models.Professional.ProfessionalDto?> GetDtoByIdAsync(
+            Guid tenantId, Guid healthcareProfessionalId, CancellationToken ct) =>
+            Task.FromResult<Models.Professional.ProfessionalDto?>(null);
+
         public Task<IReadOnlyList<Models.Professional.ProfessionalDto>> ListAsync(
             Guid tenantId, bool onlyActive, string? search, CancellationToken ct) =>
             Task.FromResult<IReadOnlyList<Models.Professional.ProfessionalDto>>([]);

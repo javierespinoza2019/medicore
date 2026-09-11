@@ -48,23 +48,29 @@ test.describe('10 — Admin · usuarios UI (Vite + API)', () => {
     await expect(page.getByTestId('page-admin-usuarios')).toBeVisible({ timeout: 15_000 });
     await expect(page.getByTestId('usuarios-table')).toBeVisible();
 
-    const stamp = stampUnico();
+    const stamp = stampUnico().replace(/\d/g, '') || 'xyz';
     const userName = `ui.${stamp}@medicore.mx`;
-    const displayName = `UI User ${stamp}`;
+    const displayFirst = `UI`;
+    const displayLast = `User ${stamp}`;
 
     await page.getByTestId('usuarios-nuevo').click();
+    await page.getByTestId('usuarios-nombre').fill(displayFirst);
+    await page.getByTestId('usuarios-apellidos').fill(displayLast);
     await page.getByTestId('usuarios-username').fill(userName);
-    await page.getByTestId('usuarios-displayname').fill(displayName);
     await page.getByTestId('usuarios-password').fill('Temporal123!');
 
-    const roles = page.getByTestId('usuarios-roles');
-    await roles.getByRole('button', { name: /Recepción|recepcion/i }).first().click();
+    await page.getByTestId('usuarios-rol').selectOption('recepcion');
+
+    // Al menos una sucursal (obligatoria en UI)
+    const branches = page.getByTestId('usuarios-branches');
+    await expect(branches.getByRole('button').first()).toBeVisible();
+    await branches.getByRole('button').first().click();
 
     const createPromise = page.waitForResponse(
       (r) => {
         try {
-          const path = new URL(r.url()).pathname;
-          return path === '/api/users' && r.request().method() === 'POST' && r.ok();
+          const path = new URL(r.url()).pathname.replace(/\/$/, '');
+          return path.endsWith('/api/users') && r.request().method() === 'POST';
         } catch {
           return false;
         }
@@ -73,7 +79,8 @@ test.describe('10 — Admin · usuarios UI (Vite + API)', () => {
     );
 
     await page.getByTestId('usuarios-guardar').click();
-    await createPromise;
-    await expect(page.getByText(displayName)).toBeVisible({ timeout: 10_000 });
+    const createRes = await createPromise;
+    expect(createRes.ok(), await createRes.text()).toBeTruthy();
+    await expect(page.getByText(`${displayFirst} ${displayLast}`)).toBeVisible({ timeout: 10_000 });
   });
 });
